@@ -1,0 +1,108 @@
+[{
+  "_id": {
+    "$oid": "65fe86ff699969e6d9a8aff1"
+  },
+  "name": "Electronics",
+  "icon": {
+    "url": "Images/categories/electronics.png"
+  }
+},
+{
+  "_id": {
+    "$oid": "65fe86ff699969e6d9a8aff2"
+  },
+  "name": "Furniture",
+  "icon": {
+    "url": "Images/categories/furniture.png"
+  }
+},
+{
+  "_id": {
+    "$oid": "65fe86ff699969e6d9a8aff3"
+  },
+  "name": "Beauty ",
+  "icon": {
+    "url": "Images/categories/beauty.png"
+  }
+},
+{
+  "_id": {
+    "$oid": "65fe86ff699969e6d9a8aff5"
+  },
+  "name": "Clothing",
+  "icon": {
+    "url": "Images/categories/clothing.png"
+  }
+},
+{
+  "_id": {
+    "$oid": "65ffc933e6ab5ef83aeede26"
+  },
+  "name": "Vehicles",
+  "icon": {
+    "url": "Images/categories/vehicles.png"
+  }
+},
+{
+  "_id": {
+    "$oid": "6629ed9a8edd97793788f9b7"
+  },
+  "name": "Pharmacy",
+  "icon": {
+    "url": "Images/categories/pharmacy.png"
+  }
+},
+{
+  "_id": {
+    "$oid": "6629edb68edd97793788f9b8"
+  },
+  "name": "Service",
+  "icon": {
+    "url": "Images/categories/service.png"
+  }
+},
+{
+  "_id": {
+    "$oid": "6629f0058edd97793788f9b9"
+  },
+  "name": "Food",
+  "icon": {
+    "url": "Images/categories/food.png"
+  }
+},
+{
+  "_id": {
+    "$oid": "6629f27c8edd97793788f9ba"
+  },
+  "name": "Pets",
+  "icon": {
+    "url": "Images/categories/pets.png"
+  }
+},
+{
+  "_id": {
+    "$oid": "662b6148b0e63c7c562a5851"
+  },
+  "name": "Stationery",
+  "icon": {
+    "url": "Images/categories/stationery.png"
+  }
+},
+{
+  "_id": {
+    "$oid": "662b618ab0e63c7c562a5852"
+  },
+  "name": "Gifts",
+  "icon": {
+    "url": "Images/categories/gifts.png"
+  }
+},
+{
+  "_id": {
+    "$oid": "662b6284b0e63c7c562a5855"
+  },
+  "name": "Construction",
+  "icon": {
+    "url": "Images/categories/construction.png"
+  }
+}]
