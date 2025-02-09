@@ -1,16 +1,14 @@
 import React, { useContext } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { MaterialCommunityIcons } from '@expo/vector-icons'; // Remove SimpleLineIcons as it's no longer needed for these icons
+import { MaterialCommunityIcons } from '@expo/vector-icons'; 
 import styles from './styles';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-import UserContext from '../../context/User';
 import { scale, colors } from '../../utils';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 function BottomTab({ screen }) {
   const navigation = useNavigation();
-  const { isLoggedIn, cartCount, orders } = useContext(UserContext);
-
+ 
   const getIconColor = (currentScreen) => {
     return screen === currentScreen ? colors.greenColor : colors.darkGrayText;
   };
@@ -47,11 +45,11 @@ function BottomTab({ screen }) {
           />
 
           
-          {cartCount > 0 && (
+          {/* {cartCount > 0 && (
             <View style={styles.badgeContainer}>
               <Text style={styles.badgeText}>{cartCount}</Text>
             </View>
-          )}
+          )} */}
         </View>
         <Text style={getTextStyle('WhereToGo')}>Where to Go</Text>
       </TouchableOpacity>
@@ -85,11 +83,11 @@ function BottomTab({ screen }) {
       {/* Profile Icon */}
       <TouchableOpacity
         onPress={() => {
-          if (isLoggedIn) {
+          // if (isLoggedIn) {
             navigation.navigate('ProfileDashboard');
-          } else {
-            navigation.navigate('SignIn');
-          }
+          // } else {
+          //   navigation.navigate('SignIn');
+          // }
         }}
         style={styles.footerBtnContainer}
       >
@@ -99,11 +97,11 @@ function BottomTab({ screen }) {
             size={scale(20)}
             color={getIconColor('PROFILE')}
           />
-          {isLoggedIn &&
+          {/* {isLoggedIn &&
             orders &&
             orders.filter((o) =>
               ['PENDING', 'DISPATCHED', 'ACCEPTED'].includes(o.orderStatus)
-            ).length > 0 && <View style={styles.profileBadge} />}
+            ).length > 0 && <View style={styles.profileBadge} />} */}
         </View>
         <Text style={getTextStyle('PROFILE')}>Menu</Text>
       </TouchableOpacity>

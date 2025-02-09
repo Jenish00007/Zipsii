@@ -2,28 +2,14 @@ import React, { useContext } from 'react'
 import styles from './styles'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useNavigation } from '@react-navigation/native'
-import { useMutation, gql } from '@apollo/client'
-import UserContext from '../../context/User'
-import { updateUser } from '../../apollo/server'
-const UPDATEUSER = gql`
-  ${updateUser}
-`
+
 import { TextDefault, BackHeader, BottomTab } from '../../components'
 import { alignment, colors } from '../../utils'
 import { View, TouchableOpacity } from 'react-native'
 function DeleteButton(props) {
   const navigation = useNavigation()
-  const { logout, profile } = useContext(UserContext)
-  const [updateUserInfo] = useMutation(UPDATEUSER)
-  async function updateUserInformation() {
-    updateUserInfo({
-      variables: {
-        name: profile.name,
-        phone: profile.phone,
-        is_Active: false
-      }
-    })
-  }
+
+
   return (
     <SafeAreaView style={[styles.flex, styles.safeAreaStyle]}>
       <BackHeader
@@ -52,11 +38,7 @@ function DeleteButton(props) {
             padding: 15,
             ...alignment.MTlarge
           }}
-          onPress={async () => {
-            await updateUserInformation()
-            logout()
-            navigation.navigate('MainLanding')
-          }}>
+         >
           <TextDefault center bold style={{ color: 'white'}}>
             Delete Account
           </TextDefault>

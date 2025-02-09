@@ -17,9 +17,9 @@ Props:
 
 const BlueBtn = (props) => (
   <View style={[styles.backgroundColor, props.style]}>
-    {props.loading ? (
+    {/* {props.loading ? (
       <Spinner backColor="rgba(0,0,0,0.9)" spinnerColor={colors.white} />
-    ) : (
+    ) : ( */}
       <TouchableOpacity
         activeOpacity={0.7}
         onPress={props.onPress}
@@ -27,7 +27,7 @@ const BlueBtn = (props) => (
       >
         <Text style={styles.btn_text}>{props.text}</Text>
       </TouchableOpacity>
-    )}
+    {/* )} */}
   </View>
 );
 

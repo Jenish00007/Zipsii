@@ -6,12 +6,12 @@ import { BottomTab, TextDefault } from '../../components';
 // import CardContainer from './CardContainer/CardContainer';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import UserContext from '../../context/User';
+
 import { colors } from '../../utils';
 
 function ProfileDashboard(props) {
   const navigation = useNavigation();
-  const { orders } = useContext(UserContext);
+
 
   return (
     <SafeAreaView style={[styles.flex, styles.safeAreaStyle]}>

@@ -2,7 +2,6 @@ import React, { useContext } from 'react';
 import { TouchableOpacity, View, Image, ScrollView } from 'react-native';
 import styles from './styles';
 import { Feather, MaterialIcons, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import UserContext from '../../../context/User';
 import { useNavigation } from '@react-navigation/native';
 import { TextDefault } from '../../../components';
 
@@ -12,7 +11,7 @@ import { colors } from '../../../utils';
 
 function ProfileContainer(props) {
   const navigation = useNavigation();
-  const { profile } = useContext(UserContext);
+
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -42,9 +41,9 @@ function ProfileContainer(props) {
             onPress={() => navigation.navigate('EditingProfile')}>
             <Feather name="edit" size={18} color={colors.white} />
           </TouchableOpacity>
-          <TextDefault style={styles.profileName} H4>
+          {/* <TextDefault style={styles.profileName} H4>
             {profile?.name || 'User Name'}
-          </TextDefault>
+          </TextDefault> */}
         </View>
 
         {/* Stats Section */}

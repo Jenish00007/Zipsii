@@ -10,11 +10,11 @@ function Button(props) {
       activeOpacity={0}
       onPress={props.onPress}
       style={[styles.container, props.containerStyle]}>
-      {props.loading ? (
+      {/* {props.loading ? (
         <Spinner backColor="transparent" spinnerColor={colors.white} />
-      ) : (
+      ) : ( */}
         <Text style={[styles.text, props.textStyle]}>{props.text}</Text>
-      )}
+      {/* )} */}
     </TouchableOpacity>
   )
 }

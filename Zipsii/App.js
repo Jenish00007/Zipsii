@@ -1,29 +1,24 @@
 import React, { useState, useEffect } from 'react'
 import AppContainer from './src/routes/routes'
 import * as Notifications from 'expo-notifications'
-import { ApolloProvider } from '@apollo/client'
 import { StatusBar, Platform } from 'react-native'
-import { ConfigurationProvider } from './src/context/Configuration'
-import { UserProvider } from './src/context/User'
 import { colors } from './src/utils/colors'
 import * as Font from 'expo-font'
-import setupApolloClient from './src/apollo/index'
 import FlashMessage from 'react-native-flash-message'
 import { Spinner } from './src/components'
 import { ScheduleProvider } from './src/context/ScheduleContext'
 
 export default function App() {
   const [fontLoaded, setFontLoaded] = useState(false)
-  const [client, setupClient] = useState(null)
+
 
   useEffect(() => {
     loadAppData()
   }, [])
 
   async function loadAppData() {
-    const client = await setupApolloClient()
 
-    setupClient(client)
+ 
     await Font.loadAsync({
       'Poppins-Regular': require('./src/assets/font/Poppins/Poppins-Regular.ttf'),
       'Poppins-Bold': require('./src/assets/font/Poppins/Poppins-Bold.ttf')
@@ -61,22 +56,22 @@ export default function App() {
     }
   }
 
-  if (fontLoaded && client) {
+  if (fontLoaded) {
     return (
-      <ApolloProvider client={client}>
+      <>
         <StatusBar
           barStyle={'dark-content'}
           backgroundColor={colors.headerbackground}
         />
-        <ConfigurationProvider>
-          <UserProvider>
+      
+        
             <ScheduleProvider>
             <AppContainer />
             </ScheduleProvider>
-          </UserProvider>
-        </ConfigurationProvider>
+         
+       
         <FlashMessage position="top" />
-      </ApolloProvider>
+        </>
     )
   } else return <Spinner spinnerColor={colors.spinnerColor} />
 }

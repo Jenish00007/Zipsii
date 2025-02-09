@@ -10,8 +10,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 // import { HeaderBackButton } from '@react-navigation/stack';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { gql, useQuery } from '@apollo/client';
-import { categories, produccts } from '../../apollo/server';
 import { TextInput, Image } from 'react-native'; // Add this to your imports
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useState } from 'react';
@@ -35,25 +33,29 @@ const caroselImage = [
   require('../../assets/images/MainLanding/slide6.jpg')
 ];
 
-const CATEGORIES = gql`
-  ${categories}
-`;
-const PRODUCTS_DATA = gql`
-  ${produccts}
-`;
-
+const dummyData = [
+  { id: '1', title: 'Item 1', description: 'This is a description of item 1' },
+  { id: '2', title: 'Item 2', description: 'This is a description of item 2' },
+  { id: '3', title: 'Item 3', description: 'This is a description of item 3' },
+  { id: '4', title: 'Item 4', description: 'This is a description of item 4' },
+  { id: '5', title: 'Item 5', description: 'This is a description of item 5' }
+];
 const videoShorts = [
   { id: '1', url: 'https://www.youtube.com/shorts/8OLAi6Eba98?feature=share' },
   { id: '2', url: 'https://www.youtube.com/shorts/NsOfgaUD92Q?feature=share' },
   { id: '3', url: 'https://www.youtube.com/shorts/QyGx_Z2tbTA?feature=share' }
 ];
 
+const dummyDatacategory = [
+  { id: '1', cardLabel: 'Beach', icon: require('../../assets/th1.jpeg') },
+  { id: '2', cardLabel: 'Mountains', icon: require('../../assets/th1.jpeg') },
+  { id: '3', cardLabel: 'Forest', icon: require('../../assets/th1.jpeg') },
+  { id: '4', cardLabel: 'Desert', icon: require('../../assets/th1.jpeg') },
+  { id: '5', cardLabel: 'City', icon: require('../../assets/th1.jpeg') },
+];
+
 function MainLanding(props) {
   const navigation = useNavigation();
-  const { data: categoryData } = useQuery(CATEGORIES);
-  const { data: productsData, loading, error, refetch, networkStatus } = useQuery(PRODUCTS_DATA);
-
-  const Featured = productsData?.products ? productsData.products.filter(item => item.featured) : [];
 
   const { scheduleData } = useSchedule();
 
@@ -289,7 +291,7 @@ function MainLanding(props) {
             horizontal
             showsHorizontalScrollIndicator={false}
             keyExtractor={(item, index) => index.toString()}
-            data={categoryData?.categories?.slice(0, 8) || []} // Ensure you limit to 8 categories
+            data={dummyDatacategory?.slice(0, 8) || []} // Ensure you limit to 8 categories
             renderItem={({ item }) => (
               <CategoryCard
                 id={item._id}
@@ -302,7 +304,7 @@ function MainLanding(props) {
         </View>
 
 
-        {Featured.length > 0 && (
+        {dummyData.length > 0 && (
           <View style={styles.titleSpacer}>
             <TextDefault textColor={colors.fontMainColor} H5 bold >
               {'Best Destination'}
@@ -316,7 +318,7 @@ function MainLanding(props) {
               horizontal={true}
               showsHorizontalScrollIndicator={false}
               keyExtractor={(item, index) => item._id}
-              data={Featured}
+              data={dummyData}
               renderItem={({ item, index }) => {
                 return (
                   <ProductCard styles={styles.itemCardContainer} {...item} />
@@ -336,33 +338,33 @@ function MainLanding(props) {
           <TextDefault textColor={colors.fontMainColor} H4>
             {'All Destination'}
           </TextDefault>
-        
+
         </View>
       </>
     );
   }
-  
+
+
   return (
     <SafeAreaView style={[styles.flex, styles.safeAreaStyle]}>
       <View style={[styles.grayBackground, styles.flex]}>
-        {error ? (
+        {/* {error ? (
           <TextError text={error.message} />
-        ) : (
-          <FlatList
-            keyExtractor={(item, index) => index.toString()}
-            showsVerticalScrollIndicator={false}
-            numColumns={2}
-            refreshing={networkStatus === 4}
-            onRefresh={() => refetch()}
-            ListFooterComponent={loading && <Spinner />}
-            ListHeaderComponent={renderHeader}
-            data={productsData ? productsData.products : []}
-            renderItem={({ item }) => (
-              <ProductCard styles={styles.productCard} {...item} />
+        ) : ( */}
+        <FlatList
+          keyExtractor={(item, index) => index.toString()}
+          showsVerticalScrollIndicator={false}
+          numColumns={2}
+          // Removed refreshing and onRefresh
+          // ListFooterComponent={loading && <Spinner />} // Optionally removed footer loading indicator
+          ListHeaderComponent={renderHeader}
+          data={dummyData}
+          renderItem={({ item }) => (
+            <ProductCard styles={styles.productCard} {...item} />
+          )}
+        />
 
-            )}
-          />
-        )}
+        {/* )} */}
         <BottomTab screen="HOME" />
       </View>
     </SafeAreaView>

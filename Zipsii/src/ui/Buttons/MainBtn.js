@@ -20,9 +20,9 @@ Props:
 
 const MainBtn = props => (
   <View style={[styles.backgroundColor, props.style]}>
-    {props.loading ? (
+    {/* {props.loading ? (
       <Spinner backColor="rgba(0,0,0,0.1)" spinnerColor={colors.white} />
-    ) : (
+    ) : ( */}
       <TouchableOpacity
         onPress={props.onPress}
         style={styles.main_brown_btn}
@@ -31,7 +31,7 @@ const MainBtn = props => (
           {props.text}
         </TextDefault>
       </TouchableOpacity>
-    )}
+    {/* )} */}
   </View>
 )
 
