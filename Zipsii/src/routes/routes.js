@@ -25,7 +25,7 @@ const MainStack = createStackNavigator();
 function Drawer() {
   return (
     <NavigationStack.Navigator screenOptions={{ headerShown: false }}>
-      <NavigationStack.Screen name="MainLanding" component={Screen.MainLanding} />
+      <NavigationStack.Screen name="MainLanding" component={Screen.Login} />
       <NavigationStack.Screen name="DeleteButton" component={Screen.DeleteButton} />
     
       <NavigationStack.Screen name="ProfileDashboard" component={Screen.ProfileDashboard} />

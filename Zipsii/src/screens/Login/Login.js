@@ -1,167 +1,113 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
-import FlashMessage, { showMessage } from "react-native-flash-message";
-import { Buffer } from "buffer";
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Ensure Buffer is globally available
-global.Buffer = global.Buffer || Buffer;
 
-// Twilio credentials (replace with your own)
-const ACCOUNT_SID = "ACde7e235ee22878fb0d0510d19a99d57f"; // Replace with your Twilio Account SID
-const AUTH_TOKEN = "6266af55daf6af3746b6390306734ac6";   // Replace with your Twilio Auth Token
-const TWILIO_PHONE_NUMBER = "+919894579863"; // Replace with your Twilio phone number
+const SignInScreen = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-function Login() {
-    const [step, setStep] = useState(1);
-    const [mobileNumber, setMobileNumber] = useState("");
-    const [generatedOtp, setGeneratedOtp] = useState("");
-    const [enteredOtp, setEnteredOtp] = useState("");
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please enter email and password');
+      return;
+    }
+  
+    setLoading(true);
+    try {
+      const response = await fetch('http://localhost:8000/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+  
+      const data = await response.json();
+  
+      // Check if the error field is false in the response (indicating success)
+      if (!data.error) {
+        Alert.alert('Success', 'Logged in successfully');
+        // Save accessToken and user information (e.g., in AsyncStorage or context)
+        const { accessToken, user } = data;
+        // Example of saving token and user info to AsyncStorage
+        await AsyncStorage.setItem('accessToken', accessToken);
+        await AsyncStorage.setItem('user', JSON.stringify(user));
+  
+        // You can navigate to the next screen here
+        // For example: navigation.navigate('Home'); // if using react-navigation
+      } else {
+        // Handle the error message from the response
+        Alert.alert('Error', data.message || 'Login failed');
+      }
+    } catch (error) {
+      console.error(error); // Log any unexpected errors
+      Alert.alert('Error', 'Login failed due to a network error');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
 
-    const generateOtp = () => {
-        return Math.floor(1000 + Math.random() * 9000).toString(); // Generate a 4-digit OTP
-    };
-
-    const sendOtp = async (otp) => {
-        const message = `Your OTP for login is: ${otp}`;
-        const formattedNumber = `+91${mobileNumber.trim()}`;
-
-        if (!formattedNumber) {
-            showMessage({ message: "Mobile number is empty or invalid", type: "danger" });
-            return;
-        }
-
-        if (!/^[6-9]\d{9}$/.test(mobileNumber)) {
-            showMessage({ message: "Invalid Mobile Number Format", type: "danger" });
-            return;
-        }
-
-        console.log("Sending OTP to:", formattedNumber);
-
-        try {
-            const response = await fetch(
-                `https://api.twilio.com/2010-04-01/Accounts/${ACCOUNT_SID}/Messages.json`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Authorization": "Basic " + Buffer.from(`${ACCOUNT_SID}:${AUTH_TOKEN}`).toString("base64"),
-                        "Content-Type": "application/x-www-form-urlencoded",
-                    },
-                    body: new URLSearchParams({
-                        From: TWILIO_PHONE_NUMBER,
-                        To: formattedNumber,
-                        Body: message,
-                    }),
-                }
-            );
-
-            const data = await response.json();
-            if (response.ok) {
-                console.log("OTP sent successfully:", data);
-                showMessage({ message: "OTP Sent Successfully", type: "success" });
-                setGeneratedOtp(otp);
-            } else {
-                console.error("Twilio error:", data);
-                showMessage({ message: `Failed to send OTP: ${data.message}`, type: "danger" });
-            }
-        } catch (error) {
-            console.error("Error sending OTP:", error);
-            showMessage({ message: "Error sending OTP. Please try again.", type: "danger" });
-        }
-    };
-
-    const handleMobileSubmit = () => {
-        const phoneRegex = /^[6-9]\d{9}$/; // Indian mobile numbers start with 6-9
-        if (phoneRegex.test(mobileNumber)) {
-            const otp = generateOtp();
-            sendOtp(otp);
-            setStep(2);
-        } else {
-            showMessage({ message: "Invalid Mobile Number", type: "danger" });
-        }
-    };
-
-    const handleOtpSubmit = () => {
-        if (enteredOtp === generatedOtp) {
-            showMessage({ message: "Login Successfully", type: "success" });
-        } else {
-            showMessage({ message: "Invalid OTP", type: "danger" });
-        }
-    };
-
-    return (
-        <View style={styles.container}>
-            {step === 1 && (
-                <>
-                    <Text style={styles.title}>Enter Mobile Number</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Enter your mobile number"
-                        keyboardType="numeric"
-                        maxLength={10}
-                        value={mobileNumber}
-                        onChangeText={setMobileNumber}
-                    />
-                    <TouchableOpacity style={styles.button} onPress={handleMobileSubmit}>
-                        <Text style={styles.buttonText}>Submit</Text>
-                    </TouchableOpacity>
-                </>
-            )}
-            {step === 2 && (
-                <>
-                    <Text style={styles.title}>Enter OTP</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Enter the OTP"
-                        keyboardType="numeric"
-                        maxLength={4}
-                        value={enteredOtp}
-                        onChangeText={setEnteredOtp}
-                    />
-                    <TouchableOpacity style={styles.button} onPress={handleOtpSubmit}>
-                        <Text style={styles.buttonText}>Verify OTP</Text>
-                    </TouchableOpacity>
-                </>
-            )}
-            <FlashMessage position="top" />
-        </View>
-    );
-}
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Sign In</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Email"
+        keyboardType="email-address"
+        value={email}
+        onChangeText={setEmail}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Password"
+        secureTextEntry
+        value={password}
+        onChangeText={setPassword}
+      />
+      <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
+        <Text style={styles.buttonText}>{loading ? 'Signing in...' : 'Sign In'}</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "#f8f9fa",
-        padding: 20,
-    },
-    title: {
-        fontSize: 18,
-        marginBottom: 20,
-        fontWeight: "bold",
-        color: "#333",
-    },
-    input: {
-        width: "100%",
-        padding: 15,
-        borderWidth: 1,
-        borderColor: "#ccc",
-        borderRadius: 8,
-        marginBottom: 20,
-        fontSize: 16,
-    },
-    button: {
-        width: "100%",
-        backgroundColor: "#2080b9",
-        padding: 15,
-        borderRadius: 8,
-        alignItems: "center",
-    },
-    buttonText: {
-        color: "#fff",
-        fontSize: 16,
-        fontWeight: "bold",
-    },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#f8f8f8',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  input: {
+    width: '100%',
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    marginBottom: 10,
+    backgroundColor: '#fff',
+  },
+  button: {
+    backgroundColor: '#007bff',
+    padding: 15,
+    borderRadius: 5,
+    width: '100%',
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
 });
 
-export default Login;
+export default SignInScreen;
