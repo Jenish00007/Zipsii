@@ -25,6 +25,7 @@ import CreatePoll from './CreatePoll/CreatePoll'
 import PageCreation from './PageCreation/PageCreation'
 import ReelUpload from './ReelUpload/ReelUpload'
 import LocationPage from './LocationPage/LocationPage'
+import SignUp from './SignUp/SignUp'
 
 
 export {
@@ -53,5 +54,6 @@ export {
   CreatePoll,
   PageCreation,
   ReelUpload,
-  LocationPage
+  LocationPage,
+  SignUp
 }

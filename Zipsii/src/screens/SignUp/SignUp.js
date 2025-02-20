@@ -1,57 +1,48 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 
-const SignInScreen = () => {
+const SignUpScreen = () => {
+  const [fullName, FullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
 
-  const handleLogin = async () => {
-    if (!email || !password) {
+  const handleSignUp = async () => {
+    if (!email || !password || !fullName) {
       Alert.alert('Error', 'Please enter email and password');
       return;
     }
 
-    console.log('Sending request with email:', email, 'and password:', password); // Debug log
-
     setLoading(true);
     try {
-      const response = await fetch('http://192.168.197.179:8000/login/', {
+      const response = await fetch('http://192.168.197.179:8000/create-account/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }), // POST body
+        body: JSON.stringify({fullName, email, password }), // POST body
       });
-
-      console.log('Response status:', response.status); // Check the status code
 
       if (response.ok) {
         const data = await response.json();
-        console.log('Response data:', data); // Check the data returned from the backend
-
         if (!data.error) {
-          Alert.alert('Success', 'Logged in successfully');
+          Alert.alert('Success', 'Account created successfully');
           const { accessToken, user } = data;
-
-          // Store the accessToken (JWT token) in AsyncStorage
           await AsyncStorage.setItem('accessToken', accessToken);
-          await AsyncStorage.setItem('user', JSON.stringify(user)); // Optionally store the user info
+          await AsyncStorage.setItem('user', JSON.stringify(user)); 
 
-          // Navigate to MainLanding page after successful login
-          navigation.navigate('Login');
+          navigation.navigate('Login'); 
         } else {
-          Alert.alert('Error', data.message || 'Login failed');
+          Alert.alert('Error', data.message || 'Signup failed');
         }
       } else {
-        Alert.alert('Error', 'Login failed, please try again.');
+        Alert.alert('Error', 'Signup failed, please try again.');
       }
     } catch (error) {
       console.error('Network or fetch error:', error); // Log error
-      Alert.alert('Error', 'Login failed due to a network error');
+      Alert.alert('Error', 'Signup failed due to a network error');
     } finally {
       setLoading(false);
     }
@@ -59,7 +50,15 @@ const SignInScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
+      <Text style={styles.title}>Sign Up</Text>
+      <TextInput
+      style={styles.input} 
+      placeholder="Name"
+      keyboardType="name"
+      value={fullName}
+      onChangeText={FullName}
+
+      />
       <TextInput
         style={styles.input}
         placeholder="Email"
@@ -74,13 +73,13 @@ const SignInScreen = () => {
         value={password}
         onChangeText={setPassword}
       />
-      <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
-        <Text style={styles.buttonText}>{loading ? 'Signing in...' : 'Sign In'}</Text>
+      <TouchableOpacity style={styles.button} onPress={handleSignUp} disabled={loading}>
+        <Text style={styles.buttonText}>{loading ? 'Signing up...' : 'Sign Up'}</Text>
       </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
-        <Text style={styles.signupText}>Don't have an account? Sign Up</Text>
-      </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('MainLanding')}>
+              <Text style={styles.signupText}>You have an account? Login</Text>
+            </TouchableOpacity>
+      
     </View>
   );
 };
@@ -121,4 +120,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SignInScreen;
+export default SignUpScreen;
