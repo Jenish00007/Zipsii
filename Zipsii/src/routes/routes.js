@@ -38,7 +38,7 @@ function Drawer() {
       <NavigationStack.Screen name="TripDetail" component={Screen.TripDetail}/>
       <NavigationStack.Screen name="Map" component={Screen.Map}/>
       <NavigationStack.Screen name='Schedule' component={Screen.Schedule}/>
-      <NavigationStack.Screen name='Login' component={Screen.Login}/>
+      <NavigationStack.Screen name='Login' component={Screen.MainLanding}/>
       <NavigationStack.Screen name="DiscoverPlace" component={Screen.DiscoverPlace} />
       <NavigationStack.Screen name='SearchPage' component={Screen.SearchPage}/>
       <NavigationStack.Screen name='Notification' component={Screen.Notification}/>

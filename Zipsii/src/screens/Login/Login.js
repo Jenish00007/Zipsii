@@ -1,54 +1,61 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import { useNavigation } from '@react-navigation/native';
 
 const SignInScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const navigation = useNavigation();
 
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert('Error', 'Please enter email and password');
       return;
     }
-  
+
+    console.log('Sending request with email:', email, 'and password:', password); // Debug log
+
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/login', {
+      const response = await fetch('http://192.168.197.179:8000/login/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password }), // POST body
       });
-  
-      const data = await response.json();
-  
-      // Check if the error field is false in the response (indicating success)
-      if (!data.error) {
-        Alert.alert('Success', 'Logged in successfully');
-        // Save accessToken and user information (e.g., in AsyncStorage or context)
-        const { accessToken, user } = data;
-        // Example of saving token and user info to AsyncStorage
-        await AsyncStorage.setItem('accessToken', accessToken);
-        await AsyncStorage.setItem('user', JSON.stringify(user));
-  
-        // You can navigate to the next screen here
-        // For example: navigation.navigate('Home'); // if using react-navigation
+
+      console.log('Response status:', response.status); // Check the status code
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Response data:', data); // Check the data returned from the backend
+
+        if (!data.error) {
+          Alert.alert('Success', 'Logged in successfully');
+          const { accessToken, user } = data;
+
+          // Store the accessToken (JWT token) in AsyncStorage
+          await AsyncStorage.setItem('accessToken', accessToken);
+          await AsyncStorage.setItem('user', JSON.stringify(user)); // Optionally store the user info
+
+          // Navigate to MainLanding page after successful login
+          navigation.navigate('Login');
+        } else {
+          Alert.alert('Error', data.message || 'Login failed');
+        }
       } else {
-        // Handle the error message from the response
-        Alert.alert('Error', data.message || 'Login failed');
+        Alert.alert('Error', 'Login failed, please try again.');
       }
     } catch (error) {
-      console.error(error); // Log any unexpected errors
+      console.error('Network or fetch error:', error); // Log error
       Alert.alert('Error', 'Login failed due to a network error');
     } finally {
       setLoading(false);
     }
   };
-  
 
   return (
     <View style={styles.container}>
