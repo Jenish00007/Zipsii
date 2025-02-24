@@ -14,35 +14,38 @@ const SignInScreen = () => {
       Alert.alert('Error', 'Please enter email and password');
       return;
     }
-
+  
     console.log('Sending request with email:', email, 'and password:', password); // Debug log
-
+  
     setLoading(true);
     try {
-      const response = await fetch('http://192.168.197.179:8000/login/', {
+      const response = await fetch('http://192.168.47.179:8000/login/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, password }), // POST body
       });
-
+  
       console.log('Response status:', response.status); // Check the status code
-
+  
       if (response.ok) {
         const data = await response.json();
         console.log('Response data:', data); // Check the data returned from the backend
-
+  
         if (!data.error) {
           Alert.alert('Success', 'Logged in successfully');
           const { accessToken, user } = data;
-
-          // Store the accessToken (JWT token) in AsyncStorage
+  
+          // Store the accessToken (JWT token) and expiration time (1 day)
+          const expirationTime = Date.now() + 24 * 60 * 60 * 1000; // 24 hours from now
           await AsyncStorage.setItem('accessToken', accessToken);
           await AsyncStorage.setItem('user', JSON.stringify(user)); // Optionally store the user info
-
-          // Navigate to MainLanding page after successful login
-          navigation.navigate('Login');
+          await AsyncStorage.setItem('expirationTime', expirationTime.toString());
+  
+          if (accessToken) {
+            navigation.navigate('Login'); // Navigate to MainLanding page after successful login
+          }
         } else {
           Alert.alert('Error', data.message || 'Login failed');
         }
@@ -56,7 +59,7 @@ const SignInScreen = () => {
       setLoading(false);
     }
   };
-
+  
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Login</Text>

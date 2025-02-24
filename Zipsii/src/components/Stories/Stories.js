@@ -1,7 +1,8 @@
+// Import statements should be at the very top of the file.
 import React from 'react';
-import {View, Text, ScrollView, TouchableOpacity, Image} from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
-import {useNavigation} from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 
 const Stories = () => {
   const navigation = useNavigation();
@@ -27,13 +28,11 @@ const Stories = () => {
       name: 'The_Groot',
       image: require('../../storage/images/profile3.jpg'),
     },
-    ,
     {
       id: 0,
       name: 'loverland',
       image: require('../../storage/images/profile4.jpg'),
     },
-    ,
     {
       id: 0,
       name: 'chillhouse',
@@ -45,17 +44,20 @@ const Stories = () => {
     <ScrollView
       horizontal={true}
       showsHorizontalScrollIndicator={false}
-      style={{paddingVertical: 20}}>
+      style={{ paddingVertical: 20 }}>
       {storyInfo.map((data, index) => {
         return (
           <TouchableOpacity
             key={index}
-            onPress={() =>
-              navigation.push('Status', {
-                name: data.name,
-                image: data.image,
-              })
-            }>
+            onPress={() => {
+              // Only trigger navigation if data.id is 1
+              if (data.id === 1) {
+                navigation.push('Status', {
+                  name: data.name,
+                  image: data.image,
+                });
+              }
+            }}>
             <View
               style={{
                 flexDirection: 'column',

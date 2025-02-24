@@ -1,6 +1,7 @@
-import { View, Text, TextInput, Button, Alert, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Button, Alert, Image, StyleSheet } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { launchImageLibrary } from 'react-native-image-picker';
 
 export default function Status() {
   const [title, setTitle] = useState('');
@@ -16,7 +17,7 @@ export default function Status() {
   useEffect(() => {
     const getToken = async () => {
       try {
-        const token = await AsyncStorage.getItem('authToken');
+        const token = await AsyncStorage.getItem('accessToken');
         if (token) {
           setAuthToken(token);
         }
@@ -27,8 +28,22 @@ export default function Status() {
     getToken();
   }, []);
 
+  // Handle image selection
+  const selectImage = () => {
+    launchImageLibrary({ mediaType: 'photo', includeBase64: false }, (response) => {
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      } else if (response.errorCode) {
+        Alert.alert('Error', 'Error with image picker: ' + response.errorMessage);
+      } else {
+        const source = { uri: response.assets[0].uri };
+        setImageUrl(source.uri); // Set the image URL to the state
+      }
+    });
+  };
+
   const handleAddStory = async () => {
-    if (!title || !story || !visitedLocation || !imageUrl || !visitedDate) {
+    if (!title || !story || !visitedLocation || !visitedDate) {
       Alert.alert('Error', 'All fields are required.');
       return;
     }
@@ -79,7 +94,17 @@ export default function Status() {
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Add Your Travel Story</Text>
-      
+
+      {/* Display Selected Image */}
+      {imageUrl ? (
+        <Image source={{ uri: imageUrl }} style={styles.imagePreview} />
+      ) : (
+        <Text style={styles.noImageText}>No Image Selected</Text>
+      )}
+
+      {/* Button to Select Image */}
+      <Button title="Select Image" onPress={selectImage} color="#2e8b57" />
+
       {/* Input fields for travel story */}
       <TextInput
         placeholder="Title"
@@ -140,6 +165,18 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     color: '#333',
     textAlign: 'center',
+  },
+  imagePreview: {
+    width: 200,
+    height: 200,
+    marginBottom: 20,
+    alignSelf: 'center',
+    borderRadius: 10,
+  },
+  noImageText: {
+    color: 'gray',
+    textAlign: 'center',
+    marginBottom: 20,
   },
   input: {
     borderWidth: 1,
