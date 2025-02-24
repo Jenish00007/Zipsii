@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import navigationService from './navigationService';
 import * as Notifications from 'expo-notifications';
 import * as Screen from '../screens';
+import AddCaption from '../components/Stories/AddCaption';
 
 const NavigationStack = createStackNavigator();
 const MainStack = createStackNavigator();
@@ -49,6 +50,8 @@ function Drawer() {
       <NavigationStack.Screen name="ChatScreen" component={Screen.ChatScreen} />
       <NavigationStack.Screen name="MessageList" component={Screen.MessageList} />
       <NavigationStack.Screen name="SignUp" component={Screen.SignUp} />
+      <NavigationStack.Screen name="AddCaption" component={AddCaption} />
+
 
       
     </NavigationStack.Navigator>

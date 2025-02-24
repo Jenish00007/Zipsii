@@ -1,7 +1,8 @@
 import React from 'react';
-import {View, Text, ScrollView, TouchableOpacity, Image} from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, Alert } from 'react-native';
+import { launchImageLibrary } from 'react-native-image-picker';
+import { useNavigation } from '@react-navigation/native';
 import Entypo from 'react-native-vector-icons/Entypo';
-import {useNavigation} from '@react-navigation/native';
 
 const Stories = () => {
   const navigation = useNavigation();
@@ -27,13 +28,11 @@ const Stories = () => {
       name: 'The_Groot',
       image: require('../../storage/images/profile3.jpg'),
     },
-    ,
     {
       id: 0,
       name: 'loverland',
       image: require('../../storage/images/profile4.jpg'),
     },
-    ,
     {
       id: 0,
       name: 'chillhouse',
@@ -41,80 +40,79 @@ const Stories = () => {
     },
   ];
 
+  // Function to pick an image from gallery
+  const pickImage = async () => {
+    const options = {
+      mediaType: 'photo',
+      quality: 1,
+    };
+
+    launchImageLibrary(options, (response) => {
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      } else if (response.errorMessage) {
+        Alert.alert('Error', response.errorMessage);
+      } else {
+        const imageUri = response.assets[0].uri;
+        navigation.navigate('AddCaption', { imageUri });
+      }
+    });
+  };
+
   return (
-    <ScrollView
-      horizontal={true}
-      showsHorizontalScrollIndicator={false}
-      style={{paddingVertical: 20}}>
-      {storyInfo.map((data, index) => {
-        return (
-          <TouchableOpacity
-            key={index}
-            onPress={() =>
-              navigation.push('Status', {
-                name: data.name,
-                image: data.image,
-              })
-            }>
-            <View
-              style={{
-                flexDirection: 'column',
-                paddingHorizontal: 8,
-                position: 'relative',
-              }}>
-              {data.id == 1 ? (
-                <View
+    <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} style={{ paddingVertical: 20 }}>
+      {storyInfo.map((data, index) => (
+        <TouchableOpacity
+          key={index}
+          onPress={() => {
+            if (data.id === 1) {
+              pickImage(); // Opens gallery if "Your Story" is clicked
+            } else {
+              alert(`Viewing ${data.name}'s story`); // Placeholder action
+            }
+          }}>
+          <View style={{ flexDirection: 'column', paddingHorizontal: 8, position: 'relative' }}>
+            {data.id === 1 ? (
+              <View style={{ position: 'absolute', bottom: 15, right: 10, zIndex: 1 }}>
+                <Entypo
+                  name="circle-with-plus"
                   style={{
-                    position: 'absolute',
-                    bottom: 15,
-                    right: 10,
-                    zIndex: 1,
-                  }}>
-                  <Entypo
-                    name="circle-with-plus"
-                    style={{
-                      fontSize: 20,
-                      color: '#405de6',
-                      backgroundColor: 'white',
-                      borderRadius: 100,
-                    }}
-                  />
-                </View>
-              ) : null}
-              <View
-                style={{
-                  width: 68,
-                  height: 68,
-                  backgroundColor: 'white',
-                  borderWidth: 1.8,
-                  borderRadius: 100,
-                  borderColor: '#c13584',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}>
-                <Image
-                  source={data.image}
-                  style={{
-                    resizeMode: 'cover',
-                    width: '92%',
-                    height: '92%',
+                    fontSize: 20,
+                    color: '#405de6',
+                    backgroundColor: 'white',
                     borderRadius: 100,
-                    backgroundColor: 'orange',
                   }}
                 />
               </View>
-              <Text
+            ) : null}
+            <View
+              style={{
+                width: 68,
+                height: 68,
+                backgroundColor: 'white',
+                borderWidth: 1.8,
+                borderRadius: 100,
+                borderColor: '#c13584',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}>
+              <Image
+                source={data.image}
                 style={{
-                  textAlign: 'center',
-                  fontSize: 10,
-                  opacity: data.id == 0 ? 1 : 0.5,
-                }}>
-                {data.name}
-              </Text>
+                  resizeMode: 'cover',
+                  width: '92%',
+                  height: '92%',
+                  borderRadius: 100,
+                  backgroundColor: 'orange',
+                }}
+              />
             </View>
-          </TouchableOpacity>
-        );
-      })}
+            <Text style={{ textAlign: 'center', fontSize: 10, opacity: data.id === 0 ? 1 : 0.5 }}>
+              {data.name}
+            </Text>
+          </View>
+        </TouchableOpacity>
+      ))}
     </ScrollView>
   );
 };
