@@ -34,16 +34,7 @@ export default function Status() {
     }
 
     try {
-      // Convert visitedDate to milliseconds
-      const visitedDateMilliseconds = new Date(visitedDate).getTime();
-
-      // Check if the authToken is available
-      if (!authToken) {
-        Alert.alert('Error', 'No authentication token found. Please log in again.');
-        return;
-      }
-
-      const response = await fetch('http://192.168.47.179:8000/add-travel-story', {
+      const response = await fetch('http://192.168.47.179:8000/create-account/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
