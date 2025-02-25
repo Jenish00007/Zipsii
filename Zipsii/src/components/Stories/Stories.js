@@ -3,7 +3,6 @@ import { View, Text, ScrollView, TouchableOpacity, Image, Alert, Modal } from 'r
 import { launchImageLibrary } from 'react-native-image-picker';
 import { useNavigation } from '@react-navigation/native';
 import Entypo from 'react-native-vector-icons/Entypo';
-import { useNavigation } from '@react-navigation/native';
 
 const Stories = () => {
   const navigation = useNavigation();

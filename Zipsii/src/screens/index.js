@@ -26,7 +26,6 @@ import PageCreation from './PageCreation/PageCreation'
 import ReelUpload from './ReelUpload/ReelUpload'
 import LocationPage from './LocationPage/LocationPage'
 import SignUp from './SignUp/SignUp'
-import Status from './Status/Status'
 
 
 export {
@@ -57,5 +56,4 @@ export {
   ReelUpload,
   LocationPage,
   SignUp,
-  Status
 }

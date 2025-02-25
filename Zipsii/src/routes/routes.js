@@ -49,7 +49,6 @@ function Drawer() {
       <NavigationStack.Screen name="ChatScreen" component={Screen.ChatScreen} />
       <NavigationStack.Screen name="MessageList" component={Screen.MessageList} />
       <NavigationStack.Screen name="SignUp" component={Screen.SignUp} />
-      <NavigationStack.Screen name="Status" component={Screen.Status} />
 
       
     </NavigationStack.Navigator>

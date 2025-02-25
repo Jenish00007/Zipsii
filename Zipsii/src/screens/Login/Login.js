@@ -19,7 +19,7 @@ const SignInScreen = () => {
   
     setLoading(true);
     try {
-      const response = await fetch('http://192.168.47.179:8000/login/', {
+      const response = await fetch(API_BASE_URL+'/login/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
