@@ -17,6 +17,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: scale(1),
   },
+  
   icon: {
     width: scale(30),
     height: scale(30),
@@ -28,13 +29,15 @@ const styles = StyleSheet.create({
   },
   dummyImage: {
     width: scale(60),
-    height: scale(60), // Adjusted to better fit within iconContainer
-    resizeMode: 'contain',
+    height: scale(60),
+    resizeMode: 'cover',
+    borderRadius: scale(15),
     position: 'absolute',
     top: '50%',
     left: '50%',
-    transform: [{ translateX: -scale(30) }, { translateY: -scale(30) }], // Centers the image within iconContainer
+    transform: [{ translateX: -scale(30) }, { translateY: -scale(30) }],
   },
+  
 });
 
 export default styles;

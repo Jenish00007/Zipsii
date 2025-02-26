@@ -9,16 +9,16 @@ const Stories = () => {
   const [image, setImage] = useState(null); // To store the image of a clicked story
   const [modalVisible, setModalVisible] = useState(false); // To control the modal visibility
   const [storyInfo, setStoryInfo] = useState([]);
-  const baseUrl = 'http://192.168.47.179:8000'; // Base URL for images
+  const baseUrl = 'http://10.0.2.2:8000'; // Base URL for images
 
   // Timer to close the modal after 10 seconds
   useEffect(() => {
     if (modalVisible) {
       const timer = setTimeout(() => {
-        setModalVisible(false); // Close modal after 10 seconds
-      }, 10000); // 10000 ms = 10 seconds
+        setModalVisible(false);
+      }, 10000); 
 
-      return () => clearTimeout(timer); // Clean up the timer if the component unmounts or modal is closed
+      return () => clearTimeout(timer); 
     }
   }, [modalVisible]);
 

@@ -1,171 +1,177 @@
-import React, {useState} from 'react';
-import {View, Text, Image, TouchableOpacity, TextInput} from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, Image, TouchableOpacity, TextInput, StyleSheet } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionic from 'react-native-vector-icons/Ionicons';
 import Entypo from 'react-native-vector-icons/Entypo';
 
-const Post = () => {
-  const postInfo = [
-    {
-      postTitle: 'mr shermon',
-      postPersonImage: require('../../storage/images/userProfile.png'),
-      postImage: require('../../storage/images/post1.jpg'),
-      likes: 765,
-      isLiked: false,
-    },
-    // {
-    //   postTitle: 'chillhouse',
-    //   postPersonImage: require('../../storage/images/profile5.jpg'),
-    //   postImage: require('../../storage/images/post2.jpg'),
-    //   likes: 345,
-    //   isLiked: false,
-    // },
-    // {
-    //   postTitle: 'Tom',
-    //   postPersonImage: require('../../storage/images/profile4.jpg'),
-    //   postImage: require('../../storage/images/post3.jpg'),
-    //   likes: 734,
-    //   isLiked: false,
-    // },
-    // {
-    //   postTitle: 'The_Groot',
-    //   postPersonImage: require('../../storage/images/profile3.jpg'),
-    //   postImage: require('../../storage/images/post4.jpg'),
-    //   likes: 875,
-    //   isLiked: false,
-    // },
-  ];
-
+const Post = (props) => {
+  const [like, setLike] = useState(props.isLiked);
+  
   return (
-    <View>
-      {postInfo.map((data, index) => {
-        const [like, setLike] = useState(data.isLiked);
-        return (
-          <View
-            key={index}
-            style={{
-              paddingBottom: 10,
-              borderBottomColor: 'gray',
-              borderBottomWidth: 0.1,
-            }}>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: 15,
-              }}>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Image
-                  source={data.postPersonImage}
-                  style={{width: 40, height: 40, borderRadius: 100}}
-                />
-                <View style={{paddingLeft: 5}}>
-                  <Text style={{fontSize: 15, fontWeight: 'bold'}}>
-                    {data.postTitle}
-                  </Text>
-                </View>
-              </View>
-              <Feather name="more-vertical" style={{fontSize: 20}} />
-            </View>
-            <View
-              style={{
-                position: 'relative',
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}>
-              <Image
-                source={data.postImage}
-                style={{width: '100%', height: 400}}
-              />
-            </View>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                paddingHorizontal: 12,
-                paddingVertical: 15,
-              }}>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <TouchableOpacity onPress={() => setLike(!like)}>
-                  <AntDesign
-                    name={like ? 'heart' : 'hearto'}
-                    style={{
-                      paddingRight: 10,
-                      fontSize: 20,
-                      color: like ? 'red' : 'black',
-                    }}
-                  />
-                </TouchableOpacity>
-                <TouchableOpacity>
-                  <Ionic
-                    name="ios-chatbubble-outline"
-                    style={{fontSize: 20, paddingRight: 10}}
-                  />
-                </TouchableOpacity>
-                <TouchableOpacity>
-                  <Feather name="navigation" style={{fontSize: 20}} />
-                </TouchableOpacity>
-              </View>
-              <Feather name="bookmark" style={{fontSize: 20}} />
-            </View>
-            <View style={{paddingHorizontal: 15}}>
-              <Text>
-                Liked by {like ? 'you and' : ''}{' '}
-                {like ? data.likes + 1 : data.likes} others
-              </Text>
-              <Text
-                style={{
-                  fontWeight: '700',
-                  fontSize: 14,
-                  paddingVertical: 2,
-                }}>
-                If enjoy the video ! Please like and Subscribe :)
-              </Text>
-              <Text style={{opacity: 0.4, paddingVertical: 2}}>
-                View all comments
-              </Text>
-              <View
-                style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  <Image
-                    source={data.postPersonImage}
-                    style={{
-                      width: 25,
-                      height: 25,
-                      borderRadius: 100,
-                      backgroundColor: 'orange',
-                      marginRight: 10,
-                    }}
-                  />
-                  <TextInput
-                    placeholder="Add a comment "
-                    style={{opacity: 0.5}}
-                  />
-                </View>
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  <Entypo
-                    name="emoji-happy"
-                    style={{fontSize: 15, color: 'lightgreen', marginRight: 10}}
-                  />
-                  <Entypo
-                    name="emoji-neutral"
-                    style={{fontSize: 15, color: 'pink', marginRight: 10}}
-                  />
-                  <Entypo
-                    name="emoji-sad"
-                    style={{fontSize: 15, color: 'red'}}
-                  />
-                </View>
-              </View>
-            </View>
-          </View>
-        );
-      })}
+    <View style={styles.postContainer}>
+      <View style={styles.header}>
+        <View style={styles.userInfo}>
+         
+          <Text style={styles.userName}>{props.postTitle}</Text>
+        </View>
+        <Feather name="more-vertical" style={styles.moreIcon} />
+      </View>
+
+      <View style={styles.postImageContainer}>
+        <Image
+          source={props.postImage}
+          style={styles.postImage}
+        />
+      </View>
+
+      <View style={styles.actionsContainer}>
+        <View style={styles.leftActions}>
+          <TouchableOpacity onPress={() => setLike(!like)}>
+            <AntDesign
+              name={like ? 'heart' : 'hearto'}
+              style={[styles.likeIcon, { color: like ? 'red' : 'black' }]}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity>
+            <Ionic name="ios-chatbubble-outline" style={styles.icon} />
+          </TouchableOpacity>
+          <TouchableOpacity>
+            <Feather name="navigation" style={styles.icon} />
+          </TouchableOpacity>
+        </View>
+        <Feather name="bookmark" style={styles.bookmarkIcon} />
+      </View>
+
+      <View style={styles.likesContainer}>
+        <Text>
+          Liked by {like ? 'you and' : ''} {like ? props.likes + 1 : props.likes} others
+        </Text>
+        <Text style={styles.description}>
+          If you enjoy the video! Please like and Subscribe
+        </Text>
+        <Text style={styles.viewComments}>View all comments</Text>
+      </View>
+
+      <View style={styles.commentSection}>
+        <View style={styles.commentInputContainer}>
+          <Image
+            source={props.postPersonImage}
+            style={styles.commentUserImage}
+          />
+          <TextInput
+            placeholder="Add a comment"
+            style={styles.commentInput}
+          />
+        </View>
+        <View style={styles.emojiContainer}>
+          <Entypo name="emoji-happy" style={[styles.emojiIcon, { color: 'lightgreen' }]} />
+          <Entypo name="emoji-neutral" style={[styles.emojiIcon, { color: 'pink' }]} />
+          <Entypo name="emoji-sad" style={[styles.emojiIcon, { color: 'red' }]} />
+        </View>
+      </View>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  postContainer: {
+    paddingBottom: 10,
+    borderBottomColor: 'gray',
+    borderBottomWidth: 0.1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 15,
+  },
+  userInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  userImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 100,
+  },
+  userName: {
+    paddingLeft: 5,
+    fontSize: 15,
+    fontWeight: 'bold',
+  },
+  moreIcon: {
+    fontSize: 20,
+  },
+  postImageContainer: {
+    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  postImage: {
+    width: '100%',
+    height: 400,
+  },
+  actionsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 15,
+  },
+  leftActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  likeIcon: {
+    paddingRight: 10,
+    fontSize: 20,
+  },
+  icon: {
+    fontSize: 20,
+    paddingRight: 10,
+  },
+  bookmarkIcon: {
+    fontSize: 20,
+  },
+  likesContainer: {
+    paddingHorizontal: 15,
+  },
+  description: {
+    fontWeight: '700',
+    fontSize: 14,
+    paddingVertical: 2,
+  },
+  viewComments: {
+    opacity: 0.4,
+    paddingVertical: 2,
+  },
+  commentSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  commentInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  commentUserImage: {
+    width: 25,
+    height: 25,
+    borderRadius: 100,
+    backgroundColor: 'orange',
+    marginRight: 10,
+  },
+  commentInput: {
+    opacity: 0.5,
+  },
+  emojiContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  emojiIcon: {
+    fontSize: 15,
+    marginRight: 10,
+  },
+});
 
 export default Post;

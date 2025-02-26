@@ -19,15 +19,15 @@ function CategoryCard(props) {
     >
       <View style={styles.iconContainer}>
         {/* Dummy image will now render inside all iconContainers */}
-        {/* <Image
-          source={require('../../assets/th1.jpeg')}
+        <Image
+        source={{ uri: props.icon }}
           style={styles.dummyImage}
-        /> */}
+        />
         {/* <Image source={props.icon} style={styles.icon} /> */}
       </View>
       <View style={styles.textContainer}>
         <TextDefault numberOfLines={1} H5>
-        Place
+        {props.cardLabel}
         </TextDefault>
       </View>
     </TouchableOpacity>

@@ -1,5 +1,5 @@
 export const colors = {
-  Zipsii_color:'A60F93',
+  Zipsii_color:'#A60F93',
   btncolor: '#870E6B',
   lightpink: '#ffe3f0',
   black: '#000',

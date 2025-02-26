@@ -7,66 +7,157 @@ import { BottomTab, TextDefault, TextError, Spinner, Hexagon } from '../../compo
 import { verticalScale, scale, colors, alignment } from '../../utils';
 import ProductCard from '../../ui/ProductCard/ProductCard';
 import { SafeAreaView } from 'react-native-safe-area-context';
-// import { HeaderBackButton } from '@react-navigation/stack';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { TextInput, Image } from 'react-native'; // Add this to your imports
+import { TextInput, Image } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { WebView } from 'react-native-webview';
 import { useSchedule } from '../../context/ScheduleContext';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Stories from '../../components/Stories/Stories';
 import Post from '../../components/Posts/Post';
+const baseUrl = 'http://10.0.2.2:8000';
 
-
-
-
-// import HexagonBlue from '../../components/Hexagon';
-
-const caroselImage = [
-  require('../../assets/images/MainLanding/slide1.jpg'),
-  require('../../assets/images/MainLanding/slide2.jpg'),
-  require('../../assets/images/MainLanding/slide3.jpg'),
-  require('../../assets/images/MainLanding/slide4.jpg'),
-  require('../../assets/images/MainLanding/slide5.jpg'),
-  require('../../assets/images/MainLanding/slide6.jpg')
-];
-
-const dummyData = [
-  { id: '1', title: 'Item 1', description: 'This is a description of item 1' },
-  { id: '2', title: 'Item 2', description: 'This is a description of item 2' },
-  { id: '3', title: 'Item 3', description: 'This is a description of item 3' },
-  { id: '4', title: 'Item 4', description: 'This is a description of item 4' },
-  { id: '5', title: 'Item 5', description: 'This is a description of item 5' }
-];
-const videoShorts = [
-  { id: '1', url: 'https://www.youtube.com/shorts/8OLAi6Eba98?feature=share' },
-  { id: '2', url: 'https://www.youtube.com/shorts/NsOfgaUD92Q?feature=share' },
-  { id: '3', url: 'https://www.youtube.com/shorts/QyGx_Z2tbTA?feature=share' }
-];
-
-const dummyDatacategory = [
-  { id: '1', cardLabel: 'Beach', icon: require('../../assets/th1.jpeg') },
-  { id: '2', cardLabel: 'Mountains', icon: require('../../assets/th1.jpeg') },
-  { id: '3', cardLabel: 'Forest', icon: require('../../assets/th1.jpeg') },
-  { id: '4', cardLabel: 'Desert', icon: require('../../assets/th1.jpeg') },
-  { id: '5', cardLabel: 'City', icon: require('../../assets/th1.jpeg') },
-];
 
 function MainLanding(props) {
   const navigation = useNavigation();
-
   const { scheduleData } = useSchedule();
-
-  // Button state
   const [selectedButton, setSelectedButton] = useState('All');
-  const buttons = ['All', 'Latest', 'Popular', 'Trending'];
-
-
+  const buttons = ['All', 'Schedule', 'Shorts', 'Posts'];
   const handleCardPress = (item) => {
-    navigation.navigate('TripDetail', { tripData: item }); // Navigate and pass data
+    navigation.navigate('TripDetail', { tripData: item });
   };
+  const [discover_by_intrest, setDiscover_by_intrest] = useState([]);
+  const [best_destination, setBest_destination] = useState([]);
+  const [all_destination, setAll_destination] = useState([]);
+  const [all_schedule, setAll_schedule] = useState([]);
+  const [all_posts, setAllPosts] = useState([]);
+  const [all_shorts, setAllShorts] = useState([]);
+
+  useEffect(() => {
+    const fetch_Discover_by_intrest = async () => {
+      try {
+        const response = await fetch(baseUrl + '/discover_by_intrest');
+        const data = await response.json();
+        const formattedData = data.slice(0, 100).map(item => ({
+          id: item.id,
+          image: baseUrl + item.image, // Make sure the URL is correct
+          name: item.name,
+        }));
+        setDiscover_by_intrest(formattedData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+    fetch_Discover_by_intrest();
+  }, []);
+
+  useEffect(() => {
+    const fetch_best_destination = async () => {
+      try {
+        const response = await fetch(baseUrl + '/best_destination');
+        const data = await response.json();
+        const formattedData = data.slice(0, 100).map(item => ({
+          id: item.id,
+          image: baseUrl + item.image, 
+          name: item.name,
+        }));
+        setBest_destination(formattedData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+    fetch_best_destination();
+  }, []);
+
+
+  useEffect(() => {
+    const fetch_all_destination = async () => {
+      try {
+        const response = await fetch(baseUrl + '/all_destination');
+        const data = await response.json();
+        const formattedData = data.slice(0, 100).map(item => ({
+          id: item.id,
+          image: baseUrl + item.image, 
+          name: item.name,
+        }));
+        setAll_destination(formattedData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+    fetch_all_destination();
+  }, []);
+
+  useEffect(() => {
+    const fetch_all_schedule = async () => {
+      try {
+        const response = await fetch(baseUrl + '/get_all_schedule');
+        const data = await response.json();
+        const formattedData = data.slice(0, 100).map((item) => ({
+          id: item.id,
+          title: item.title,
+          from: item.from,
+          to: item.to,
+          date: item.date,
+          riders: item.riders,
+          joined: item.joined,
+          imageUrl: item.imageUrl,
+          day1Locations: item.day1Locations,
+          day2Locations: item.day2Locations,
+        }));
+        setAll_schedule(formattedData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+    fetch_all_schedule();
+  }, []);
+
+  useEffect(() => {
+    const fetch_all_posts = async () => {
+      try {
+        const response = await fetch(baseUrl + '/get_all_posts');
+        const data = await response.json();
+        const formattedData = data.slice(0, 100).map(item => ({
+          id: item.id,
+          postPersonImage: item.postPersonImage,
+          postTitle: item.postTitle,
+          postImage: item.postImage,
+          likes: item.likes,
+          isLiked: item.isLiked,
+        }));
+        setAllPosts(formattedData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+    fetch_all_posts();
+  }, []);
+
+  useEffect(() => {
+    const fetch_all_Shorts = async () => {
+      try {
+        const response = await fetch(baseUrl + '/get_all_shorts');
+        const data = await response.json();
+        const formattedData = data.slice(0, 100).map(item => ({
+          id: item.id,
+          video: item.video.url,
+          videoTitle: item.videoTitle,
+          videoImage: item.videoImage,
+          likes: item.likes,
+          isLiked: item.isLiked,
+        }));
+        console.log(data)
+        setAllShorts(formattedData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+    fetch_all_Shorts();
+  }, []);
+
 
   const renderVideoShorts = () => (
     <View style={styles.videoShortsContainer}>
@@ -76,12 +167,12 @@ function MainLanding(props) {
       <FlatList
         horizontal
         showsHorizontalScrollIndicator={false}
-        data={videoShorts}
+        data={all_shorts}
         keyExtractor={item => item.id}
         renderItem={({ item }) => (
           <View style={styles.videoContainer}>
             <WebView
-              source={{ uri: item.url }}
+              source={{ uri: item.video }}
               style={styles.webviewVideo}
               allowsFullscreenVideo
             />
@@ -91,8 +182,174 @@ function MainLanding(props) {
     </View>
   );
 
+  const renderScheduleContainer = () => (
+    <View style={styles.scheduleContainer}>
+      <View style={styles.scheduleheadContainer}>
+        <TextDefault textColor={colors.fontMainColor} H5 bold>
+          {'Schedule'}
+        </TextDefault>
+        <TouchableOpacity onPress={() => navigation.navigate('MySchedule')}>
+          <TextDefault textColor={colors.btncolor} H5>
+            {'View All'}
+          </TextDefault>
+        </TouchableOpacity>
+      </View>
+      {all_schedule && all_schedule.length > 0 ? (
+        <FlatList
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          data={all_schedule}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={styles.card}
+              onPress={() => handleCardPress(item)}
+            >
+              <Image source={{ uri: item.imageUrl }} style={styles.image} />
+              <View style={styles.cardContent}>
+                <TextDefault style={styles.title} H4>
+                  {item.title}
+                </TextDefault>
+                <View style={styles.routeRow}>
+                  <View style={styles.routeItem} H5>
+                    <TextDefault style={styles.routeLabel}>From</TextDefault>
+                    <View style={styles.locationRow}>
+                      <Icon name="location-outline" size={16} color="#333" />
+                      <TextDefault style={styles.routeText}>{item.from}</TextDefault>
+                    </View>
+                  </View>
+                  <View style={styles.routeItem} H5>
+                    <TextDefault style={styles.routeLabel}>To</TextDefault>
+                    <View style={styles.locationRow}>
+                      <Icon name="location-outline" size={16} color="#333" />
+                      <TextDefault style={styles.routeText}>{item.to}</TextDefault>
+                    </View>
+                  </View>
+                </View>
+                <TextDefault style={styles.date}>📅 {item.date}</TextDefault>
+                <TextDefault style={styles.riders}>🏍️ ({item.riders})</TextDefault>
+              </View>
+              <TouchableOpacity style={styles.joinedButton}>
+                <TextDefault style={styles.joinedText}>
+                  {item.joined ? 'Joined' : 'Join'}
+                </TextDefault>
+              </TouchableOpacity>
+            </TouchableOpacity>
+          )}
+        />
+      ) : (
+        <TextDefault>No schedule available</TextDefault>
+      )}
+    </View>
+  );
+
+  const renderDiscoverByInterest = () => (
+    <View style={styles.titleSpacer}>
+      <TextDefault textColor={colors.fontMainColor} H5 bold >
+        {'Discover by Interest'}
+      </TextDefault>
+      <View style={styles.seeAllTextContainer}>
+        <TouchableOpacity onPress={() => navigation.navigate('WhereToGo')}>
+          <TextDefault textColor={colors.greenColor} H5 style={styles.seeAllText}>View All</TextDefault>
+        </TouchableOpacity>
+      </View>
+
+      <FlatList
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        keyExtractor={(item, index) => index.toString()}
+        data={discover_by_intrest?.slice(0, 8) || []}
+        renderItem={({ item }) => (
+          <CategoryCard
+            id={item.id}
+            icon={item.image}
+            cardLabel={item.name}
+            style={styles.categoryWrapper}
+          />
+        )}
+      />
+    </View>
+  );
+
+  const renderBestDestination = () => (
+    best_destination.length > 0 && (
+      <View style={styles.titleSpacer}>
+        <TextDefault textColor={colors.fontMainColor} H5 bold >
+          {'Best Destination'}
+        </TextDefault>
+        <View style={styles.seeAllTextContainer}>
+          <TouchableOpacity onPress={() => navigation.navigate('WhereToGo')}>
+            <TextDefault textColor={colors.greenColor} H5 style={styles.seeAllText}>View All</TextDefault>
+          </TouchableOpacity>
+        </View>
+        <FlatList
+          horizontal={true}
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item, index) => item.id}
+          data={best_destination}
+          renderItem={({ item, index }) => (
+            <ProductCard styles={styles.itemCardContainer} {...item} />
+          )}
+        />
+      </View>
+    )
+  );
 
 
+  const renderPosts = () => (
+    <View style={styles.titleSpacer}>
+      <TextDefault textColor={colors.fontMainColor} H4>
+        {'Posts'}
+      </TextDefault>
+      <FlatList
+        data={all_posts} 
+        renderItem={renderItem}
+        keyExtractor={(item, index) => index.toString()}
+        contentContainerStyle={{ paddingBottom: 20 }} 
+      />
+    </View>
+  );
+  const renderItem = ({ item }) => {
+    return (
+      <Post
+        postPersonImage={item.postPersonImage}
+        postTitle={item.postTitle}
+        postImage={item.postImage}
+        likes={item.likes}
+        isLiked={item.isLiked}
+      />
+    );
+  };
+  
+  const renderAllDestination = () => (
+    <View style={styles.titleSpacer}>
+      <TextDefault textColor={colors.fontMainColor} H4>
+        {'All Destination'}
+      </TextDefault>
+    </View>
+  );
+
+  // Determine what content to show based on selected button
+  const renderContent = () => {
+    switch (selectedButton) {
+      case 'Shorts':
+        return renderVideoShorts();
+      case 'Schedule':
+        return renderScheduleContainer();
+      case 'Posts':
+        return renderPosts();
+      case 'All':
+      default:
+        return (
+          <>
+            {renderScheduleContainer()}
+            {renderDiscoverByInterest()}
+            {renderBestDestination()}
+            {renderAllDestination()}
+          </>
+        );
+    }
+  };
 
   function renderHeader() {
     return (
@@ -101,15 +358,14 @@ function MainLanding(props) {
           <View style={styles.locationWrapper}>
             <View style={styles.locationContainer}>
               <Image
-                source={require('../../assets/zipsii.png')}  // Your image file
-                style={styles.locationImage}  // Style the image appropriately
+                source={require('../../assets/zipsii.png')}
+                style={styles.locationImage}
               />
               <TextDefault style={styles.locationText} H5 bold>Zypsii</TextDefault>
             </View>
-
           </View>
           <TouchableOpacity
-            onPress={() => navigation.navigate('SearchPage')} // Navigate to Searchbar
+            onPress={() => navigation.navigate('SearchPage')}
             style={styles.notificationIconWrapper}
           >
             <MaterialIcons
@@ -132,8 +388,6 @@ function MainLanding(props) {
             />
           </TouchableOpacity>
 
-
-
           <TouchableOpacity
             onPress={() => navigation.navigate("LocationPage")}
             style={styles.notificationIconWrapper}
@@ -152,34 +406,7 @@ function MainLanding(props) {
           >
             <MaterialCommunityIcons name="poll" size={28} color="#000" />
           </TouchableOpacity>
-
-
-
         </View>
-
-        {/* Search Bar */}
-        {/* <TouchableOpacity
-          style={styles.searchContainer}
-          onPress={() => navigation.navigate('SearchResult')} // Navigate to SearchResult
-          activeOpacity={0.7} // Optional: Add a slight opacity effect on press
-        >
-          <MaterialIcons name="search" size={24} color="#A0A0A0" />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search Food, Drinks, etc"
-            placeholderTextColor="#A0A0A0"
-            editable={false} // Disable editing as the entire container is clickable
-            pointerEvents="none" // Ensure TextInput doesn't intercept the touch event
-          />
-          <TouchableOpacity>
-            <MaterialIcons name="tune" size={24} color="#008000" />
-          </TouchableOpacity>
-        </TouchableOpacity> */}
-
-
-
-
-        {/* ButtonContainer */}
 
         <Stories />
 
@@ -205,166 +432,25 @@ function MainLanding(props) {
           ))}
         </View>
 
-
-        {renderVideoShorts()}
-
-
-        {/* Schedule Section */}
-        <View style={styles.scheduleContainer}>
-          <View style={styles.scheduleheadContainer}>
-            <TextDefault textColor={colors.fontMainColor} H5 bold>
-              {'Schedule'}
-
-            </TextDefault>
-            <TouchableOpacity onPress={() => navigation.navigate('MySchedule')}>
-
-              <TextDefault textColor={colors.btncolor} H5>
-                {'View All'}
-              </TextDefault>
-            </TouchableOpacity>
-          </View>
-          {scheduleData && scheduleData.length > 0 ? (
-            <FlatList
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              data={scheduleData}
-              keyExtractor={(item) => item.id.toString()}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={styles.card}
-                  onPress={() => handleCardPress(item)} // Navigate to TripDetail
-                >
-                  {/* Left Side - Image */}
-                  <Image source={{ uri: item.imageUrl }} style={styles.image} />
-                  {/* Right Side - Content */}
-                  <View style={styles.cardContent}>
-                    <TextDefault style={styles.title} H4>
-                      {item.title}
-                    </TextDefault>
-                    <View style={styles.routeRow}>
-                      <View style={styles.routeItem} H5>
-                        <TextDefault style={styles.routeLabel}>From</TextDefault>
-                        <View style={styles.locationRow}>
-                          <Icon name="location-outline" size={16} color="#333" />
-                          <TextDefault style={styles.routeText}>{item.from}</TextDefault>
-                        </View>
-                      </View>
-                      <View style={styles.routeItem} H5>
-                        <TextDefault style={styles.routeLabel}>To</TextDefault>
-                        <View style={styles.locationRow}>
-                          <Icon name="location-outline" size={16} color="#333" />
-                          <TextDefault style={styles.routeText}>{item.to}</TextDefault>
-                        </View>
-                      </View>
-                    </View>
-                    <TextDefault style={styles.date}>📅 {item.date}</TextDefault>
-                    <TextDefault style={styles.riders}>🏍️ ({item.riders})</TextDefault>
-                  </View>
-                  <TouchableOpacity style={styles.joinedButton}>
-                    <TextDefault style={styles.joinedText}>
-                      {item.joined ? 'Joined' : 'Join'}
-                    </TextDefault>
-                  </TouchableOpacity>
-                </TouchableOpacity>
-              )}
-            />
-          ) : (
-            <TextDefault>No schedule available</TextDefault>
-          )}
-        </View>
-
-
-
-        {/* Scrollable Category Row */}
-        <View style={styles.titleSpacer}>
-          <TextDefault textColor={colors.fontMainColor} H5 bold >
-            {'Discover by Intrest'}
-          </TextDefault>
-          <View style={styles.seeAllTextContainer}>
-            <TouchableOpacity onPress={() => navigation.navigate('WhereToGo')}>
-              <TextDefault textColor={colors.greenColor} H5 style={styles.seeAllText}>View All</TextDefault>
-            </TouchableOpacity>
-          </View>
-
-          {/* Horizontal Scrollable FlatList for Icon Containers */}
-          <FlatList
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            keyExtractor={(item, index) => index.toString()}
-            data={dummyDatacategory?.slice(0, 8) || []} // Ensure you limit to 8 categories
-            renderItem={({ item }) => (
-              <CategoryCard
-                id={item._id}
-                icon={require('../../storage/images/profile4.jpg')} // Replace with dynamic icon if available
-                cardLabel={item.title} // Pass the category name as `cardLabel`
-                style={styles.categoryWrapper}
-              />
-            )}
-          />
-        </View>
-
-
-        {dummyData.length > 0 && (
-          <View style={styles.titleSpacer}>
-            <TextDefault textColor={colors.fontMainColor} H5 bold >
-              {'Best Destination'}
-            </TextDefault>
-            <View style={styles.seeAllTextContainer}>
-              <TouchableOpacity onPress={() => navigation.navigate('WhereToGo')}>
-                <TextDefault textColor={colors.greenColor} H5 style={styles.seeAllText}>View All</TextDefault>
-              </TouchableOpacity>
-            </View>
-            <FlatList
-              horizontal={true}
-              showsHorizontalScrollIndicator={false}
-              keyExtractor={(item, index) => item._id}
-              data={dummyData}
-              renderItem={({ item, index }) => {
-                return (
-                  <ProductCard styles={styles.itemCardContainer} {...item} />
-                );
-              }}
-            />
-          </View>
-        )}
-        <View style={styles.titleSpacer}>
-          <TextDefault textColor={colors.fontMainColor} H4>
-            {'Posts'}
-          </TextDefault>
-          <Post />
-        </View>
-
-        <View style={styles.titleSpacer}>
-          <TextDefault textColor={colors.fontMainColor} H4>
-            {'All Destination'}
-          </TextDefault>
-
-        </View>
+        {/* Render content based on selected button */}
+        {renderContent()}
       </>
     );
   }
 
-
   return (
     <SafeAreaView style={[styles.flex, styles.safeAreaStyle]}>
       <View style={[styles.grayBackground, styles.flex]}>
-        {/* {error ? (
-          <TextError text={error.message} />
-        ) : ( */}
         <FlatList
           keyExtractor={(item, index) => index.toString()}
           showsVerticalScrollIndicator={false}
           numColumns={2}
-          // Removed refreshing and onRefresh
-          // ListFooterComponent={loading && <Spinner />} // Optionally removed footer loading indicator
           ListHeaderComponent={renderHeader}
-          data={dummyData}
+          data={selectedButton === 'All' ? all_destination : []}
           renderItem={({ item }) => (
             <ProductCard styles={styles.productCard} {...item} />
           )}
         />
-
-        {/* )} */}
         <BottomTab screen="HOME" />
       </View>
     </SafeAreaView>

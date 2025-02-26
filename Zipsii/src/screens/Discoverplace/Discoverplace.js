@@ -8,7 +8,7 @@ import { MaterialCommunityIcons, SimpleLineIcons, Ionicons } from '@expo/vector-
 import { colors } from '../../utils';
 import { TextDefault } from '../../components';
 import { textStyles } from '../../utils';
-
+const baseUrl = 'http://10.0.2.2:8000'; 
 function DiscoverPlace({ navigation }) {
   const backPressed = () => {
     navigation.goBack(); // Navigate to the previous screen when the back arrow is pressed
@@ -21,26 +21,30 @@ function DiscoverPlace({ navigation }) {
   useEffect(() => {
     const fetchCardData = async () => {
       try {
-        const response = await fetch('https://jsonplaceholder.typicode.com/photos');
+        const response = await fetch(baseUrl + '/places');
         const data = await response.json();
-        
-        // Limiting the data to 8 items and formatting it to match your structure
+  
+        // Log to verify the data structure
+        console.log(data);
+  
         const formattedData = data.slice(0, 100).map(item => ({
           id: item.id,
-          image: item.url,
-          title: item.title,
-          subtitle: 'Placeholder Location', // Replace this with a dynamic location if available
+          image: baseUrl + item.image, // Make sure the URL is correct
+          title: item.name,
+          subtitle: item.subtitle,
         }));
-
+  
+        console.log(formattedData); // Check the formatted data with image URLs
+  
         setCardData(formattedData);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
     };
-
+  
     fetchCardData();
   }, []);
-
+  
   return (
     <View style={styles.container}>
       <View style={styles.protractorShape} />
