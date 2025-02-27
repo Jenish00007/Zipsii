@@ -4,72 +4,11 @@ import { styles } from './styles';
 import { useNavigation } from '@react-navigation/native'; // Import useNavigation
 import Icon from 'react-native-vector-icons/Ionicons'; // Import vector icons
 
-const Schedule = () => {
+const Schedule = (props) => {
   const navigation = useNavigation(); // Access navigation object
 
-  const data = [
-    {
-      id: 1,
-      title: 'Bikers club',
-      from: 'Chennai----------',
-      to: 'Mysore',
-      date: '02-02-25',
-      riders: 20,
-      joined: true,
-      imageUrl: 'https://img.freepik.com/free-photo/straight-road-middle-desert-with-magnificent-mountains-sunset_181624-37698.jpg?semt=ais_hybrid',
-      day1Locations: ['Thirumazhisai', 'Sriperumbudur', 'Vellore', 'Vaniyambadi', 'Krishnagiri'],
-      day2Locations: ['Krishnagiri', 'Salem', 'Erode'],
-    },
-    {
-      id: 2,
-      title: 'R15 club',
-      from: 'Coimbatore----------',
-      to: 'Goa',
-      date: '10-12-24',
-      riders: 2,
-      joined: true,
-      imageUrl: 'https://img.freepik.com/free-photo/straight-road-middle-desert-with-magnificent-mountains-sunset_181624-37698.jpg?semt=ais_hybrid',
-      day1Locations: ['Chennai', 'Tiruvannamalai', 'Vellore'],
-      day2Locations: ['Erode', 'Coimbatore'],
-    },
-    {
-      id: 3,
-      title: 'R16 club',
-      from: 'Coimbatore----------',
-      to: 'Goa',
-      date: '17-12-24',
-      riders: 2,
-      joined: true,
-      imageUrl: 'https://img.freepik.com/free-photo/straight-road-middle-desert-with-magnificent-mountains-sunset_181624-37698.jpg?semt=ais_hybrid',
-      day1Locations: ['Madurai', 'Dindigul', 'Karur'],
-      day2Locations: ['Salem', 'Coimbatore'],
-    },
-    {
-      id: 4,
-      title: 'Bikers club',
-      from: 'Chennai----------',
-      to: 'Mysore',
-      date: '14-02-25',
-      riders: 20,
-      joined: true,
-      imageUrl: 'https://img.freepik.com/free-photo/straight-road-middle-desert-with-magnificent-mountains-sunset_181624-37698.jpg?semt=ais_hybrid',
-      day1Locations: ['Thiruvallur', 'Pondicherry'],
-      day2Locations: ['Cuddalore', 'Chidambaram'],
-    },
-    {
-      id: 5,
-      title: 'Route 46',
-      from: 'Chennai----------',
-      to: 'Mysore',
-      date: '12-02-25',
-      riders: 20,
-      joined: true,
-      imageUrl: 'https://img.freepik.com/free-photo/straight-road-middle-desert-with-magnificent-mountains-sunset_181624-37698.jpg?semt=ais_hybrid',
-      day1Locations: ['Bangalore', 'Hosur'],
-      day2Locations: ['Coimbatore', 'Mysore'],
-    },
-  ];
-
+ 
+console.log(props.data)
   const handleCardPress = (item) => {
     navigation.navigate('TripDetail', { tripData: item }); // Navigate and pass data
   };
@@ -78,14 +17,11 @@ const Schedule = () => {
     <View style={styles.container}>
       <View style={styles.headerRow}>
         <Text style={styles.header}>My Schedule</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Schedule')}>
-          <Text style={styles.viewAll}>View all</Text>
-        </TouchableOpacity>
       </View>
 
       {/* Using FlatList to render items */}
       <FlatList
-        data={data} // Array of data
+        data={props.data} // Array of data
         keyExtractor={(item) => item.id.toString()} // Key for each item
         renderItem={({ item }) => (
           <TouchableOpacity

@@ -527,6 +527,45 @@ app.get('/get_all_shorts', (req, res) => {
 });
 
 
+app.get('/get_all_Notification', (req, res) => {
+    try {
+        const Notification = [
+            {
+                id: 1,
+                title: "New Recipe Alert!",
+                description:
+                  "Lorem ipsum tempor incididunt ut labore et dolore, in voluptate velit esse cillum",
+                time: "10 mins ago",
+                date: "Today",
+                read: false, // Initially unread
+              },
+              {
+                id: 2,
+                title: "Save Recipe Alert!",
+                description:
+                  "Lorem ipsum tempor incididunt ut labore et dolore, in voluptate velit esse cillum",
+                time: "30 mins ago",
+                date: "Yesterday",
+                read: true, // Initially read
+              },
+              {
+                id: 3,
+                title: "Special Offer Alert!",
+                description:
+                  "Exclusive offers just for you, hurry up before they expire!",
+                time: "2 hours ago",
+                date: "Today",
+                read: false, // Initially unread
+              },
+          ];
+          
+        res.json(Notification);
+    } catch (error) {
+        console.error('Error fetching places: ', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
 app.get('/get_all_schedule', (req, res) => {
     try {
         const places = [

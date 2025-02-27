@@ -388,7 +388,7 @@ function MainLanding(props) {
             />
           </TouchableOpacity>
 
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={() => navigation.navigate("LocationPage")}
             style={styles.notificationIconWrapper}
           >
@@ -397,15 +397,15 @@ function MainLanding(props) {
               size={28}
               color="#000"
             />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           {/* Create Poll Icon */}
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={() => navigation.navigate('CreatePoll')}
             style={styles.notificationIconWrapper}
           >
             <MaterialCommunityIcons name="poll" size={28} color="#000" />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         <Stories />

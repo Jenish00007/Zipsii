@@ -1,16 +1,42 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity } from "react-native";
 import styles from "./styles";
-import Schedule from "./Schedule/Schedule";
+import Schedule from "./Schedule/AllSchedule";
 import {
   BackHeader,
   BottomTab,
 
 } from '../../components'
 import { SafeAreaView } from "react-native-safe-area-context";
-
+const baseUrl = 'http://10.0.2.2:8000'; 
 function MySchedule({ navigation }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
+ const [all_schedule, setAll_schedule] = useState([]);
+
+   useEffect(() => {
+      const fetch_all_schedule = async () => {
+        try {
+          const response = await fetch(baseUrl + '/get_all_schedule');
+          const data = await response.json();
+          const formattedData = data.slice(0, 100).map((item) => ({
+            id: item.id,
+            title: item.title,
+            from: item.from,
+            to: item.to,
+            date: item.date,
+            riders: item.riders,
+            joined: item.joined,
+            imageUrl: item.imageUrl,
+            day1Locations: item.day1Locations,
+            day2Locations: item.day2Locations,
+          }));
+          setAll_schedule(formattedData);
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+      };
+      fetch_all_schedule();
+    }, []);
 
   // Helper function to generate dates for the current month
   const getDatesForMonth = (year, month) => {
@@ -121,7 +147,7 @@ function MySchedule({ navigation }) {
       </View>
 
       {/* Integrate Schedule Component Below the Date Schedule Container */}
-      <Schedule />
+      <Schedule data={all_schedule}/>
 
       {/* BottomTab Component */}
       <BottomTab screen={"WhereToGo"} style={styles.BottomTab}/>
