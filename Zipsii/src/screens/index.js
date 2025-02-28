@@ -26,6 +26,7 @@ import PageCreation from './PageCreation/PageCreation'
 import ReelUpload from './ReelUpload/ReelUpload'
 import LocationPage from './LocationPage/LocationPage'
 import SignUp from './SignUp/SignUp'
+import FavoritesPage from './Favourite/Favourite'
 
 
 export {
@@ -35,7 +36,7 @@ export {
   ProfileDashboard,
  
   Review,
-
+  FavoritesPage,
   DeleteButton,
   DummyScreen,
   MessageList,

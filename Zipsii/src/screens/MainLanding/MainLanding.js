@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, FlatList, ImageBackground, TouchableOpacity } from 'react-native';
+import { View, FlatList, ScrollView, ImageBackground, TouchableOpacity, NativeModules } from 'react-native';
 import SwiperFlatList from 'react-native-swiper-flatlist';
 import styles from './styles';
 import CategoryCard from '../../ui/CategoryCard/CategoryCard';
@@ -17,6 +17,8 @@ import { useSchedule } from '../../context/ScheduleContext';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Stories from '../../components/Stories/Stories';
 import Post from '../../components/Posts/Post';
+import DiscoverByNearest from '../../components/DiscoverByNearest/DiscoverByNearest';
+import Schedule from '../MySchedule/Schedule/AllSchedule';
 const baseUrl = 'http://10.0.2.2:8000';
 
 
@@ -34,6 +36,7 @@ function MainLanding(props) {
   const [all_schedule, setAll_schedule] = useState([]);
   const [all_posts, setAllPosts] = useState([]);
   const [all_shorts, setAllShorts] = useState([]);
+  const [discoverbynearest, setDiscoverbyNearest] = useState([]);
 
   useEffect(() => {
     const fetch_Discover_by_intrest = async () => {
@@ -60,7 +63,7 @@ function MainLanding(props) {
         const data = await response.json();
         const formattedData = data.slice(0, 100).map(item => ({
           id: item.id,
-          image: baseUrl + item.image, 
+          image: baseUrl + item.image,
           name: item.name,
         }));
         setBest_destination(formattedData);
@@ -79,7 +82,7 @@ function MainLanding(props) {
         const data = await response.json();
         const formattedData = data.slice(0, 100).map(item => ({
           id: item.id,
-          image: baseUrl + item.image, 
+          image: baseUrl + item.image,
           name: item.name,
         }));
         setAll_destination(formattedData);
@@ -149,7 +152,7 @@ function MainLanding(props) {
           likes: item.likes,
           isLiked: item.isLiked,
         }));
-        console.log(data)
+        // console.log(data)
         setAllShorts(formattedData);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -158,6 +161,33 @@ function MainLanding(props) {
     fetch_all_Shorts();
   }, []);
 
+  // Fetch data from an open-source API (JSONPlaceholder API for demonstration)
+  useEffect(() => {
+    const fetchDiscoverbyNearest = async () => {
+      try {
+        const response = await fetch(baseUrl + '/discover_by_nearest');
+        const data = await response.json();
+
+        // Log to verify the data structure
+       // console.log(data);
+
+        const formattedData = data.slice(0, 100).map(item => ({
+          id: item.id,
+          image: item.image,
+          title: item.name,
+          subtitle: item.subtitle,
+        }));
+
+        //console.log(formattedData); // Check the formatted data with image URLs
+
+        setDiscoverbyNearest(formattedData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchDiscoverbyNearest();
+  }, []);
 
   const renderVideoShorts = () => (
     <View style={styles.videoShortsContainer}>
@@ -194,54 +224,28 @@ function MainLanding(props) {
           </TextDefault>
         </TouchableOpacity>
       </View>
+
+      
       {all_schedule && all_schedule.length > 0 ? (
-        <FlatList
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          data={all_schedule}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.card}
-              onPress={() => handleCardPress(item)}
-            >
-              <Image source={{ uri: item.imageUrl }} style={styles.image} />
-              <View style={styles.cardContent}>
-                <TextDefault style={styles.title} H4>
-                  {item.title}
-                </TextDefault>
-                <View style={styles.routeRow}>
-                  <View style={styles.routeItem} H5>
-                    <TextDefault style={styles.routeLabel}>From</TextDefault>
-                    <View style={styles.locationRow}>
-                      <Icon name="location-outline" size={16} color="#333" />
-                      <TextDefault style={styles.routeText}>{item.from}</TextDefault>
-                    </View>
-                  </View>
-                  <View style={styles.routeItem} H5>
-                    <TextDefault style={styles.routeLabel}>To</TextDefault>
-                    <View style={styles.locationRow}>
-                      <Icon name="location-outline" size={16} color="#333" />
-                      <TextDefault style={styles.routeText}>{item.to}</TextDefault>
-                    </View>
-                  </View>
-                </View>
-                <TextDefault style={styles.date}>📅 {item.date}</TextDefault>
-                <TextDefault style={styles.riders}>🏍️ ({item.riders})</TextDefault>
-              </View>
-              <TouchableOpacity style={styles.joinedButton}>
-                <TextDefault style={styles.joinedText}>
-                  {item.joined ? 'Joined' : 'Join'}
-                </TextDefault>
-              </TouchableOpacity>
-            </TouchableOpacity>
-          )}
+       <FlatList
+       horizontal
+       showsHorizontalScrollIndicator={false}
+       keyExtractor={(item, index) => index.toString()}
+       data={all_schedule?.slice(0, 8) || []}
+       renderItem={({ item }) => (
+         <Schedule
+         item={item} 
+         />
+       )}
+     
         />
       ) : (
         <TextDefault>No schedule available</TextDefault>
       )}
     </View>
   );
+
+
 
   const renderDiscoverByInterest = () => (
     <View style={styles.titleSpacer}>
@@ -271,6 +275,34 @@ function MainLanding(props) {
     </View>
   );
 
+  
+  const renderDiscoverByNearest = () => (
+    discoverbynearest.length > 0 && (
+      <View style={styles.titleSpacer}>
+        <TextDefault textColor={colors.fontMainColor} H5 bold >
+          {/* {'Discover by Nearest'} */}
+          Discover by Nearest
+        </TextDefault>
+        <View style={styles.seeAllTextContainer}>
+          <TouchableOpacity onPress={() => navigation.navigate('DiscoverPlace')}>
+            <TextDefault textColor={colors.greenColor} H5 style={styles.seeAllText}>View All</TextDefault>
+          </TouchableOpacity>
+        </View>
+      
+        <FlatList
+          horizontal={true}
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item, index) => item.id}
+          data={discoverbynearest}
+          renderItem={({ item, index }) => (
+            <DiscoverByNearest styles={styles.itemCardContainer} {...item} />
+          )}
+        />
+
+      </View>
+    )
+  );
+
   const renderBestDestination = () => (
     best_destination.length > 0 && (
       <View style={styles.titleSpacer}>
@@ -291,6 +323,8 @@ function MainLanding(props) {
             <ProductCard styles={styles.itemCardContainer} {...item} />
           )}
         />
+       
+
       </View>
     )
   );
@@ -302,10 +336,10 @@ function MainLanding(props) {
         {'Posts'}
       </TextDefault>
       <FlatList
-        data={all_posts} 
+        data={all_posts}
         renderItem={renderItem}
         keyExtractor={(item, index) => index.toString()}
-        contentContainerStyle={{ paddingBottom: 20 }} 
+        contentContainerStyle={{ paddingBottom: 20 }}
       />
     </View>
   );
@@ -320,7 +354,7 @@ function MainLanding(props) {
       />
     );
   };
-  
+
   const renderAllDestination = () => (
     <View style={styles.titleSpacer}>
       <TextDefault textColor={colors.fontMainColor} H4>
@@ -344,6 +378,7 @@ function MainLanding(props) {
           <>
             {renderScheduleContainer()}
             {renderDiscoverByInterest()}
+            {renderDiscoverByNearest()}
             {renderBestDestination()}
             {renderAllDestination()}
           </>

@@ -367,7 +367,47 @@ app.get('/stories', (req, res) => {
     }
 });
 
+app.get('/userInfo', (req, res) => {
+    // The { userId } = req.user part might cause errors if req.user is undefined
+    // Consider adding middleware to validate the user or make this check optional
+    try {
+        // Use the same property casing as you're expecting in the frontend
+        const userInfo = { 
+            id: 1, 
+            name: 'Jenish', 
+            Posts: '100',      // Match the casing in your frontend component
+            Followers: '12k',  // Match the casing in your frontend component
+            Following: '12k',  // Match the casing in your frontend component
+            image: 'https://lh3.googleusercontent.com/p/AF1QipOwcynxRpNebAQYvogATP7Bg7j0k45R21LWYlCN=s1360-w1360-h1020-rw',
+            notes:'Just be yourself, there is no one better'
+        };
+        
+        // Set proper content-type header
+        res.setHeader('Content-Type', 'application/json');
+        res.json(userInfo);
+    } catch (error) {
+        console.error('Error fetching user info: ', error);
+        res.status(500).json({ error: 'Internal Server Error' });  // Return JSON error
+    }
+});
 
+
+app.get('/get_favorites', (req, res) => {
+    try {
+        const places = [
+            { id: 1, name: 'Ocean Breeze', title: 'Place 1', subtitle: 'Beachfront', image: '/uploads/userProfile.png' },
+            { id: 2, name: 'Mountain Peaks', title: 'Place 2', subtitle: 'Mountain View', image: '/uploads/profile1.jpg' },
+            { id: 3, name: 'Sunnyvale', title: 'Place 3', subtitle: 'Sunny Retreat', image: '/uploads/profile2.jpg' },
+            { id: 4, name: 'Woodland Haven', title: 'Place 4', subtitle: 'Cozy Cabin', image: '/uploads/profile3.jpg' },
+            { id: 5, name: 'Urban Oasis', title: 'Place 5', subtitle: 'Urban Loft', image: '/uploads/profile4.jpg' },
+            { id: 6, name: 'Riverfront Getaway', title: 'Place 6', subtitle: 'Riverside', image: '/uploads/profile5.jpg' }
+        ];
+        res.json(places);
+    } catch (error) {
+        console.error('Error fetching places: ', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
 
 app.get('/places', (req, res) => {
     try {
@@ -432,6 +472,66 @@ app.get('/all_destination', (req, res) => {
             { id: 6, name: 'Riverfront Getaway',  image: '/uploads/profile5.jpg' }
         ];
         res.json(places);
+    } catch (error) {
+        console.error('Error fetching places: ', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+
+app.get('/discover_by_nearest', (req, res) => {
+    try {
+      const cardData = [
+            {
+                id: 1,
+                image: 'https://lh3.googleusercontent.com/p/AF1QipOwcynxRpNebAQYvogATP7Bg7j0k45R21LWYlCN=s1360-w1360-h1020-rw',
+                title: 'Niladri Reservoir',
+                subtitle: 'Tekergat, Sunamgnj',
+              },
+              {
+                id: 2,
+                image: 'https://lh3.googleusercontent.com/p/AF1QipMU8xPHOakcdPjjT4bNIiIxuTiv6pQ7DRWxIGfn=s1360-w1360-h1020-rw',
+                title: 'Casa Las Tirtugas',
+                subtitle: 'Av Damero, Mexico',
+              },
+              {
+                id: 3,
+                image: 'https://lh3.googleusercontent.com/p/AF1QipOha67_zF0k8T5CBZyH_IZ6F_e_gGTQaF5Fkx4e=s1360-w1360-h1020-rw',
+                title: 'Beautiful Beach',
+                subtitle: 'Sunny Coastline, USA',
+              },
+              {
+                id: 4,
+                image: 'https://lh3.googleusercontent.com/p/AF1QipMmcWo4Ciw8yex9le9t1hdcvZDQFZVY40JrcjSW=s1360-w1360-h1020-rw',
+                title: 'Mountain Retreat',
+                subtitle: 'High Peaks, Nepal',
+              },
+              {
+                id: 5,
+                image: 'https://lh3.googleusercontent.com/p/AF1QipOSjf8POP7YG7I4HqzI7ZSQKcvrq09XQPwNn8Gw=s1360-w1360-h1020-rw',
+                title: 'Historic Castle',
+                subtitle: 'Edinburgh, Scotland',
+              },
+              {
+                id: 6,
+                image: 'https://lh3.googleusercontent.com/p/AF1QipMmCQKX_-bj12teoTW4iYA8ZkD_r4fHLIIojNpv=s1360-w1360-h1020-rw',
+                title: 'Desert Oasis',
+                subtitle: 'Sahara, Africa',
+              },
+              {
+                id: 7,
+                image: 'https://lh3.googleusercontent.com/p/AF1QipPPqbWVw3ssObZCFJWGBJako_PzCvbjSwep6bLl=s1360-w1360-h1020-rw',
+                title: 'Rainforest Escape',
+                subtitle: 'Amazon, Brazil',
+              },
+              {
+                id: 8,
+                image: 'https://lh3.googleusercontent.com/p/AF1QipPfFlUBfQB8n4b1bG9bW7WwuXh97i3HxE1KOoY3=s1360-w1360-h1020-rw',
+                title: 'Snowy Cabin',
+                subtitle: 'Alps, Switzerland',
+              },
+          ];
+        res.json(cardData);
     } catch (error) {
         console.error('Error fetching places: ', error);
         res.status(500).send('Internal Server Error');
@@ -566,6 +666,85 @@ app.get('/get_all_Notification', (req, res) => {
     }
 });
 
+const peopleData = [
+    {
+      id: "1",
+      name: "Aurelia",
+      tagline: "Be your own hero 💪",
+      image: "https://www.perfocal.com/blog/content/images/size/w960/2021/01/Perfocal_17-11-2019_TYWFAQ_100_standard-3.jpg",
+    },
+    {
+      id: "2",
+      name: "Bristy Haque",
+      tagline: "Keep working ✍️",
+      image: "https://img.freepik.com/free-photo/business-woman-with-tablet-street_23-2148213471.jpg",
+    },
+    {
+      id: "3",
+      name: "John Borino",
+      tagline: "Make yourself proud 😇",
+      image: "https://imgv3.fotor.com/images/ai-headshot-generator/AI-generated-LinkedIn-profile-picture--of-a-smiling-male-in-the-light-brown-business-suit-with-his-back-to-the-window-from-Fotor.jpg",
+    },
+    {
+      id: "4",
+      name: "Ella Fitzgerald",
+      tagline: "Stay inspired 🌟",
+      image: "https://a.storyblok.com/f/191576/1176x882/f95162c213/profile_picture_hero_before.webp",
+    },
+    {
+      id: "5",
+      name: "Michael Stevens",
+      tagline: "Dream big 🚀",
+      image: "https://t3.ftcdn.net/jpg/06/01/50/96/240_F_601509638_jDwIDvlnryPRhXPsBeW1nXv90pdlbykC.jpg",
+    },
+    {
+      id: "6",
+      name: "Sophia Grace",
+      tagline: "Never give up 🏆",
+      image: "https://img.freepik.com/free-photo/businesswoman-making-phone-call-outdoors_23-2148002104.jpg",
+    },
+  ];
+
+
+
+// Endpoint to search people by name
+app.get('/search_people', (req, res) => {
+    const query = req.query.query || ''; // Get query parameter or default to empty string
+    try {
+      const filteredData = peopleData.filter((person) =>
+        person.name.toLowerCase().includes(query.toLowerCase())
+      );
+      res.json(filteredData); // Respond with filtered results based on search query
+    } catch (error) {
+      console.error('Error searching data: ', error);
+      res.status(500).send('Internal Server Error');
+    }
+  });
+
+
+  // Endpoint to get all places
+app.get('/search_places', (req, res) => {
+    const query = req.query.query || '';
+    try {
+        const places = [
+            { id: 1, name: 'Ocean Breeze', title: 'Place 1', subtitle: 'Beachfront', image: 'https://img.freepik.com/free-photo/straight-road-middle-desert-with-magnificent-mountains-sunset_181624-37698.jpg?semt=ais_hybrid' },
+            { id: 2, name: 'Mountain Peaks', title: 'Place 2', subtitle: 'Mountain View', image: 'https://img.freepik.com/free-photo/straight-road-middle-desert-with-magnificent-mountains-sunset_181624-37698.jpg?semt=ais_hybrid' },
+            { id: 3, name: 'Sunnyvale', title: 'Place 3', subtitle: 'Sunny Retreat', image: 'https://img.freepik.com/free-photo/straight-road-middle-desert-with-magnificent-mountains-sunset_181624-37698.jpg?semt=ais_hybrid' },
+            { id: 4, name: 'Woodland Haven', title: 'Place 4', subtitle: 'Cozy Cabin', image: 'https://img.freepik.com/free-photo/straight-road-middle-desert-with-magnificent-mountains-sunset_181624-37698.jpg?semt=ais_hybrid' },
+            { id: 5, name: 'Urban Oasis', title: 'Place 5', subtitle: 'Urban Loft', image: 'https://img.freepik.com/free-photo/straight-road-middle-desert-with-magnificent-mountains-sunset_181624-37698.jpg?semt=ais_hybrid' },
+            { id: 6, name: 'Riverfront Getaway', title: 'Place 6', subtitle: 'Riverside', image: 'https://img.freepik.com/free-photo/straight-road-middle-desert-with-magnificent-mountains-sunset_181624-37698.jpg?semt=ais_hybrid' }
+        ];
+      const filteredPlaces = places.filter(place =>
+        place.name.toLowerCase().includes(query.toLowerCase())
+      );
+      res.json(filteredPlaces);
+    } catch (error) {
+      console.error('Error fetching places: ', error);
+      res.status(500).send('Internal Server Error');
+    }
+  });
+
+  
 app.get('/get_all_schedule', (req, res) => {
     try {
         const places = [

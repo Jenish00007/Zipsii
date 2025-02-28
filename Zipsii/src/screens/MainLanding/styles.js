@@ -344,5 +344,23 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: 14,
   },
+  discoverRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 15,
+    marginVertical: 10,
+    ...alignment.MBmedium,
+  },
+  discoverText: {
+   fontSize: 16,
+   fontWeight: "bold",
+   color: colors.fontMainColor,
+ },
+ viewAllText: {
+   fontSize: 14,
+   color: colors.btncolor,
+   fontWeight: "500",
+ },
 })
 export default styles

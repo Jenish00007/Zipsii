@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Image, ScrollView, TouchableOpacity, Linking } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text,FlatList, TextInput, Image, ScrollView, TouchableOpacity, Linking } from 'react-native';
 import styles from './styles';
-
 import BottomTab from '../../components/BottomTab/BottomTab';
 import { BackHeader } from '../../components';
 import { SimpleLineIcons, MaterialIcons, Ionicons, FontAwesome, Feather, FontAwesome5 } from '@expo/vector-icons';
@@ -9,7 +8,8 @@ import { colors } from '../../utils';
 import MainBtn from '../../ui/Buttons/MainBtn';
 import { AntDesign } from '@expo/vector-icons';
 import { cardData } from "../CardData/CardData";
-
+import DiscoverByNearest from '../../components/DiscoverByNearest/DiscoverByNearest';
+const baseUrl = 'http://10.0.2.2:8000';
 function Destination({ route, navigation }) {
   const { image, cardTitle, subtitle } = route.params;
   const [comment, setComment] = useState('');
@@ -17,7 +17,35 @@ function Destination({ route, navigation }) {
   const [activeTab, setActiveTab] = useState('Main Attractions'); // State to track active tab
   const [isFollowing, setIsFollowing] = useState(false); // State to track following status
   const [isSaved, setIsSaved] = useState(false); // State to track saved status
- 
+  const [discoverbynearest, setDiscoverbyNearest] = useState([]);
+  
+      // Fetch data from an open-source API (JSONPlaceholder API for demonstration)
+      useEffect(() => {
+        const fetchDiscoverbyNearest = async () => {
+          try {
+            const response = await fetch(baseUrl + '/discover_by_nearest');
+            const data = await response.json();
+    
+            // Log to verify the data structure
+          //  console.log(data);
+    
+            const formattedData = data.slice(0, 100).map(item => ({
+              id: item.id,
+              image: item.image,
+              title: item.name,
+              subtitle: item.subtitle,
+            }));
+    
+          //  console.log(formattedData); // Check the formatted data with image URLs
+    
+            setDiscoverbyNearest(formattedData);
+          } catch (error) {
+            console.error('Error fetching data:', error);
+          }
+        };
+    
+        fetchDiscoverbyNearest();
+      }, []);
   // YouTube tutorial videos data
   const tutorialVideos = [
     {
@@ -288,15 +316,21 @@ function Destination({ route, navigation }) {
                   </View>
           
                   {/* Horizontal Scroll for Cards */}
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                    {cardData.map((card) => (
-                      <View key={card.id} style={styles.card}>
-                        <Image source={{ uri: card.image }} style={styles.cardImage} />
-                        <Text style={styles.cardTitle}>{card.title}</Text>
-                        <Text style={styles.cardSubtitle}>{card.subtitle}</Text>
-                      </View>
-                    ))}
-                  </ScrollView>
+                  {/* <View style={styles.discoverRow}>
+          <TextDefault style={styles.discoverText}>Discover by Nearest</TextDefault>
+          <TouchableOpacity onPress={() => navigation.navigate('DiscoverPlace')}>
+            <TextDefault style={styles.viewAllText}>View All</TextDefault>
+          </TouchableOpacity>
+        </View> */}
+        <FlatList
+          horizontal={true}
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item, index) => item.id}
+          data={discoverbynearest}
+          renderItem={({ item, index }) => (
+            <DiscoverByNearest styles={styles.itemCardContainer} {...item} />
+          )}
+        />
 
           {/* YouTube Tutorial Videos Section */}
           <View style={videoStyles.videoSection}>

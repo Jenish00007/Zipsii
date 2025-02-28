@@ -4,26 +4,17 @@ import { styles } from './styles';
 import { useNavigation } from '@react-navigation/native'; // Import useNavigation
 import Icon from 'react-native-vector-icons/Ionicons'; // Import vector icons
 
-const Schedule = (props) => {
+const Schedule = ({item}) => {
   const navigation = useNavigation(); // Access navigation object
 
- 
-console.log(props.data)
+console.log(item)
   const handleCardPress = (item) => {
     navigation.navigate('TripDetail', { tripData: item }); // Navigate and pass data
   };
 
   return (
     <View style={styles.container}>
-      <View style={styles.headerRow}>
-        <Text style={styles.header}>My Schedule</Text>
-      </View>
-
-      {/* Using FlatList to render items */}
-      <FlatList
-        data={props.data} // Array of data
-        keyExtractor={(item) => item.id.toString()} // Key for each item
-        renderItem={({ item }) => (
+     
           <TouchableOpacity
             key={item.id}
             style={styles.card}
@@ -55,8 +46,7 @@ console.log(props.data)
               <Text style={styles.joinedText}>{item.joined ? 'Joined' : 'Join'}</Text>
             </TouchableOpacity>
           </TouchableOpacity>
-        )}
-      />
+       
     </View>
   );
 };
