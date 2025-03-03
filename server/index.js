@@ -815,6 +815,35 @@ app.get('/get_all_schedule', (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
+
+app.post('/makeschedule', authenticateToken,async  (req, res) => {
+    const scheduleData = req.body;
+    console.log(scheduleData);
+  
+    const folderPath = path.join(__dirname, 'schedules');
+  
+    if (!fs.existsSync(folderPath)) {
+      fs.mkdirSync(folderPath);
+    }
+    const fileName = `schedule_${Date.now()}.json`;
+  
+    const filePath = path.join(folderPath, fileName);
+  
+    fs.writeFile(filePath, JSON.stringify(scheduleData, null, 2), (err) => {
+      if (err) {
+        console.error('Error writing schedule data to file:', err);
+        return res.status(500).json({ message: 'Failed to save schedule' });
+      }
+  
+      console.log('Schedule data saved to file:', filePath);
+  
+      res.status(200).json({
+        message: 'Schedule received and saved successfully',
+        receivedData: scheduleData,
+        user: req.user, 
+      });
+    });
+  });
 app.listen(8000)
 module.exports = app
 

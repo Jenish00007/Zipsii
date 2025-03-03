@@ -186,7 +186,7 @@ protractorShape: {
     marginTop: 8,
   },
   doneButton: {
-    padding: 16,
+    padding: 100,
     backgroundColor: colors.btncolor,
     borderRadius: 8,
     alignItems: "center",
