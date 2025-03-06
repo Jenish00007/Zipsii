@@ -9,7 +9,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useState, useEffect } from 'react';
 import { colors } from '../../utils';
 
-const baseUrl = 'http://10.0.2.2:8000';
+const baseUrl = 'http://192.168.18.179:8000';
 function ProfileDashboard(props) {
   const navigation = useNavigation();
   const [profileInfo, setProfileInfo] = useState({

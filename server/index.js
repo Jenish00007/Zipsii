@@ -26,11 +26,97 @@ app.listen(8000, '0.0.0.0', () => {
 
 const User = require("./models/user.model")
 const TravelStory = require("./models/travelStory.model")
+const TutorialVideos = require("./models/tutorialVideos.model")
+const Descriptionexplore = require("./models/descriptionExplore.model")
+const Commentbox = require("./models/commentBox.model");
+
 
 app.get("/", (req, res) => {
     return res.status(200).json({ "message": "this is AJ" })
 })
 
+// ✅ Route to Save a Comment
+// app.post("/comments", async (req, res) => {
+//     try {
+//       const { text } = req.body;
+//       if (!text) return res.status(400).json({ error: "Comment cannot be empty" });
+  
+//       const newComment = new Commentbox({ text });
+//       await newComment.save();
+//       res.status(201).json({ message: "Comment saved", comment: newComment });
+//     } catch (error) {
+//       console.error("Error saving comment:", error); // More detailed logs here
+//       res.status(500).json({ error: "Internal server error", details: error.message });
+//     }
+//   });
+  
+app.post("/comments", async (req, res) => {
+    try {
+      const { text } = req.body;
+      if (!text) return res.status(400).json({ error: "Comment cannot be empty" });
+  
+      console.log("Before saving comment:", text);  // Log before saving
+      const newComment = new Commentbox({ text });
+      await newComment.save();
+      console.log("After saving comment:", newComment);  // Log after saving
+      res.status(201).json({ message: "Comment saved", comment: newComment });
+    } catch (error) {
+      console.error("Error saving comment:", error); // More detailed logs here
+      res.status(500).json({ error: "Internal server error", details: error.message });
+    }
+  });
+  
+  // Route to Fetch All Comments
+app.get("/comments", async (req, res) => {
+    try {
+      const comments = await Commentbox.find().sort({ createdAt: -1 }); // Fetch latest comments first
+      console.log("Fetched comments:", comments); // Log comments to confirm the data
+      res.json(comments);
+    } catch (error) {
+      console.error("Error fetching comments:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+  
+  
+  
+  // ✅ Route to Fetch All Comments
+//   app.get("/comments", async (req, res) => {
+//     try {
+//       const comments = await Commentbox.find().sort({ createdAt: -1 }); // Fetch latest comments first
+//       res.json(comments);
+//     } catch (error) {
+//       console.error("Error fetching comments:", error);
+//       res.status(500).json({ error: "Internal server error" });
+//     }
+//   });
+
+app.get('/tutorialVideos', async (req, res) => {
+    try {
+        const tutorialVideos = await TutorialVideos.find(); // Fetch all tutorial videos from the database
+        res.status(200).json({ videos: tutorialVideos });
+    } catch (error) {
+        res.status(500).json({ error: true, message: error.message });
+    }
+}); 
+
+app.get("/destination", (req, res) => {
+    res.json({
+      title: "About Destination",
+      shortDescription: "Ooty is a popular hill station located in the southern part of India.",
+      fullDescription:
+        "Ooty is known for its scenic views, tea plantations, and pleasant weather. The town offers various tourist attractions, such as Ooty Lake, Botanical Gardens, and the Nilgiri Mountain Railway.",
+    });
+  });
+
+app.get('/descriptionexplore', async (req, res) => {
+    try {
+        const descriptionexplore = await Descriptionexplore.find(); // Fetch all tutorial videos from the database
+        res.status(200).json({ dataexplore: descriptionexplore });
+    } catch (error) {
+        res.status(500).json({ error: true, message: error.message });
+    }
+});
 //create account
 app.post("/create-account", async (req, res) => {
     const { fullName, email, password } = req.body
@@ -64,6 +150,8 @@ app.post("/create-account", async (req, res) => {
             message: "registration success full"
         })
 })
+
+
 
 //login
 app.post("/login", async (req, res) => {
@@ -478,6 +566,19 @@ app.get('/all_destination', (req, res) => {
     }
 });
 
+app.get('/destinationdescription', (req, res) => {
+    try {
+      const AboutDestination = [
+        {
+            "description": "Ooty is a popular hill station located in the southern part of India. Ooty is known for its scenic views, tea plantations, and pleasant weather. The town offers various tourist attractions, such as the Ooty Lake, Botanical Gardens, and the Nilgiri Mountain Railway, making it a perfect destination for nature lovers and adventure enthusiasts."
+          }
+          ];
+        res.json(AboutDestination);
+    } catch (error) {
+        console.error('Error fetching places: ', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
 
 app.get('/discover_by_nearest', (req, res) => {
     try {
@@ -816,34 +917,105 @@ app.get('/get_all_schedule', (req, res) => {
     }
 });
 
-app.post('/makeschedule', authenticateToken,async  (req, res) => {
-    const scheduleData = req.body;
-    console.log(scheduleData);
+app.post('/makeschedule', authenticateToken, upload.single('coverImage'), async (req, res) => {
+    try {
+      const scheduleData = req.body;
   
-    const folderPath = path.join(__dirname, 'schedules');
+      const folderPath = path.join(__dirname, 'uploads');
+
   
-    if (!fs.existsSync(folderPath)) {
-      fs.mkdirSync(folderPath);
-    }
-    const fileName = `schedule_${Date.now()}.json`;
-  
-    const filePath = path.join(folderPath, fileName);
-  
-    fs.writeFile(filePath, JSON.stringify(scheduleData, null, 2), (err) => {
-      if (err) {
-        console.error('Error writing schedule data to file:', err);
-        return res.status(500).json({ message: 'Failed to save schedule' });
+      if (!fs.existsSync(folderPath)) {
+        fs.mkdirSync(folderPath);
       }
   
-      console.log('Schedule data saved to file:', filePath);
+      // Handle file upload and generate file path
+      console.log(scheduleData);
+    //   if (req.coverImage) {
+
+    //     const uploadedImagePath = path.join('uploads', req.coverImage);
+
+    //     scheduleData.coverImageUrl = `/${uploadedImagePath}`;
+    //     console.log('Uploaded cover image path:', uploadedImagePath);
+    //   } else {
+    //     return res.status(400).json({ message: 'No cover image uploaded' });
+    //   }
   
-      res.status(200).json({
-        message: 'Schedule received and saved successfully',
-        receivedData: scheduleData,
-        user: req.user, 
+      const fileName = `schedule_${Date.now()}.json`;
+      const filePath = path.join(folderPath, fileName);
+  
+      // Save the schedule data to a JSON file
+      fs.writeFile(filePath, JSON.stringify(scheduleData, null, 2), (err) => {
+        if (err) {
+          console.error('Error writing schedule data to file:', err);
+          return res.status(500).json({ message: 'Failed to save schedule' });
+        }
+  
+        console.log('Schedule data saved to file:', filePath);
+  
+        // Respond with the saved data and image URL
+        res.status(200).json({
+          message: 'Schedule received and saved successfully',
+          receivedData: scheduleData,
+          user: req.user, // Assuming you have user info in req.user
+        });
       });
-    });
+    } catch (error) {
+      console.error('Error in making schedule:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
   });
+
+  app.post('/reels_upload', authenticateToken, upload.single('media'), async (req, res) => {
+    try {
+      const scheduleData = req.body; // The JSON data sent in the body
+      const mediaFile = scheduleData.coverImageUrl; // The uploaded file
+
+  
+      // Log the received data (for debugging purposes)
+      console.log('Received Schedule Data:', scheduleData);
+      console.log('Received Media File:', mediaFile);
+  
+      const folderPath = path.join(__dirname, 'Reels'); // Folder to store the schedules
+  
+      // Create a schedule object with media file information
+      const scheduleWithMedia = {
+        title: scheduleData.title,
+        description: scheduleData.description,
+        coverMediaUrl: mediaFile ? mediaFile : null, // Store the path to the media file
+      };
+      if(!mediaFile){
+        return res.status(400).json({ message: 'Failed to save schedule' });
+      }else{
+        
+      }
+
+  
+      const fileName = `schedule_${Date.now()}.json`; // Use a timestamp for unique filenames
+      const filePath = path.join(folderPath, fileName);
+  
+      // Save the schedule data to a JSON file
+      fs.writeFile(filePath, JSON.stringify(scheduleWithMedia, null, 2), (err) => {
+        if (err) {
+          console.error('Error writing schedule data to file:', err);
+          return res.status(400).json({ message: 'Failed to save schedule' });
+        }
+  
+        console.log('Schedule data saved to file:', filePath);
+  
+        res.status(200).json({
+          message: 'Schedule received and saved successfully',
+          receivedData: scheduleWithMedia,
+          user: req.user, // Send the user info back (from token)
+        });
+      });
+    } catch (error) {
+      console.error('Error in reels_uplod route:', error);
+      res.status(400).json({ message: 'Failed to upload reel' });
+    }
+  });
+  
+  
+  
 app.listen(8000)
 module.exports = app
 

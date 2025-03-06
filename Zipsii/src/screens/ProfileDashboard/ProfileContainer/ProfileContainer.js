@@ -66,6 +66,7 @@ function ProfileContainer({profileInfo}) {
             { label: 'Your Profile', icon: 'person-outline', route: 'DummyScreen' },
             { label: 'Create Business Page', icon: 'person-outline', route: 'PageCreation' },
             { label: 'Delete', icon: 'delete', route: 'DeleteButton' },
+            { label: 'Logout', icon: 'logout', route: 'Logout' },
             { label: 'Favourites', icon: 'star-outline', route: 'Favourite' },
             { label: 'My Schedule', icon: 'list', route: 'MySchedule' },
             { label: 'Settings', icon: 'settings', route: 'Settings' },

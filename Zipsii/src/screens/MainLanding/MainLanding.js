@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, FlatList, ScrollView, ImageBackground, TouchableOpacity, NativeModules } from 'react-native';
+import { View, FlatList,Alert, ScrollView, ImageBackground, TouchableOpacity, NativeModules } from 'react-native';
 import SwiperFlatList from 'react-native-swiper-flatlist';
 import styles from './styles';
 import CategoryCard from '../../ui/CategoryCard/CategoryCard';
@@ -19,85 +19,116 @@ import Stories from '../../components/Stories/Stories';
 import Post from '../../components/Posts/Post';
 import DiscoverByNearest from '../../components/DiscoverByNearest/DiscoverByNearest';
 import Schedule from '../MySchedule/Schedule/AllSchedule';
-const baseUrl = 'http://10.0.2.2:8000';
+const baseUrl = 'http://192.168.18.179:8000';
+import { BackHandler } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 
 
 function MainLanding(props) {
-  const navigation = useNavigation();
-  const { scheduleData } = useSchedule();
-  const [selectedButton, setSelectedButton] = useState('All');
-  const buttons = ['All', 'Schedule', 'Shorts', 'Posts'];
+  const navigation = useNavigation()
+  const { scheduleData } = useSchedule()
+  const [selectedButton, setSelectedButton] = useState('All')
+  const buttons = ['All', 'Schedule', 'Shorts', 'Posts']
   const handleCardPress = (item) => {
-    navigation.navigate('TripDetail', { tripData: item });
-  };
-  const [discover_by_intrest, setDiscover_by_intrest] = useState([]);
-  const [best_destination, setBest_destination] = useState([]);
-  const [all_destination, setAll_destination] = useState([]);
-  const [all_schedule, setAll_schedule] = useState([]);
-  const [all_posts, setAllPosts] = useState([]);
-  const [all_shorts, setAllShorts] = useState([]);
-  const [discoverbynearest, setDiscoverbyNearest] = useState([]);
+    navigation.navigate('TripDetail', { tripData: item })
+  }
+  const [discover_by_intrest, setDiscover_by_intrest] = useState([])
+  const [best_destination, setBest_destination] = useState([])
+  const [all_destination, setAll_destination] = useState([])
+  const [all_schedule, setAll_schedule] = useState([])
+  const [all_posts, setAllPosts] = useState([])
+  const [all_shorts, setAllShorts] = useState([])
+  const [discoverbynearest, setDiscoverbyNearest] = useState([])
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const backAction = () => {
+        Alert.alert(
+          "Exit App",
+          "Are you sure you want to exit?",
+          [
+            {
+              text: "Cancel",
+              onPress: () => null,
+              style: "cancel"
+            },
+            { text: "YES", onPress: () => BackHandler.exitApp() }
+          ]
+        );
+        return true; // Prevent default behavior (exit app)
+      };
+
+      // Add the event listener
+      const backHandler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        backAction
+      );
+
+      // Clean up the event listener when the screen is unfocused
+      return () => backHandler.remove();
+    }, []) // Empty dependency array ensures this runs only on mount/unmount
+  );
+
 
   useEffect(() => {
-    const fetch_Discover_by_intrest = async () => {
+    const fetch_Discover_by_intrest = async() => {
       try {
-        const response = await fetch(baseUrl + '/discover_by_intrest');
-        const data = await response.json();
+        const response = await fetch(baseUrl + '/discover_by_intrest')
+        const data = await response.json()
         const formattedData = data.slice(0, 100).map(item => ({
           id: item.id,
           image: baseUrl + item.image, // Make sure the URL is correct
-          name: item.name,
-        }));
-        setDiscover_by_intrest(formattedData);
+          name: item.name
+        }))
+        setDiscover_by_intrest(formattedData)
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error fetching data:', error)
       }
-    };
-    fetch_Discover_by_intrest();
-  }, []);
+    }
+    fetch_Discover_by_intrest()
+  }, [])
 
   useEffect(() => {
-    const fetch_best_destination = async () => {
+    const fetch_best_destination = async() => {
       try {
-        const response = await fetch(baseUrl + '/best_destination');
-        const data = await response.json();
+        const response = await fetch(baseUrl + '/best_destination')
+        const data = await response.json()
         const formattedData = data.slice(0, 100).map(item => ({
           id: item.id,
           image: baseUrl + item.image,
-          name: item.name,
-        }));
-        setBest_destination(formattedData);
+          name: item.name
+        }))
+        setBest_destination(formattedData)
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error fetching data:', error)
       }
-    };
-    fetch_best_destination();
-  }, []);
-
+    }
+    fetch_best_destination()
+  }, [])
 
   useEffect(() => {
-    const fetch_all_destination = async () => {
+    const fetch_all_destination = async() => {
       try {
-        const response = await fetch(baseUrl + '/all_destination');
-        const data = await response.json();
+        const response = await fetch(baseUrl + '/all_destination')
+        const data = await response.json()
         const formattedData = data.slice(0, 100).map(item => ({
           id: item.id,
           image: baseUrl + item.image,
-          name: item.name,
-        }));
-        setAll_destination(formattedData);
+          name: item.name
+        }))
+        setAll_destination(formattedData)
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error fetching data:', error)
       }
-    };
-    fetch_all_destination();
-  }, []);
+    }
+    fetch_all_destination()
+  }, [])
 
   useEffect(() => {
-    const fetch_all_schedule = async () => {
+    const fetch_all_schedule = async() => {
       try {
-        const response = await fetch(baseUrl + '/get_all_schedule');
-        const data = await response.json();
+        const response = await fetch(baseUrl + '/get_all_schedule')
+        const data = await response.json()
         const formattedData = data.slice(0, 100).map((item) => ({
           id: item.id,
           title: item.title,
@@ -108,86 +139,86 @@ function MainLanding(props) {
           joined: item.joined,
           imageUrl: item.imageUrl,
           day1Locations: item.day1Locations,
-          day2Locations: item.day2Locations,
-        }));
-        setAll_schedule(formattedData);
+          day2Locations: item.day2Locations
+        }))
+        setAll_schedule(formattedData)
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error fetching data:', error)
       }
-    };
-    fetch_all_schedule();
-  }, []);
+    }
+    fetch_all_schedule()
+  }, [])
 
   useEffect(() => {
-    const fetch_all_posts = async () => {
+    const fetch_all_posts = async() => {
       try {
-        const response = await fetch(baseUrl + '/get_all_posts');
-        const data = await response.json();
+        const response = await fetch(baseUrl + '/get_all_posts')
+        const data = await response.json()
         const formattedData = data.slice(0, 100).map(item => ({
           id: item.id,
           postPersonImage: item.postPersonImage,
           postTitle: item.postTitle,
           postImage: item.postImage,
           likes: item.likes,
-          isLiked: item.isLiked,
-        }));
-        setAllPosts(formattedData);
+          isLiked: item.isLiked
+        }))
+        setAllPosts(formattedData)
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error fetching data:', error)
       }
-    };
-    fetch_all_posts();
-  }, []);
+    }
+    fetch_all_posts()
+  }, [])
 
   useEffect(() => {
-    const fetch_all_Shorts = async () => {
+    const fetch_all_Shorts = async() => {
       try {
-        const response = await fetch(baseUrl + '/get_all_shorts');
-        const data = await response.json();
+        const response = await fetch(baseUrl + '/get_all_shorts')
+        const data = await response.json()
         const formattedData = data.slice(0, 100).map(item => ({
           id: item.id,
           video: item.video.url,
           videoTitle: item.videoTitle,
           videoImage: item.videoImage,
           likes: item.likes,
-          isLiked: item.isLiked,
-        }));
+          isLiked: item.isLiked
+        }))
         // console.log(data)
-        setAllShorts(formattedData);
+        setAllShorts(formattedData)
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error fetching data:', error)
       }
-    };
-    fetch_all_Shorts();
-  }, []);
+    }
+    fetch_all_Shorts()
+  }, [])
 
   // Fetch data from an open-source API (JSONPlaceholder API for demonstration)
   useEffect(() => {
-    const fetchDiscoverbyNearest = async () => {
+    const fetchDiscoverbyNearest = async() => {
       try {
-        const response = await fetch(baseUrl + '/discover_by_nearest');
-        const data = await response.json();
+        const response = await fetch(baseUrl + '/discover_by_nearest')
+        const data = await response.json()
 
         // Log to verify the data structure
-       // console.log(data);
+        // console.log(data);
 
         const formattedData = data.slice(0, 100).map(item => ({
           id: item.id,
           image: item.image,
           title: item.name,
-          subtitle: item.subtitle,
-        }));
+          subtitle: item.subtitle
+        }))
 
-        //console.log(formattedData); // Check the formatted data with image URLs
+        // console.log(formattedData); // Check the formatted data with image URLs
 
-        setDiscoverbyNearest(formattedData);
+        setDiscoverbyNearest(formattedData)
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error fetching data:', error)
       }
-    };
+    }
 
-    fetchDiscoverbyNearest();
-  }, []);
+    fetchDiscoverbyNearest()
+  }, [])
 
   const renderVideoShorts = () => (
     <View style={styles.videoShortsContainer}>
@@ -210,7 +241,7 @@ function MainLanding(props) {
         )}
       />
     </View>
-  );
+  )
 
   const renderScheduleContainer = () => (
     <View style={styles.scheduleContainer}>
@@ -225,27 +256,24 @@ function MainLanding(props) {
         </TouchableOpacity>
       </View>
 
-      
       {all_schedule && all_schedule.length > 0 ? (
-       <FlatList
-       horizontal
-       showsHorizontalScrollIndicator={false}
-       keyExtractor={(item, index) => index.toString()}
-       data={all_schedule?.slice(0, 8) || []}
-       renderItem={({ item }) => (
-         <Schedule
-         item={item} 
-         />
-       )}
-     
+        <FlatList
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item, index) => index.toString()}
+          data={all_schedule?.slice(0, 8) || []}
+          renderItem={({ item }) => (
+            <Schedule
+              item={item}
+            />
+          )}
+
         />
       ) : (
         <TextDefault>No schedule available</TextDefault>
       )}
     </View>
-  );
-
-
+  )
 
   const renderDiscoverByInterest = () => (
     <View style={styles.titleSpacer}>
@@ -273,9 +301,8 @@ function MainLanding(props) {
         )}
       />
     </View>
-  );
+  )
 
-  
   const renderDiscoverByNearest = () => (
     discoverbynearest.length > 0 && (
       <View style={styles.titleSpacer}>
@@ -288,7 +315,7 @@ function MainLanding(props) {
             <TextDefault textColor={colors.greenColor} H5 style={styles.seeAllText}>View All</TextDefault>
           </TouchableOpacity>
         </View>
-      
+
         <FlatList
           horizontal={true}
           showsHorizontalScrollIndicator={false}
@@ -301,7 +328,7 @@ function MainLanding(props) {
 
       </View>
     )
-  );
+  )
 
   const renderBestDestination = () => (
     best_destination.length > 0 && (
@@ -323,12 +350,10 @@ function MainLanding(props) {
             <ProductCard styles={styles.itemCardContainer} {...item} />
           )}
         />
-       
 
       </View>
     )
-  );
-
+  )
 
   const renderPosts = () => (
     <View style={styles.titleSpacer}>
@@ -342,7 +367,7 @@ function MainLanding(props) {
         contentContainerStyle={{ paddingBottom: 20 }}
       />
     </View>
-  );
+  )
   const renderItem = ({ item }) => {
     return (
       <Post
@@ -352,8 +377,8 @@ function MainLanding(props) {
         likes={item.likes}
         isLiked={item.isLiked}
       />
-    );
-  };
+    )
+  }
 
   const renderAllDestination = () => (
     <View style={styles.titleSpacer}>
@@ -361,17 +386,17 @@ function MainLanding(props) {
         {'All Destination'}
       </TextDefault>
     </View>
-  );
+  )
 
   // Determine what content to show based on selected button
   const renderContent = () => {
     switch (selectedButton) {
       case 'Shorts':
-        return renderVideoShorts();
+        return renderVideoShorts()
       case 'Schedule':
-        return renderScheduleContainer();
+        return renderScheduleContainer()
       case 'Posts':
-        return renderPosts();
+        return renderPosts()
       case 'All':
       default:
         return (
@@ -382,9 +407,9 @@ function MainLanding(props) {
             {renderBestDestination()}
             {renderAllDestination()}
           </>
-        );
+        )
     }
-  };
+  }
 
   function renderHeader() {
     return (
@@ -470,7 +495,7 @@ function MainLanding(props) {
         {/* Render content based on selected button */}
         {renderContent()}
       </>
-    );
+    )
   }
 
   return (
@@ -489,6 +514,6 @@ function MainLanding(props) {
         <BottomTab screen="HOME" />
       </View>
     </SafeAreaView>
-  );
+  )
 }
-export default MainLanding;
+export default MainLanding

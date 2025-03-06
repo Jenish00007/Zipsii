@@ -14,7 +14,7 @@ import styles from "./styles";
 import Icon from "react-native-vector-icons/Ionicons";
 import { colors } from "../../utils";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import * as ImagePicker from 'expo-image-picker'; // Import image picker for selecting the cover image
 
 function MakeSchedule() {
   const navigation = useNavigation();
@@ -32,6 +32,9 @@ function MakeSchedule() {
   const [locationTo, setLocationTo] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
+
+  // State for cover image
+  const [coverImage, setCoverImage] = useState(null);
 
   // Focus state to highlight input
   const [focusedField, setFocusedField] = useState(null);
@@ -56,6 +59,19 @@ function MakeSchedule() {
     setDays(updatedDays);
   };
 
+  // Function to handle image selection (cover image)
+  const pickCoverImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setCoverImage(result.assets[0].uri); // Set the selected image URI
+    }
+  };
+
   // Function to handle the API request and post data
   const handleSubmit = async () => {
     const scheduleData = {
@@ -68,8 +84,11 @@ function MakeSchedule() {
       members,
       travelMode,
       days,
+      coverImage, // Add the cover image URI to the schedule data
     };
+
     const accessToken = await AsyncStorage.getItem('accessToken');
+
     try {
       // Replace with your API URL
       const response = await fetch('http://192.168.18.179:8000/makeschedule', {
@@ -311,18 +330,20 @@ function MakeSchedule() {
           {/* Cover Image */}
           <View style={styles.formGroup}>
             <Text style={styles.title}>Cover Image</Text>
-            <Image
-              source={{
-                uri: "https://img.freepik.com/free-photo/straight-road-middle-desert-with-mountains-background_1150-9924.jpg",
-              }}
-              style={styles.coverImage}
-            />
-            <TouchableOpacity style={styles.uploadImageButton}>
+            {coverImage ? (
+              // Show selected image inside a box/container with styling
+              <View style={styles.coverImageContainer}>
+                <Image source={{ uri: coverImage }} style={styles.coverImage} />
+              </View>
+            ) : (
+              <Text style={styles.placeholderText}>No image selected</Text> // Optional: Show placeholder text
+            )}
+            <TouchableOpacity style={styles.uploadImageButton} onPress={pickCoverImage}>
               <Icon name="cloud-upload-outline" size={24} color={colors.btncolor} />
               <Text style={styles.uploadImageText}>Upload Image</Text>
             </TouchableOpacity>
           </View>
-
+          
           {/* Done Button */}
           <TouchableOpacity style={styles.doneButton} onPress={handleSubmit}>
             <Text style={styles.doneButtonText}>Done</Text>

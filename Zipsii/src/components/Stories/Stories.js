@@ -9,7 +9,7 @@ const Stories = () => {
   const [image, setImage] = useState(null); // To store the image of a clicked story
   const [modalVisible, setModalVisible] = useState(false); // To control the modal visibility
   const [storyInfo, setStoryInfo] = useState([]);
-  const baseUrl = 'http://10.0.2.2:8000'; // Base URL for images
+  const baseUrl = 'http://192.168.18.179:8000'; // Base URL for images
 
   // Timer to close the modal after 10 seconds
   useEffect(() => {

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, Image, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
+import { useAuth } from '../../components/Auth/AuthContext'; // Adjust the path as needed
 
 const SignInScreen = () => {
   const [email, setEmail] = useState('');
@@ -10,44 +11,50 @@ const SignInScreen = () => {
   const [loading, setLoading] = useState(false);
   const [passwordIsVisible, setPasswordIsVisible] = useState(false);
   const navigation = useNavigation();
+  const { login, user } = useAuth(); // Assuming useAuth provides the current user and login function
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const storedUser = await AsyncStorage.getItem('user');
+      if (storedUser) {
+        // If user is already logged in, navigate to MainLanding
+        navigation.navigate('MainLanding');
+      }
+    };
+
+    checkUser();
+  }, [navigation]);
 
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert('Error', 'Please enter email and password');
       return;
     }
-  
-    console.log('Sending request with email:', email, 'and password:', password); // Debug log
-  
+
     setLoading(true);
     try {
-      const response = await fetch('http://10.0.2.2:8000/login/', {
+      const response = await fetch('http://192.168.18.179:8000/login/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }), // POST body
+        body: JSON.stringify({ email, password }),
       });
-  
-      console.log('Response status:', response.status); // Check the status code
-  
+
       if (response.ok) {
         const data = await response.json();
-        console.log('Response data:', data); // Check the data returned from the backend
-  
         if (!data.error) {
           Alert.alert('Success', 'Logged in successfully');
           const { accessToken, user } = data;
-  
-          // Store the accessToken (JWT token) and expiration time (1 day)
-          const expirationTime = Date.now() + 24 * 60 * 60 * 1000; // 24 hours from now
+
+          // Store the accessToken and user info
           await AsyncStorage.setItem('accessToken', accessToken);
-          await AsyncStorage.setItem('user', JSON.stringify(user)); // Optionally store the user info
-          await AsyncStorage.setItem('expirationTime', expirationTime.toString());
-  
-          if (accessToken) {
-            navigation.navigate('Login'); // Navigate to MainLanding page after successful login
-          }
+          await AsyncStorage.setItem('user', JSON.stringify(user));
+
+          // Use the login function from AuthContext to set the user
+          login(user);
+
+          navigation.navigate('MainLanding');
         } else {
           Alert.alert('Error', data.message || 'Login failed');
         }
@@ -55,12 +62,21 @@ const SignInScreen = () => {
         Alert.alert('Error', 'Login failed, please try again.');
       }
     } catch (error) {
-      console.error('Network or fetch error:', error); // Log error
+      console.error('Network or fetch error:', error);
       Alert.alert('Error', 'Login failed due to a network error');
     } finally {
       setLoading(false);
     }
   };
+
+  // If user is already logged in, don't render the SignInScreen
+  if (user) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#3662AA" />
+      </View>
+    );
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -235,6 +251,11 @@ const styles = StyleSheet.create({
     color: '#007bff',
     marginTop: 10,
     textAlign: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

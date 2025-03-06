@@ -61,7 +61,7 @@ const CustomButton = ({ flatListRef, flatListIndex, dataLength, navigation }) =>
           });
         } else {
           // Navigate to MainLanding page
-          navigation.navigate('Drawer', { screen: 'noDrawer', params: { screen: 'MainLanding' } });
+          navigation.navigate('Drawer', { screen: 'noDrawer', params: { screen: 'Login' } });
 
 
         }

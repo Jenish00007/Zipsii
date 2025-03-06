@@ -8,7 +8,7 @@ import { Feather, MaterialIcons, Ionicons, MaterialCommunityIcons } from '@expo/
 import Post from '../../components/Posts/Post';
 import Schedule from '../MySchedule/Schedule/AllSchedule';
 
-const baseUrl = 'http://10.0.2.2:8000';
+const baseUrl = 'http://192.168.18.179:8000';
 
 const DummyScreen = ({ navigation }) => {
   const [activeIcon, setActiveIcon] = useState('th-large'); // Default active icon

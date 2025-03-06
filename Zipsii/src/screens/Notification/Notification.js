@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, SectionList, TouchableOpacity } from "react-native";
 import { colors } from "../../utils";
-const baseUrl = 'http://10.0.2.2:8000'; 
+const baseUrl = 'http://192.168.18.179:8000'; 
 const Notification = () => {
   const [activeTab, setActiveTab] = useState("All");
 

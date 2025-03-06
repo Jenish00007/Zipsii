@@ -19,7 +19,7 @@ const SignUpScreen = () => {
 
     setLoading(true);
     try {
-      const response = await fetch('http://10.0.2.2:8000/create-account/', {
+      const response = await fetch('http://192.168.18.179:8000/create-account/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -78,7 +78,7 @@ const SignUpScreen = () => {
       <TouchableOpacity style={styles.button} onPress={handleSignUp} disabled={loading}>
         <Text style={styles.buttonText}>{loading ? 'Signing up...' : 'Sign Up'}</Text>
       </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate('MainLanding')}>
+            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
               <Text style={styles.signupText}>You have an account? Login</Text>
             </TouchableOpacity>
       
