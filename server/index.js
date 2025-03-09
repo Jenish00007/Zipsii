@@ -1014,6 +1014,55 @@ app.post('/makeschedule', authenticateToken, upload.single('coverImage'), async 
     }
   });
   
+app.put('/edit_profile', authenticateToken, async (req, res) => {
+  try {
+    const { fullName, email } = req.body;
+    const userId = req.user.userId; // Assuming user ID is stored in req.user after authentication
+
+    // **Check if at least one field is provided**
+    if (!fullName && !email) {
+      return res.status(400).json({ message: 'Please provide fullName or email to update.' });
+    }
+
+    // **Validation**
+    const updateData = {};
+
+    if (fullName) {
+      if (typeof fullName !== 'string' || fullName.length < 3) {
+        return res.status(400).json({ message: 'Full name must be at least 3 characters long.' });
+      }
+      updateData.fullName = fullName;
+    }
+
+    if (email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ message: 'Invalid email format.' });
+      }
+
+      // **Check if Email Already Exists (excluding current user)**
+      const existingUser = await User.findOne({ email, _id: { $ne: userId } });
+      if (existingUser) {
+        return res.status(400).json({ message: 'Email is already in use by another user.' });
+      }
+
+      updateData.email = email;
+    }
+
+    // **Update User Profile**
+    const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true, runValidators: true });
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    res.json({ message: 'Profile updated successfully.', user: updatedUser });
+
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+});
   
   
 app.listen(8000)
