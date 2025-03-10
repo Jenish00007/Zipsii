@@ -3,13 +3,33 @@ import { View, Text, ScrollView, TouchableOpacity, Image, Alert, Modal } from 'r
 import { launchImageLibrary } from 'react-native-image-picker';
 import { useNavigation } from '@react-navigation/native';
 import Entypo from 'react-native-vector-icons/Entypo';
+import * as ImagePicker from 'expo-image-picker'; // Import ImagePicker
+
 
 const Stories = () => {
   const navigation = useNavigation();
   const [image, setImage] = useState(null); // To store the image of a clicked story
   const [modalVisible, setModalVisible] = useState(false); // To control the modal visibility
   const [storyInfo, setStoryInfo] = useState([]);
-  const baseUrl = 'http://192.168.18.179:8000'; // Base URL for images
+  const baseUrl = 'http://192.168.213.179:8000'; // Base URL for images
+
+    const pickImage = async () => {
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (permissionResult.granted) {
+        const result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          aspect: [4, 3],
+          quality: 1,
+        });
+  
+        if (!result.canceled) {
+          setImage(result.assets[0]);
+        }
+      } else {
+        Alert.alert("Permission required", "You need to allow access to your photos to upload an image.");
+      }
+    };
 
   // Timer to close the modal after 10 seconds
   useEffect(() => {
