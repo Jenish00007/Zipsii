@@ -91,7 +91,7 @@ function MakeSchedule() {
 
     try {
       // Replace with your API URL
-      const response = await fetch('http://192.168.18.179:8000/makeschedule', {
+      const response = await fetch('http://192.168.213.179:8000/makeschedule', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

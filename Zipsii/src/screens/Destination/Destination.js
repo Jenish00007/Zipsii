@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, FlatList, TextInput, Image, ScrollView, TouchableOpacity, Linking } from 'react-native'
+import { View,Alert, Text, FlatList, TextInput, Image, ScrollView, TouchableOpacity, Linking } from 'react-native'
 import styles from './styles'
 import BottomTab from '../../components/BottomTab/BottomTab'
 import { BackHeader } from '../../components'
@@ -9,7 +9,9 @@ import MainBtn from '../../ui/Buttons/MainBtn'
 
 import { cardData } from '../CardData/CardData'
 import DiscoverByNearest from '../../components/DiscoverByNearest/DiscoverByNearest'
-const baseUrl = 'http://192.168.18.179:8000'
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const baseUrl = 'http://192.168.213.179:8000'
 function Destination({ route, navigation }) {
   const { image, cardTitle, subtitle } = route.params
   // const [comment, setComment] = useState('')
@@ -18,7 +20,9 @@ function Destination({ route, navigation }) {
   const [isFollowing, setIsFollowing] = useState(false) // State to track following status
   const [isSaved, setIsSaved] = useState(false) // State to track saved status
   const [discoverbynearest, setDiscoverbyNearest] = useState([])
-
+  const [loading, setLoading] = useState(false); // Loading state
+  const item_id= route.params.product.id;
+  const image1 = route.params.product.image;
   // Fetch data from an open-source API (JSONPlaceholder API for demonstration)
   useEffect(() => {
     const fetchDiscoverbyNearest = async() => {
@@ -52,7 +56,7 @@ function Destination({ route, navigation }) {
   useEffect(() => {
     const fetchDestinationData = async() => {
       try {
-        const response = await fetch('http://172.20.10.5:8000/destination')
+        const response = await fetch('http://192.168.213.179:8000/destination')
         const data = await response.json()
         setDestinationData(data) // ✅ Store fetched data in state
       } catch (error) {
@@ -69,7 +73,7 @@ function Destination({ route, navigation }) {
   useEffect(() => {
     const fetchTutorialVideos = async() => {
       try {
-        const response = await fetch('http://192.168.18.179:8000/tutorialVideos') // Replace with your backend URL
+        const response = await fetch('http://192.168.213.179:8000/tutorialVideos') // Replace with your backend URL
         const data = await response.json()
         setTutorialVideos(data.videos) // Access the 'videos' array from the response
       } catch (error) {
@@ -86,7 +90,7 @@ function Destination({ route, navigation }) {
   useEffect(() => {
     const fetchDescriptionexplore = async() => {
       try {
-        const response = await fetch('http://192.168.18.179:8000/descriptionexplore') // Replace with your backend URL
+        const response = await fetch('http://192.168.213.179:8000/descriptionexplore') // Replace with your backend URL
         const data = await response.json()
         setDescriptionexplore(data.dataexplore) // Access the 'videos' array from the response
       } catch (error) {
@@ -117,10 +121,42 @@ function Destination({ route, navigation }) {
     console.log(isFollowing ? 'Unfollowed' : 'Followed')
   }
 
-  const handleSave = () => {
-    setIsSaved(!isSaved)
-    console.log(isSaved ? 'Removed from saved' : 'Saved to favorites')
-  }
+  // const handleSave = () => {
+  //   setIsSaved(!isSaved)
+  //   console.log(isSaved ? 'Removed from saved' : 'Saved to favorites')
+  // }
+  const handleSave = async () => {
+    setLoading(true); // Start loading
+
+    try {
+      const accessToken = await AsyncStorage.getItem('accessToken'); // Get the access token
+      const response = await fetch(`http://192.168.213.179:8000/update-like-status?id=${item_id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`, // Attach the JWT token to the request header
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json(); // Parse JSON response
+
+        if (!data.error) {
+          Alert.alert('Success', isSaved ? 'Product liked' : 'Product unliked');
+          setIsSaved(!isSaved); // Update liked state
+        } else {
+          Alert.alert('Error', data.message || 'Failed to update like status');
+        }
+      } else {
+        Alert.alert('Error', 'Failed to update like status, please try again.');
+      }
+    } catch (error) {
+      console.error('Network or fetch error:', error);
+      Alert.alert('Error', 'Failed to update like status due to a network error');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleOpenMap = () => {
     console.log('Opening Map')
@@ -202,7 +238,7 @@ function Destination({ route, navigation }) {
     if (!comment.trim()) return // Prevent empty comments
 
     try {
-      const response = await fetch('http://172.20.10.5:8000/comments', {
+      const response = await fetch('http://192.168.213.179:8000/comments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -241,7 +277,7 @@ function Destination({ route, navigation }) {
   // Example function to fetch comments
   async function fetchComments() {
     try {
-      const response = await fetch('http://172.20.10.5:8000/comments')
+      const response = await fetch('http://192.168.213.179:8000/comments')
       if (!response.ok) {
         throw new Error('Failed to fetch comments')
       }
@@ -264,7 +300,7 @@ function Destination({ route, navigation }) {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {/* Image Container */}
         <View style={styles.imageContainer}>
-          <Image source={{ uri: image }} style={styles.detailImage} />
+          <Image source={{ uri: image1 }} style={styles.detailImage} />
           <BackHeader
             title="Details"
             backPressed={backPressed}

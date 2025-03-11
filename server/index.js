@@ -74,7 +74,7 @@ app.get("/comments", async (req, res) => {
       res.json(comments);
     } catch (error) {
       console.error("Error fetching comments:", error);
-      res.status(500).json({ error: "Internal server error" });
+      res.status(400).json({ error: "Internal server error" });
     }
   });
   
@@ -929,7 +929,6 @@ app.post('/makeschedule', authenticateToken, upload.single('coverImage'), async 
       }
   
       // Handle file upload and generate file path
-      console.log(scheduleData);
     //   if (req.coverImage) {
 
     //     const uploadedImagePath = path.join('uploads', req.coverImage);
@@ -1013,8 +1012,39 @@ app.post('/makeschedule', authenticateToken, upload.single('coverImage'), async 
       res.status(400).json({ message: 'Failed to upload reel' });
     }
   });
+    
+  app.post('/update-like-status', authenticateToken, (req, res) => {
+    const productId = req.query.id;  
+    const updatedProducts = {
+      productId: productId,
+    };    
+    const productsFilePath = path.join(__dirname, 'whistlist'); 
+    const fileName = `whistlist_${Date.now()}.json`;
+    const filePath = path.join(productsFilePath, fileName);
   
+    
+    fs.writeFile(filePath, JSON.stringify(updatedProducts, null, 2), 'utf8', (err) => {
+      if (err) {
+        console.error('Error writing to the file:', err);
+        return res.status(500).json({
+          message: 'Failed to save the wishlist',
+          error: err.message,
+        });
+      }
+      
+      // Respond with success
+      res.status(200).json({
+        message: 'Wishlist saved successfully',
+        receivedData: updatedProducts,
+        productId: productId, 
+        user: req.user,
+      });
+    });
+  });
   
+
+
+
   
 app.listen(8000)
 module.exports = app
