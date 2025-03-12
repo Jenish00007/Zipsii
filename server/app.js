@@ -1,29 +1,55 @@
-require("dotenv").config()
-const bcrypt = require("bcrypt")
-const express = require("express")
-const cors = require("cors")
-const jwt = require("jsonwebtoken")
-const config = require("./config.json")
-const mongoose = require("mongoose")
-const { authenticateToken } = require('./utilities')
-const upload = require('./multer')
-const fs = require('fs')
-const path = require('path')
+require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
+const mongoose = require("mongoose");
+const helmet = require("helmet");
+const mongoSanitize = require("express-mongo-sanitize");
+const xss = require("xss-clean");
+const rateLimit = require("express-rate-limit");
+const hpp = require("hpp");
 
-mongoose.connect((config.connectionString)).then(() => {
-    console.log("database connected")
+//import all the routes here:
+const userRoutes = require('./components/users/routers');
+
+// Database Connection
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
 })
-    ;
-const app = express()
-app.use(express.json())
-app.use(cors({ origin: "*" }))
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
+  .then(() => console.log("Database connected"))
+  .catch((err) => console.error("Database connection error:", err));
 
-app.listen(8000, '0.0.0.0', () => {
-    console.log('Server running on port 8000');
+const app = express();
+
+
+// Security Middleware
+app.disable("x-powered-by"); // Hide Express Server Info
+app.use(helmet());
+app.use(mongoSanitize());
+app.use(xss());
+app.use(hpp());
+app.use(express.json());
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
+
+// CORS Configuration
+const corsOptions = {
+  origin: process.env.ORIGINS, // Change to your frontend URL
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+
+// Rate Limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: "Too many requests, please try again later.",
 });
 
+app.use(limiter);
 
+/** 
 const User = require("./models/user.model")
 const TravelStory = require("./models/travelStory.model")
 const TutorialVideos = require("./models/tutorialVideos.model")
@@ -1064,7 +1090,18 @@ app.put('/edit_profile', authenticateToken, async (req, res) => {
   }
 });
   
-  
-app.listen(8000)
-module.exports = app
+*/
 
+// Use Routes
+app.use(userRoutes);
+
+// Catch-all 404 handler
+app.use((req, res) => {
+  res.status(404).json({ error: "Route not found" });
+});
+
+app.listen(process.env.SERVER_PORT, () => {
+  console.log(`http://localhost:${process.env.SERVER_PORT}`)
+})
+
+module.exports = app;
