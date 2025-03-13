@@ -1,3 +1,3 @@
-const { handleValidationErrors } = require('./common');
+const { handleValidationErrors, getUserDetails } = require('./common');
 
-module.exports = { handleValidationErrors };
+module.exports = { handleValidationErrors, getUserDetails };
