@@ -27,12 +27,12 @@ const userRegistration = async (req, res) => {
         });
 
         // Save user to database
-        await newUser.save();
+        const userDetails = await newUser.save();
 
         return res.status(201).json({
             status: true,
             message: "User registered successfully",
-            user: { fullName, userName, email, location: newUser.location },
+            user: userDetails
         });
         
     } catch (error) {
