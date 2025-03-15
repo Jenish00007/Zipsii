@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react'
-import { View,Alert, Text, FlatList, TextInput, Image, ScrollView, TouchableOpacity, Linking } from 'react-native'
+import { View, StyleSheet, Alert, Text, FlatList, TextInput, Image, ScrollView, TouchableOpacity, Linking } from 'react-native'
 import styles from './styles'
 import BottomTab from '../../components/BottomTab/BottomTab'
 import { BackHeader } from '../../components'
 import { SimpleLineIcons, MaterialIcons, Ionicons, FontAwesome, Feather, FontAwesome5, AntDesign } from '@expo/vector-icons'
 import { colors } from '../../utils'
 import MainBtn from '../../ui/Buttons/MainBtn'
-
+import { ActivityIndicator } from 'react-native'
 import { cardData } from '../CardData/CardData'
 import DiscoverByNearest from '../../components/DiscoverByNearest/DiscoverByNearest'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const baseUrl = 'http://192.168.213.179:8000'
+const baseUrl = 'http://172.20.10.5:8000'
 function Destination({ route, navigation }) {
   const { image, cardTitle, subtitle } = route.params
   // const [comment, setComment] = useState('')
@@ -20,43 +20,66 @@ function Destination({ route, navigation }) {
   const [isFollowing, setIsFollowing] = useState(false) // State to track following status
   const [isSaved, setIsSaved] = useState(false) // State to track saved status
   const [discoverbynearest, setDiscoverbyNearest] = useState([])
-  const [loading, setLoading] = useState(false); // Loading state
+  const [loading, setLoading] = useState(true); // Loading state
   const item_id= route.params.product.id;
   const image1 = route.params.product.image;
   // Fetch data from an open-source API (JSONPlaceholder API for demonstration)
+  // useEffect(() => {
+  //   const fetchDiscoverbyNearest = async() => {
+  //     try {
+  //       const response = await fetch(baseUrl + '/discover_by_nearest')
+  //       const data = await response.json()
+
+  //       // Log to verify the data structure
+  //       //  console.log(data);
+
+  //       const formattedData = data.slice(0, 100).map(item => ({
+  //         id: item.id,
+  //         image: item.image,
+  //         title: item.name,
+  //         subtitle: item.subtitle
+  //       }))
+
+  //       //  console.log(formattedData); // Check the formatted data with image URLs
+
+  //       setDiscoverbyNearest(formattedData)
+  //     } catch (error) {
+  //       console.error('Error fetching data:', error)
+  //     }
+  //   }
+
+  //   fetchDiscoverbyNearest()
+  // }, [])
+
   useEffect(() => {
-    const fetchDiscoverbyNearest = async() => {
+    const fetchDiscoverbyNearest = async () => {
       try {
-        const response = await fetch(baseUrl + '/discover_by_nearest')
-        const data = await response.json()
-
-        // Log to verify the data structure
-        //  console.log(data);
-
-        const formattedData = data.slice(0, 100).map(item => ({
+        setLoading(true); // Start loading
+        const response = await fetch(baseUrl + '/discover_by_nearest');
+        const data = await response.json();
+        const formattedData = data.map(item => ({
           id: item.id,
           image: item.image,
           title: item.name,
           subtitle: item.subtitle
-        }))
-
-        //  console.log(formattedData); // Check the formatted data with image URLs
-
-        setDiscoverbyNearest(formattedData)
+        }));
+        setDiscoverbyNearest(formattedData);
       } catch (error) {
-        console.error('Error fetching data:', error)
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false); // Stop loading
       }
-    }
-
-    fetchDiscoverbyNearest()
-  }, [])
+    };
+  
+    fetchDiscoverbyNearest();
+  }, []);
 
   const [destinationData, setDestinationData] = useState(null) // ✅ Store fetched data
 
   useEffect(() => {
     const fetchDestinationData = async() => {
       try {
-        const response = await fetch('http://192.168.213.179:8000/destination')
+        const response = await fetch('http://172.20.10.5:8000/destination')
         const data = await response.json()
         setDestinationData(data) // ✅ Store fetched data in state
       } catch (error) {
@@ -73,7 +96,7 @@ function Destination({ route, navigation }) {
   useEffect(() => {
     const fetchTutorialVideos = async() => {
       try {
-        const response = await fetch('http://192.168.213.179:8000/tutorialVideos') // Replace with your backend URL
+        const response = await fetch('http://172.20.10.5:8000/tutorialVideos') // Replace with your backend URL
         const data = await response.json()
         setTutorialVideos(data.videos) // Access the 'videos' array from the response
       } catch (error) {
@@ -90,7 +113,7 @@ function Destination({ route, navigation }) {
   useEffect(() => {
     const fetchDescriptionexplore = async() => {
       try {
-        const response = await fetch('http://192.168.213.179:8000/descriptionexplore') // Replace with your backend URL
+        const response = await fetch('http://172.20.10.5:8000/descriptionexplore') // Replace with your backend URL
         const data = await response.json()
         setDescriptionexplore(data.dataexplore) // Access the 'videos' array from the response
       } catch (error) {
@@ -130,7 +153,7 @@ function Destination({ route, navigation }) {
 
     try {
       const accessToken = await AsyncStorage.getItem('accessToken'); // Get the access token
-      const response = await fetch(`http://192.168.213.179:8000/update-like-status?id=${item_id}`, {
+      const response = await fetch(`http://172.20.10.5:8000/update-like-status?id=${item_id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -238,7 +261,7 @@ function Destination({ route, navigation }) {
     if (!comment.trim()) return // Prevent empty comments
 
     try {
-      const response = await fetch('http://192.168.213.179:8000/comments', {
+      const response = await fetch('http://172.20.10.5:8000/comments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -277,7 +300,7 @@ function Destination({ route, navigation }) {
   // Example function to fetch comments
   async function fetchComments() {
     try {
-      const response = await fetch('http://192.168.213.179:8000/comments')
+      const response = await fetch('http://172.20.10.5:8000/comments')
       if (!response.ok) {
         throw new Error('Failed to fetch comments')
       }
@@ -296,7 +319,9 @@ function Destination({ route, navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* Destination Details */}
+    {loading ? (
+      <ActivityIndicator size="large" color={colors.Zipsii_color} />
+    ) : (
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {/* Image Container */}
         <View style={styles.imageContainer}>
@@ -573,23 +598,71 @@ function Destination({ route, navigation }) {
               </TouchableOpacity>
             </View>
           </View>
-          <View>
+          {/* <View>
             {comments.map(comment => (
               <View key={comment._id}>
                 <Text>{comment.text}</Text>
               </View>
             ))}
-          </View>
+          </View> */}
+          <View style={stylescomment.commentSection}>
+  {comments.map((comment) => (
+    <View key={comment._id} style={stylescomment.commentCard}>
+      <View style={stylescomment.commentHeader}>
+        <FontAwesome name="user-circle" size={20} color="#555" />
+        <Text style={stylescomment.commentUser}>{comment.username || "User"}</Text>
+      </View>
+      <Text style={stylescomment.commentText}>{comment.text}</Text>
+    </View>
+  ))}
+</View>
+
 
           <MainBtn text="Make a schedule" onPress={() => navigation.navigate('MakeSchedule')} style={{ marginTop: 20 }} />
         </View>
       </ScrollView>
-
+    )}
       {/* Bottom Navigation */}
       <BottomTab screen="WhereToGo" style={styles.bottomTab} />
+   
     </View>
   )
 }
+
+const stylescomment = StyleSheet.create({
+  commentSection: {
+    marginTop: 20,
+    paddingHorizontal: 15,
+  },
+  commentCard: {
+    backgroundColor: "#f8f9fa",
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 3,
+    elevation: 2, // Shadow for Android
+  },
+  commentHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 5,
+  },
+  commentUser: {
+    marginLeft: 8,
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  commentText: {
+    fontSize: 14,
+    color: "#555",
+    lineHeight: 18,
+  },
+});
+
 
 // Additional styles for tabs
 const tabStyles = {

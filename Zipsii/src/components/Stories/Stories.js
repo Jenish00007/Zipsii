@@ -1,68 +1,67 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, Alert, Modal } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, Alert, Modal, ActivityIndicator } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { useNavigation } from '@react-navigation/native';
 import Entypo from 'react-native-vector-icons/Entypo';
-import * as ImagePicker from 'expo-image-picker'; // Import ImagePicker
-
+import * as ImagePicker from 'expo-image-picker'; 
 
 const Stories = () => {
   const navigation = useNavigation();
-  const [image, setImage] = useState(null); // To store the image of a clicked story
-  const [modalVisible, setModalVisible] = useState(false); // To control the modal visibility
+  const [image, setImage] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
   const [storyInfo, setStoryInfo] = useState([]);
-  const baseUrl = 'http://192.168.213.179:8000'; // Base URL for images
+  const [isLoading, setIsLoading] = useState(true); // Loading state
+  const baseUrl = 'http://172.20.10.5:8000'; 
 
-    const pickImage = async () => {
-      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (permissionResult.granted) {
-        const result = await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
-          allowsEditing: true,
-          aspect: [4, 3],
-          quality: 1,
-        });
-  
-        if (!result.canceled) {
-          setImage(result.assets[0]);
-        }
-      } else {
-        Alert.alert("Permission required", "You need to allow access to your photos to upload an image.");
+  const pickImage = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (permissionResult.granted) {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+
+      if (!result.canceled) {
+        setImage(result.assets[0]);
       }
-    };
+    } else {
+      Alert.alert("Permission required", "You need to allow access to your photos to upload an image.");
+    }
+  };
 
-  // Timer to close the modal after 10 seconds
   useEffect(() => {
     if (modalVisible) {
       const timer = setTimeout(() => {
         setModalVisible(false);
       }, 10000); 
 
-      return () => clearTimeout(timer); 
+      return () => clearTimeout(timer);
     }
   }, [modalVisible]);
 
-  // Fetch data from backend API
   useEffect(() => {
     const fetchStoryData = async () => {
       try {
+        setIsLoading(true); // Start loading
         const response = await fetch(baseUrl + '/stories');
         
-        // Check if the response status is OK (200)
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
         
         const data = await response.json();
-        // Update image paths by adding the base URL
         const updatedData = data.map(item => ({
           ...item,
-          image: baseUrl + item.image, // Concatenate base URL with the relative image path
+          image: baseUrl + item.image,
         }));
-        setStoryInfo(updatedData); // Update the state with the modified data
+        setStoryInfo(updatedData);
       } catch (error) {
         console.error('Error fetching data: ', error);
         Alert.alert('Error', `Failed to load stories: ${error.message}`);
+      } finally {
+        setIsLoading(false); // Stop loading
       }
     };
   
@@ -71,61 +70,68 @@ const Stories = () => {
 
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} style={{ paddingVertical: 20 }}>
-        {storyInfo.map((data, index) => (
-          <TouchableOpacity
-            key={index}
-            onPress={() => {
-              if (data.id === 1) {
-                pickImage(); // Opens gallery if "Your Story" is clicked
-              } else {
-                setImage(data.image); // Sets the image of the clicked story
-                setModalVisible(true); // Show the modal with the selected story image
-              }
-            }}>
-            <View style={{ flexDirection: 'column', paddingHorizontal: 8, position: 'relative' }}>
-              {data.id === 1 ? (
-                <View style={{ position: 'absolute', bottom: 15, right: 10, zIndex: 1 }}>
-                  <Entypo
-                    name="circle-with-plus"
+      {isLoading ? ( 
+        // Show loading spinner while fetching data
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color="#c13584" />
+        </View>
+      ) : (
+        <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} style={{ paddingVertical: 20 }}>
+          {storyInfo.map((data, index) => (
+            <TouchableOpacity
+              key={index}
+              onPress={() => {
+                if (data.id === 1) {
+                  pickImage();
+                } else {
+                  setImage(data.image);
+                  setModalVisible(true);
+                }
+              }}>
+              <View style={{ flexDirection: 'column', paddingHorizontal: 8, position: 'relative' }}>
+                {data.id === 1 ? (
+                  <View style={{ position: 'absolute', bottom: 15, right: 10, zIndex: 1 }}>
+                    <Entypo
+                      name="circle-with-plus"
+                      style={{
+                        fontSize: 20,
+                        color: '#405de6',
+                        backgroundColor: 'white',
+                        borderRadius: 100,
+                      }}
+                    />
+                  </View>
+                ) : null}
+                <View
+                  style={{
+                    width: 68,
+                    height: 68,
+                    backgroundColor: 'white',
+                    borderWidth: 1.8,
+                    borderRadius: 100,
+                    borderColor: '#c13584',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}>
+                  <Image
+                    source={{ uri: data.image }}
                     style={{
-                      fontSize: 20,
-                      color: '#405de6',
-                      backgroundColor: 'white',
+                      resizeMode: 'cover',
+                      width: '92%',
+                      height: '92%',
                       borderRadius: 100,
+                      backgroundColor: 'orange',
                     }}
                   />
                 </View>
-              ) : null}
-              <View
-                style={{
-                  width: 68,
-                  height: 68,
-                  backgroundColor: 'white',
-                  borderWidth: 1.8,
-                  borderRadius: 100,
-                  borderColor: '#c13584',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}>
-                <Image
-                  source={{ uri: data.image }} // Use full URL for the image source
-                  style={{
-                    resizeMode: 'cover',
-                    width: '92%',
-                    height: '92%',
-                    borderRadius: 100,
-                    backgroundColor: 'orange',
-                  }}
-                />
+                <Text style={{ textAlign: 'center', fontSize: 10, opacity: data.id === 0 ? 1 : 0.5 }}>
+                  {data.name}
+                </Text>
               </View>
-              <Text style={{ textAlign: 'center', fontSize: 10, opacity: data.id === 0 ? 1 : 0.5 }}>
-                {data.name}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )}
 
       {/* Full-Screen Modal to display the image */}
       <Modal transparent={true} visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
@@ -134,7 +140,7 @@ const Stories = () => {
             flex: 1,
             justifyContent: 'center',
             alignItems: 'center',
-            backgroundColor: 'rgba(0, 0, 0, 0.8)', // Dark background
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
           }}>
           <View
             style={{
@@ -146,7 +152,6 @@ const Stories = () => {
             }}>
             <Image source={{ uri: image }} style={{ width: '100%', height: '100%', resizeMode: 'contain' }} />
 
-            {/* X Button to close modal */}
             <TouchableOpacity
               onPress={() => setModalVisible(false)}
               style={{
@@ -159,7 +164,7 @@ const Stories = () => {
               }}>
               <Text style={{ fontSize: 20, color: '#333' }}>X</Text>
             </TouchableOpacity>
-          </View>
+          </View> 
         </View>
       </Modal>
     </View>

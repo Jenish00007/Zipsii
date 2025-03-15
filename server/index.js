@@ -852,7 +852,7 @@ app.get('/get_all_schedule', (req, res) => {
             {
                 id: 1,
                 title: 'Bikers club',
-                from: 'Chennai----------',
+                from: 'Ch',
                 to: 'Mysore',
                 date: '02-02-25',
                 riders: 20,
@@ -864,7 +864,7 @@ app.get('/get_all_schedule', (req, res) => {
               {
                 id: 2,
                 title: 'R15 club',
-                from: 'Coimbatore----------',
+                from: 'Coimbatore---',
                 to: 'Goa',
                 date: '10-12-24',
                 riders: 2,
@@ -876,7 +876,7 @@ app.get('/get_all_schedule', (req, res) => {
               {
                 id: 3,
                 title: 'R16 club',
-                from: 'Coimbatore----------',
+                from: 'Coimbatore---',
                 to: 'Goa',
                 date: '17-12-24',
                 riders: 2,
@@ -888,7 +888,7 @@ app.get('/get_all_schedule', (req, res) => {
               {
                 id: 4,
                 title: 'Bikers club',
-                from: 'Chennai----------',
+                from: 'Chennai---',
                 to: 'Mysore',
                 date: '14-02-25',
                 riders: 20,
@@ -900,7 +900,7 @@ app.get('/get_all_schedule', (req, res) => {
               {
                 id: 5,
                 title: 'Route 46',
-                from: 'Chennai----------',
+                from: 'Chennai---',
                 to: 'Mysore',
                 date: '12-02-25',
                 riders: 20,

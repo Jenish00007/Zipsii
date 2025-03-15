@@ -1,4 +1,5 @@
 import { Dimensions, StyleSheet } from 'react-native'
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen'; // Ensure correct import
 import {
   alignment,
   fontStyles,
@@ -263,13 +264,16 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   scheduleContainer: {
-    marginTop: verticalScale(20),
+    padding: wp('4%'), // Dynamic padding based on screen width
+    marginTop: hp('2%'),
+    // marginTop: verticalScale(20),
     paddingHorizontal: scale(16),
     backgroundColor: '#fff',
     paddingBottom: verticalScale(20),
   },
   scheduleheadContainer:{
     flexDirection: 'row',
+    marginBottom: hp('2%'),
     justifyContent: 'space-between',
     alignItems: 'center',
     ...alignment.PxSmall
