@@ -50,6 +50,8 @@ function Drawer() {
       <NavigationStack.Screen name="MessageList" component={Screen.MessageList} />
       <NavigationStack.Screen name="SignUp" component={Screen.SignUp} />
       <NavigationStack.Screen name="Favourite" component={Screen.FavoritesPage} />
+      <NavigationStack.Screen name="MapScreen" component={Screen.MapScreen} />
+
 
       
     </NavigationStack.Navigator>

@@ -119,8 +119,9 @@ app.get('/descriptionexplore', async (req, res) => {
 });
 //create account
 app.post("/create-account", async (req, res) => {
-    const { fullName, email, password } = req.body
-    if (!fullName || !email || !password) {
+  console.log(req.body);
+    const { fullName, email, password,latitude,longitude } = req.body
+    if (!fullName || !email || !password || !latitude || !longitude ) {
         return res.status(400).json({ error: "all fields are required." })
     }
     const isUser = await User.findOne({ email })
@@ -133,7 +134,9 @@ app.post("/create-account", async (req, res) => {
     const user = new User({
         fullName,
         email,
-        password: hashedPassword
+        password: hashedPassword,
+        latitude,
+        longitude
     })
     await user.save()
 
@@ -1013,7 +1016,7 @@ app.post('/makeschedule', authenticateToken, upload.single('coverImage'), async 
     }
   });
     
-  app.post('/update-like-status', authenticateToken, (req, res) => {
+  app.post('/update-like-status',(req, res) => {
     const productId = req.query.id;  
     const updatedProducts = {
       productId: productId,

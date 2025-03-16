@@ -1,50 +1,36 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
-  Image,
   ScrollView,
   Alert,
+  StyleSheet,
 } from "react-native";
-import { BackHeader, BottomTab } from "../../components";
-import { useNavigation } from "@react-navigation/native";
-import styles from "./styles";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import MapView, { Marker } from "react-native-maps"; // MapView for location selection
 import Icon from "react-native-vector-icons/Ionicons";
-import { colors } from "../../utils";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as ImagePicker from 'expo-image-picker'; // Import image picker for selecting the cover image
+import * as ImagePicker from 'expo-image-picker'; // Image picker for cover image
+import styles from "./styles";
 
 function MakeSchedule() {
   const navigation = useNavigation();
+  const route = useRoute();
   const [visibility, setVisibility] = useState("Public");
-  const [showVisibilityDropdown, setShowVisibilityDropdown] = useState(false);
   const [members, setMembers] = useState("1-2");
-  const [showMembersDropdown, setShowMembersDropdown] = useState(false);
   const [travelMode, setTravelMode] = useState("Car");
-  const [showTravelModeDropdown, setShowTravelModeDropdown] = useState(false);
-  const [days, setDays] = useState([{ id: 1, details: "" }]);
-
-  // State for text inputs
+  const [days, setDays] = useState([{ id: 1, details: "", latitude: "", longitude: "" }]);
   const [tripName, setTripName] = useState("");
   const [locationFrom, setLocationFrom] = useState("");
   const [locationTo, setLocationTo] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-
-  // State for cover image
   const [coverImage, setCoverImage] = useState(null);
-
-  // Focus state to highlight input
-  const [focusedField, setFocusedField] = useState(null);
-
-  const visibilityOptions = ["Public", "Private", "Friends Only"];
-  const membersOptions = Array.from({ length: 4 }, (_, i) => `1-${i + 2}`);
-  const travelModeOptions = ["Car", "Bike", "Cycle"];
-
+  
   const addDay = () => {
-    setDays([...days, { id: days.length + 1, details: "" }]);
+    setDays([...days, { id: days.length + 1, details: "", latitude: "", longitude: "" }]);
   };
 
   const removeDay = (id) => {
@@ -52,9 +38,9 @@ function MakeSchedule() {
     setDays(updatedDays);
   };
 
-  const updateDayDetails = (id, details) => {
+  const updateDayDetails = (id, field, value) => {
     const updatedDays = days.map((day) =>
-      day.id === id ? { ...day, details } : day
+      day.id === id ? { ...day, [field]: value } : day
     );
     setDays(updatedDays);
   };
@@ -72,26 +58,30 @@ function MakeSchedule() {
     }
   };
 
-  // Function to handle the API request and post data
   const handleSubmit = async () => {
     const scheduleData = {
-      tripName, // User input
-      locationFrom, // User input
-      locationTo, // User input
-      fromDate, // User input
-      toDate, // User input
+      tripName,
+      locationFrom,
+      locationTo,
+      fromDate,
+      toDate,
       visibility,
       members,
       travelMode,
-      days,
-      coverImage, // Add the cover image URI to the schedule data
+      days: days.map(day => ({
+        ...day,
+        location: {
+          latitude: parseFloat(day.latitude),
+          longitude: parseFloat(day.longitude),
+        },
+      })),
+      coverImage,
     };
 
     const accessToken = await AsyncStorage.getItem('accessToken');
 
     try {
-      // Replace with your API URL
-      const response = await fetch('http://192.168.213.179:8000/makeschedule', {
+      const response = await fetch('http://192.168.85.179:8000/makeschedule', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -101,7 +91,6 @@ function MakeSchedule() {
       });
 
       if (response.ok) {
-        // If the API call is successful, navigate to MySchedule screen
         Alert.alert('Success', 'Schedule created successfully!');
         navigation.navigate('MySchedule');
       } else {
@@ -113,23 +102,31 @@ function MakeSchedule() {
     }
   };
 
+  // Function to open map for each day
+  const openMapForDay = (dayId) => {
+    navigation.navigate('MapScreen', { dayId });
+  };
+
+  useEffect(() => {
+    if (route.params?.latitude && route.params?.longitude) {
+      const { latitude, longitude, dayId } = route.params;
+      updateDayDetails(dayId, "latitude", latitude.toString());
+      updateDayDetails(dayId, "longitude", longitude.toString());
+    }
+  }, [route.params]);
+
   return (
     <View style={styles.mainContainer}>
-      <View style={styles.backgroundCurvedContainer} />
-      <View style={styles.protractorShape} />
-      <BackHeader title="Make a Schedule" />
       <ScrollView style={styles.container}>
         <View style={styles.tripContainer}>
           {/* Trip Name */}
           <View style={styles.formGroupRow}>
             <Text style={styles.labelRow}>Trip Name</Text>
             <TextInput
-              style={[styles.underlineInput, focusedField === 'tripName' && styles.inputFocused]}
+              style={styles.underlineInput}
               value={tripName}
-              onChangeText={setTripName} // Update the state with user input
+              onChangeText={setTripName}
               placeholder="Enter trip name"
-              onFocus={() => setFocusedField('tripName')}
-              onBlur={() => setFocusedField(null)}
             />
           </View>
 
@@ -139,23 +136,19 @@ function MakeSchedule() {
             <View style={styles.formGroup}>
               <Text style={styles.label}>From</Text>
               <TextInput
-                style={[styles.input, focusedField === 'locationFrom' && styles.inputFocused]}
+                style={styles.input}
                 value={locationFrom}
                 onChangeText={setLocationFrom}
                 placeholder="From location"
-                onFocus={() => setFocusedField('locationFrom')}
-                onBlur={() => setFocusedField(null)}
               />
             </View>
             <View style={styles.formGroup}>
               <Text style={styles.label}>To</Text>
               <TextInput
-                style={[styles.input, focusedField === 'locationTo' && styles.inputFocused]}
+                style={styles.input}
                 value={locationTo}
                 onChangeText={setLocationTo}
                 placeholder="To location"
-                onFocus={() => setFocusedField('locationTo')}
-                onBlur={() => setFocusedField(null)}
               />
             </View>
           </View>
@@ -167,107 +160,25 @@ function MakeSchedule() {
               <View style={styles.formGroup}>
                 <Text style={styles.label}>From Date</Text>
                 <TextInput
-                  style={[styles.input, focusedField === 'fromDate' && styles.inputFocused]}
+                  style={styles.input}
                   value={fromDate}
                   onChangeText={setFromDate}
                   placeholder="Start date"
-                  onFocus={() => setFocusedField('fromDate')}
-                  onBlur={() => setFocusedField(null)}
                 />
               </View>
               <View style={styles.formGroup}>
                 <Text style={styles.label}>To Date</Text>
                 <TextInput
-                  style={[styles.input, focusedField === 'toDate' && styles.inputFocused]}
+                  style={styles.input}
                   value={toDate}
                   onChangeText={setToDate}
                   placeholder="End date"
-                  onFocus={() => setFocusedField('toDate')}
-                  onBlur={() => setFocusedField(null)}
                 />
               </View>
             </View>
           </View>
 
-          {/* Dropdowns for Visibility and Members */}
-          <Text style={styles.title}>Visibility & Members</Text>
-          <View style={styles.row}>
-            {/* Visibility Dropdown */}
-            <View style={styles.formGroup}>
-              <TouchableOpacity
-                style={styles.dropdownContainer}
-                onPress={() => setShowVisibilityDropdown(!showVisibilityDropdown)}
-              >
-                <Text style={styles.dropdownText}>{visibility}</Text>
-                <Icon
-                  name={showVisibilityDropdown ? "chevron-up" : "chevron-down"}
-                  size={20}
-                  color="#555"
-                  style={styles.icon}
-                />
-              </TouchableOpacity>
-              {showVisibilityDropdown && (
-                <View style={styles.dropdown}>
-                  {visibilityOptions.map((option, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      style={styles.dropdownOption}
-                      onPress={() => {
-                        setVisibility(option);
-                        setShowVisibilityDropdown(false);
-                      }}
-                    >
-                      <Text style={styles.optionText}>{option}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
-            </View>
-
-            {/* Members Dropdown */}
-            <View style={styles.formGroup}>
-              <TouchableOpacity
-                style={styles.dropdownContainer}
-                onPress={() => setShowMembersDropdown(!showMembersDropdown)}
-              >
-                <Text style={styles.dropdownText}>{members}</Text>
-                <Icon
-                  name={showMembersDropdown ? "chevron-up" : "chevron-down"}
-                  size={20}
-                  color="#555"
-                  style={styles.icon}
-                />
-              </TouchableOpacity>
-              {showMembersDropdown && (
-                <View style={styles.dropdown}>
-                  {membersOptions.map((option, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      style={styles.dropdownOption}
-                      onPress={() => {
-                        setMembers(option);
-                        setShowMembersDropdown(false);
-                      }}
-                    >
-                      <Text style={styles.optionText}>{option}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
-            </View>
-          </View>
-
-          {/* No of Days */}
-          <Text style={styles.title}>No of Days</Text>
-          <View style={styles.formGroup}>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter number of days"
-              keyboardType="numeric"
-            />
-          </View>
-
-          {/* Plan Description */}
+          {/* Plan Description - Location Fields */}
           <Text style={styles.title}>Plan Description</Text>
           <View style={styles.planDescriptionContainer}>
             {days.map((day) => (
@@ -277,9 +188,23 @@ function MakeSchedule() {
                   style={styles.dayInput}
                   placeholder={`Enter details for Day ${day.id}`}
                   value={day.details}
-                  onChangeText={(text) => updateDayDetails(day.id, text)}
+                  onChangeText={(text) => updateDayDetails(day.id, "details", text)}
                   multiline
+                  onFocus={() => openMapForDay(day.id)}  // Open map when day description is focused
                 />
+                <MapView
+                  style={styles.map}
+                  initialRegion={{
+                    latitude: day.latitude ? parseFloat(day.latitude) : 37.78825,
+                    longitude: day.longitude ? parseFloat(day.longitude) : -122.4324,
+                    latitudeDelta: 0.0922,
+                    longitudeDelta: 0.0421,
+                  }}
+                >
+                  {day.latitude && day.longitude && (
+                    <Marker coordinate={{ latitude: parseFloat(day.latitude), longitude: parseFloat(day.longitude) }} />
+                  )}
+                </MapView>
                 <TouchableOpacity
                   style={styles.removeDayButton}
                   onPress={() => removeDay(day.id)}
@@ -288,72 +213,113 @@ function MakeSchedule() {
                 </TouchableOpacity>
               </View>
             ))}
-
             <TouchableOpacity style={styles.addDayButton} onPress={addDay}>
-              <Icon name="add-circle" size={24} color={colors.btncolor} />
+              <Icon name="add-circle" size={24} color="#007bff" />
             </TouchableOpacity>
           </View>
 
-          {/* Travel Mode Section */}
-          <Text style={styles.title}>Travel Mode</Text>
-          <View style={styles.formGroup}>
-            <TouchableOpacity
-              style={styles.dropdownContainer}
-              onPress={() => setShowTravelModeDropdown(!showTravelModeDropdown)}
-            >
-              <Text style={styles.dropdownText}>{travelMode}</Text>
-              <Icon
-                name={showTravelModeDropdown ? "chevron-up" : "chevron-down"}
-                size={20}
-                color="#555"
-                style={styles.icon}
-              />
-            </TouchableOpacity>
-            {showTravelModeDropdown && (
-              <View style={styles.dropdown}>
-                {travelModeOptions.map((option, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={styles.dropdownOption}
-                    onPress={() => {
-                      setTravelMode(option);
-                      setShowTravelModeDropdown(false);
-                    }}
-                  >
-                    <Text style={styles.optionText}>{option}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
-          </View>
-
-          {/* Cover Image */}
-          <View style={styles.formGroup}>
-            <Text style={styles.title}>Cover Image</Text>
-            {coverImage ? (
-              // Show selected image inside a box/container with styling
-              <View style={styles.coverImageContainer}>
-                <Image source={{ uri: coverImage }} style={styles.coverImage} />
-              </View>
-            ) : (
-              <Text style={styles.placeholderText}>No image selected</Text> // Optional: Show placeholder text
-            )}
-            <TouchableOpacity style={styles.uploadImageButton} onPress={pickCoverImage}>
-              <Icon name="cloud-upload-outline" size={24} color={colors.btncolor} />
-              <Text style={styles.uploadImageText}>Upload Image</Text>
-            </TouchableOpacity>
-          </View>
-          
           {/* Done Button */}
           <TouchableOpacity style={styles.doneButton} onPress={handleSubmit}>
             <Text style={styles.doneButtonText}>Done</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
-
-      <BottomTab />
     </View>
   );
 }
+
+// const styles = StyleSheet.create({
+//   mainContainer: {
+//     flex: 1,
+//   },
+//   container: {
+//     flex: 1,
+//     padding: 20,
+//   },
+//   tripContainer: {
+//     marginBottom: 20,
+//   },
+//   formGroupRow: {
+//     flexDirection: "row",
+//     justifyContent: "space-between",
+//   },
+//   labelRow: {
+//     fontSize: 16,
+//     fontWeight: "bold",
+//   },
+//   underlineInput: {
+//     borderBottomWidth: 1,
+//     borderBottomColor: "#ccc",
+//     paddingHorizontal: 10,
+//     paddingVertical: 8,
+//     width: "48%",
+//   },
+//   maintitle: {
+//     fontSize: 18,
+//     fontWeight: "bold",
+//     marginTop: 20,
+//   },
+//   row: {
+//     flexDirection: "row",
+//     justifyContent: "space-between",
+//   },
+//   formGroup: {
+//     width: "48%",
+//   },
+//   input: {
+//     borderWidth: 1,
+//     padding: 10,
+//     borderRadius: 5,
+//     borderColor: "#ccc",
+//     marginTop: 5,
+//   },
+//   datescontainer: {
+//     marginTop: 20,
+//   },
+//   dayContainer: {
+//     marginBottom: 20,
+//   },
+//   dayTitle: {
+//     fontSize: 16,
+//     fontWeight: "bold",
+//   },
+//   dayInput: {
+//     borderWidth: 1,
+//     padding: 10,
+//     borderColor: "#ccc",
+//     marginTop: 10,
+//     borderRadius: 5,
+//     height: 80,
+//     textAlignVertical: "top",
+//   },
+//   map: {
+//     width: "100%",
+//     height: 200,
+//     marginTop: 10,
+//   },
+//   removeDayButton: {
+//     position: "absolute",
+//     top: 10,
+//     right: 10,
+//     backgroundColor: "#e53935",
+//     padding: 5,
+//     borderRadius: 20,
+//   },
+//   addDayButton: {
+//     alignSelf: "center",
+//     marginTop: 10,
+//   },
+//   doneButton: {
+//     backgroundColor: "#007bff",
+//     padding: 15,
+//     borderRadius: 5,
+//     marginTop: 20,
+//     alignItems: "center",
+//   },
+//   doneButtonText: {
+//     color: "#fff",
+//     fontSize: 18,
+//   },
+// });
 
 export default MakeSchedule;
