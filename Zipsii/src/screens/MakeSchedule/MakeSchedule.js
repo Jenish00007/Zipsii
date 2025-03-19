@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import MapView, { Marker } from "react-native-maps"; // MapView for location selection
-import Icon from "react-native-vector-icons/Ionicons";
+import Icon from "react-native-vector-icons/Ionicons"; // Import Icon library
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker'; // Image picker for cover image
 import styles from "./styles";
@@ -18,64 +18,53 @@ import styles from "./styles";
 function MakeSchedule() {
   const navigation = useNavigation();
   const route = useRoute();
-  const [visibility, setVisibility] = useState("Public");
-  const [members, setMembers] = useState("1-2");
-  const [travelMode, setTravelMode] = useState("Car");
-  const [days, setDays] = useState([{ id: 1, details: "", latitude: "", longitude: "" }]);
+
+  // Initializing states based on the provided format
+  const [bannerImage, setBannerImage] = useState(null);
   const [tripName, setTripName] = useState("");
+  const [travelMode, setTravelMode] = useState("Bike");
+  const [visible, setVisible] = useState("Public");
   const [locationFrom, setLocationFrom] = useState("");
   const [locationTo, setLocationTo] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-  const [coverImage, setCoverImage] = useState(null);
-  
-  const addDay = () => {
-    setDays([...days, { id: days.length + 1, details: "", latitude: "", longitude: "" }]);
+  const [days, setDays] = useState([{ id: 1, description: "", latitude: "", longitude: "" }]);
+
+  // Function to calculate the number of days between two dates
+  const calculateNumberOfDays = (fromDate, toDate) => {
+    const startDate = new Date(fromDate);
+    const endDate = new Date(toDate);
+    const diffTime = Math.abs(endDate - startDate);
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // Adding 1 for inclusive date range
   };
 
-  const removeDay = (id) => {
-    const updatedDays = days.filter((day) => day.id !== id);
-    setDays(updatedDays);
-  };
-
-  const updateDayDetails = (id, field, value) => {
-    const updatedDays = days.map((day) =>
-      day.id === id ? { ...day, [field]: value } : day
-    );
-    setDays(updatedDays);
-  };
-
-  // Function to handle image selection (cover image)
-  const pickCoverImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      setCoverImage(result.assets[0].uri); // Set the selected image URI
-    }
-  };
-
+  // Function to handle the form submission
   const handleSubmit = async () => {
+    const numberOfDays = calculateNumberOfDays(fromDate, toDate);
+
+    // Constructing the schedule data in the required format
     const scheduleData = {
+      bannerImage,
       tripName,
-      locationFrom,
-      locationTo,
-      fromDate,
-      toDate,
-      visibility,
-      members,
       travelMode,
-      days: days.map(day => ({
-        ...day,
+      visible,
+      location: {
+        from: locationFrom,
+        to: locationTo,
+      },
+      dates: {
+        from: fromDate,
+        end: toDate,
+      },
+      numberOfDays,
+      planDescription: days.map(day => ({
+        description: day.description,
+        date: fromDate, // Using fromDate as a placeholder for day date
         location: {
           latitude: parseFloat(day.latitude),
           longitude: parseFloat(day.longitude),
         },
       })),
-      coverImage,
     };
 
     const accessToken = await AsyncStorage.getItem('accessToken');
@@ -102,16 +91,36 @@ function MakeSchedule() {
     }
   };
 
-  // Function to open map for each day
+  // Function to add a day to the trip plan
+  const addDay = () => {
+    setDays([...days, { id: days.length + 1, description: "", latitude: "", longitude: "" }]);
+  };
+
+  // Function to remove a day from the trip plan
+  const removeDay = (id) => {
+    const updatedDays = days.filter((day) => day.id !== id);
+    setDays(updatedDays);
+  };
+
+  // Function to update a day's description or location
+  const updateDayDetails = (id, field, value) => {
+    const updatedDays = days.map((day) =>
+      day.id === id ? { ...day, [field]: value } : day
+    );
+    setDays(updatedDays);
+  };
+
+  // Open map for location selection for a specific day
   const openMapForDay = (dayId) => {
     navigation.navigate('MapScreen', { dayId });
   };
 
+  // Updating day location details from the map screen
   useEffect(() => {
     if (route.params?.latitude && route.params?.longitude) {
       const { latitude, longitude, dayId } = route.params;
-      updateDayDetails(dayId, "latitude", latitude.toString());
       updateDayDetails(dayId, "longitude", longitude.toString());
+      updateDayDetails(dayId, "latitude", route.params.latitude.toString());
     }
   }, [route.params]);
 
@@ -163,7 +172,7 @@ function MakeSchedule() {
                   style={styles.input}
                   value={fromDate}
                   onChangeText={setFromDate}
-                  placeholder="Start date"
+                  placeholder="Start date (dd/mm/yyyy)"
                 />
               </View>
               <View style={styles.formGroup}>
@@ -172,7 +181,7 @@ function MakeSchedule() {
                   style={styles.input}
                   value={toDate}
                   onChangeText={setToDate}
-                  placeholder="End date"
+                  placeholder="End date (dd/mm/yyyy)"
                 />
               </View>
             </View>
@@ -187,11 +196,18 @@ function MakeSchedule() {
                 <TextInput
                   style={styles.dayInput}
                   placeholder={`Enter details for Day ${day.id}`}
-                  value={day.details}
-                  onChangeText={(text) => updateDayDetails(day.id, "details", text)}
+                  value={day.description}
+                  onChangeText={(text) => updateDayDetails(day.id, "description", text)}
                   multiline
-                  onFocus={() => openMapForDay(day.id)}  // Open map when day description is focused
                 />
+                <View style={styles.mapButtonContainer}>
+                  <TouchableOpacity
+                    onPress={() => openMapForDay(day.id)}
+                    style={styles.mapButton}>
+                    <Icon name="location-sharp" size={24} color="white" />
+                    <Text style={styles.mapButtonText}>Select Location</Text>
+                  </TouchableOpacity>
+                </View>
                 <MapView
                   style={styles.map}
                   initialRegion={{
@@ -227,99 +243,5 @@ function MakeSchedule() {
     </View>
   );
 }
-
-// const styles = StyleSheet.create({
-//   mainContainer: {
-//     flex: 1,
-//   },
-//   container: {
-//     flex: 1,
-//     padding: 20,
-//   },
-//   tripContainer: {
-//     marginBottom: 20,
-//   },
-//   formGroupRow: {
-//     flexDirection: "row",
-//     justifyContent: "space-between",
-//   },
-//   labelRow: {
-//     fontSize: 16,
-//     fontWeight: "bold",
-//   },
-//   underlineInput: {
-//     borderBottomWidth: 1,
-//     borderBottomColor: "#ccc",
-//     paddingHorizontal: 10,
-//     paddingVertical: 8,
-//     width: "48%",
-//   },
-//   maintitle: {
-//     fontSize: 18,
-//     fontWeight: "bold",
-//     marginTop: 20,
-//   },
-//   row: {
-//     flexDirection: "row",
-//     justifyContent: "space-between",
-//   },
-//   formGroup: {
-//     width: "48%",
-//   },
-//   input: {
-//     borderWidth: 1,
-//     padding: 10,
-//     borderRadius: 5,
-//     borderColor: "#ccc",
-//     marginTop: 5,
-//   },
-//   datescontainer: {
-//     marginTop: 20,
-//   },
-//   dayContainer: {
-//     marginBottom: 20,
-//   },
-//   dayTitle: {
-//     fontSize: 16,
-//     fontWeight: "bold",
-//   },
-//   dayInput: {
-//     borderWidth: 1,
-//     padding: 10,
-//     borderColor: "#ccc",
-//     marginTop: 10,
-//     borderRadius: 5,
-//     height: 80,
-//     textAlignVertical: "top",
-//   },
-//   map: {
-//     width: "100%",
-//     height: 200,
-//     marginTop: 10,
-//   },
-//   removeDayButton: {
-//     position: "absolute",
-//     top: 10,
-//     right: 10,
-//     backgroundColor: "#e53935",
-//     padding: 5,
-//     borderRadius: 20,
-//   },
-//   addDayButton: {
-//     alignSelf: "center",
-//     marginTop: 10,
-//   },
-//   doneButton: {
-//     backgroundColor: "#007bff",
-//     padding: 15,
-//     borderRadius: 5,
-//     marginTop: 20,
-//     alignItems: "center",
-//   },
-//   doneButtonText: {
-//     color: "#fff",
-//     fontSize: 18,
-//   },
-// });
 
 export default MakeSchedule;
