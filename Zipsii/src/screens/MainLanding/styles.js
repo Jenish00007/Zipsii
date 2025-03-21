@@ -60,6 +60,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', // Vertically aligns items in the row
   },
   notificationIconWrapper: {
+    marginLeft: 10,
     justifyContent: 'flex-end', // Positions the icon on the far right
     alignItems: 'flex-start', // Aligns vertically with the rest of the content
   },
@@ -185,6 +186,15 @@ const styles = StyleSheet.create({
   locationText: {
     fontSize: 16,  // Adjust text size
     color: '#333',  // Adjust text color
+  },
+
+  icon: {
+    paddingHorizontal: 5,
+  },
+
+  rightIconsContainer: {
+    flexDirection: 'row', // Align icons in a row
+    alignItems: 'center', // Center them vertically
   },
   
   seeAllText: {

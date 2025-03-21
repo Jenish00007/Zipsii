@@ -46,7 +46,7 @@ protractorShape: {
     shadowRadius: 6, // Shadow radius (iOS)
     elevation: 6, // Shadow for Android
     ...alignment.Pmedium,
-    top: 120,
+    top: 5,
     
   },
   formGroupRow: {
@@ -186,7 +186,7 @@ protractorShape: {
     marginTop: 8,
   },
   doneButton: {
-    padding: 100,
+    padding: 20,
     backgroundColor: colors.btncolor,
     borderRadius: 8,
     alignItems: "center",

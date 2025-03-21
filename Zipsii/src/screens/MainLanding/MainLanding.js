@@ -19,7 +19,7 @@ import Stories from '../../components/Stories/Stories';
 import Post from '../../components/Posts/Post';
 import DiscoverByNearest from '../../components/DiscoverByNearest/DiscoverByNearest';
 import Schedule from '../MySchedule/Schedule/AllSchedule';
-const baseUrl = 'http://192.168.18.179:8000';
+const baseUrl = 'http://192.168.1.14:8000';
 import { BackHandler } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -424,6 +424,7 @@ function MainLanding(props) {
               <TextDefault style={styles.locationText} H5 bold>Zypsii</TextDefault>
             </View>
           </View>
+          <View style={styles.rightIconsContainer}>
           <TouchableOpacity
             onPress={() => navigation.navigate('SearchPage')}
             style={styles.notificationIconWrapper}
@@ -432,7 +433,7 @@ function MainLanding(props) {
               name="search"
               size={28}
               color="#000"
-              style={styles.notificationIcon}
+              style={styles.icon}
             />
           </TouchableOpacity>
 
@@ -467,7 +468,7 @@ function MainLanding(props) {
             <MaterialCommunityIcons name="poll" size={28} color="#000" />
           </TouchableOpacity> */}
         </View>
-
+        </View>
         <Stories />
 
         <View style={styles.buttonContainer}>
