@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, Alert, Modal, ActivityIndicator } from 'react-native';
-import { launchImageLibrary } from 'react-native-image-picker';
 import { useNavigation } from '@react-navigation/native';
 import Entypo from 'react-native-vector-icons/Entypo';
-import * as ImagePicker from 'expo-image-picker'; 
+import * as ImagePicker from 'expo-image-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Stories = () => {
   const navigation = useNavigation();
   const [image, setImage] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [storyInfo, setStoryInfo] = useState([]);
-  const [isLoading, setIsLoading] = useState(true); // Loading state
-  const baseUrl = 'http://172.20.10.5:8000'; 
+  const [isLoading, setIsLoading] = useState(true);
+  const [viewedStoryId, setViewedStoryId] = useState(null);
+  const baseUrl = 'http://192.168.1.14:8000';
 
   const pickImage = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -35,43 +36,89 @@ const Stories = () => {
     if (modalVisible) {
       const timer = setTimeout(() => {
         setModalVisible(false);
-      }, 10000); 
+      }, 10000);
 
       return () => clearTimeout(timer);
     }
   }, [modalVisible]);
 
+  // Fetch the viewed story IDs from AsyncStorage
+  const loadViewedStories = async () => {
+    try {
+      const viewedStories = await AsyncStorage.getItem('viewedStories');
+      return viewedStories ? JSON.parse(viewedStories) : [];
+    } catch (error) {
+      console.error('Error loading viewed stories: ', error);
+      return [];
+    }
+  };
+
+  // Store the viewed story IDs in AsyncStorage
+  const saveViewedStory = async (storyId) => {
+    try {
+      const viewedStories = await loadViewedStories();
+      if (!viewedStories.includes(storyId)) {
+        viewedStories.push(storyId);
+        await AsyncStorage.setItem('viewedStories', JSON.stringify(viewedStories));
+      }
+    } catch (error) {
+      console.error('Error saving viewed story: ', error);
+    }
+  };
+
   useEffect(() => {
     const fetchStoryData = async () => {
       try {
-        setIsLoading(true); // Start loading
+        setIsLoading(true);
         const response = await fetch(baseUrl + '/stories');
-        
+
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        
+
         const data = await response.json();
+        const viewedStories = await loadViewedStories();
+
         const updatedData = data.map(item => ({
           ...item,
           image: baseUrl + item.image,
+          viewed: viewedStories.includes(item.id), // Mark as viewed based on AsyncStorage
         }));
         setStoryInfo(updatedData);
       } catch (error) {
         console.error('Error fetching data: ', error);
         Alert.alert('Error', `Failed to load stories: ${error.message}`);
       } finally {
-        setIsLoading(false); // Stop loading
+        setIsLoading(false);
       }
     };
-  
+
     fetchStoryData();
   }, []);
 
+  const handleStoryPress = async (data) => {
+    if (data.id === 1) {
+      pickImage();
+    } else {
+      setImage(data.image);
+      setModalVisible(true);
+
+      // Mark the currently viewed story and save it in AsyncStorage
+      setViewedStoryId(data.id);
+      await saveViewedStory(data.id);
+
+      // Update the storyInfo to reflect the viewed state
+      setStoryInfo(prevStoryInfo =>
+        prevStoryInfo.map(item =>
+          item.id === data.id ? { ...item, viewed: true } : item
+        )
+      );
+    }
+  };
+
   return (
     <View style={{ flex: 1 }}>
-      {isLoading ? ( 
-        // Show loading spinner while fetching data
+      {isLoading ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color="#c13584" />
         </View>
@@ -80,14 +127,7 @@ const Stories = () => {
           {storyInfo.map((data, index) => (
             <TouchableOpacity
               key={index}
-              onPress={() => {
-                if (data.id === 1) {
-                  pickImage();
-                } else {
-                  setImage(data.image);
-                  setModalVisible(true);
-                }
-              }}>
+              onPress={() => handleStoryPress(data)}>
               <View style={{ flexDirection: 'column', paddingHorizontal: 8, position: 'relative' }}>
                 {data.id === 1 ? (
                   <View style={{ position: 'absolute', bottom: 15, right: 10, zIndex: 1 }}>
@@ -109,7 +149,7 @@ const Stories = () => {
                     backgroundColor: 'white',
                     borderWidth: 1.8,
                     borderRadius: 100,
-                    borderColor: '#c13584',
+                    borderColor: data.viewed ? 'transparent' : '#c13584',
                     justifyContent: 'center',
                     alignItems: 'center',
                   }}>
@@ -133,7 +173,6 @@ const Stories = () => {
         </ScrollView>
       )}
 
-      {/* Full-Screen Modal to display the image */}
       <Modal transparent={true} visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
         <View
           style={{
@@ -164,7 +203,7 @@ const Stories = () => {
               }}>
               <Text style={{ fontSize: 20, color: '#333' }}>X</Text>
             </TouchableOpacity>
-          </View> 
+          </View>
         </View>
       </Modal>
     </View>

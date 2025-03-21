@@ -445,11 +445,11 @@ app.get('/stories', (req, res) => {
     try {
         const stories = [
             { id: 1, name: 'Your Story', image: '/uploads/userProfile.png' },
-            { id: 0, name: 'Ram_Charan', image: '/uploads/profile1.jpg' },
-            { id: 0, name: 'Tom', image: '/uploads/profile2.jpg' },
-            { id: 0, name: 'The_Groot', image: '/uploads/profile3.jpg' },
-            { id: 0, name: 'loverland', image: '/uploads/profile4.jpg' },
-            { id: 0, name: 'chillhouse', image: '/uploads/profile5.jpg' }
+            { id: 2, name: 'Ram_Charan', image: '/uploads/profile1.jpg' },
+            { id: 3, name: 'Tom', image: '/uploads/profile2.jpg' },
+            { id: 4, name: 'The_Groot', image: '/uploads/profile3.jpg' },
+            { id: 5, name: 'loverland', image: '/uploads/profile4.jpg' },
+            { id: 6, name: 'chillhouse', image: '/uploads/profile5.jpg' }
         ];
         res.json(stories); // Ensure this returns a valid JSON
     } catch (error) {
