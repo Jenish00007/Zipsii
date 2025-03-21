@@ -28,6 +28,7 @@ import LocationPage from './LocationPage/LocationPage'
 import SignUp from './SignUp/SignUp'
 import FavoritesPage from './Favourite/Favourite'
 import LogoutButton from './Logout/Logout'
+import MapScreen from './mapscreen/MapScreen '
 
 
 export {
@@ -35,7 +36,7 @@ export {
   data,
   MainLanding,
   ProfileDashboard,
- 
+  MapScreen,
   Review,
   FavoritesPage,
   DeleteButton,
