@@ -1,26 +1,135 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
+  Alert,
   TouchableOpacity,
   Image,
   TextInput,
   StyleSheet,
 } from "react-native";
 import { colors } from "../../utils";
+import * as ImagePicker from "expo-image-picker";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Location from 'expo-location'; // Importing Location module
 
 const ProfilePage = ({ navigation }) => {
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [website, setWebsite] = useState("");
   const [bio, setBio] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [gender, setGender] = useState("");
+  const [location, setLocation] = useState({ latitude: 343, longitude: 343 }); // Default location
+  const [profileImage, setProfileImage] = useState(null);
 
-  const handleSave = () => {
-    console.log("Profile updated");
-    navigation.goBack();
+  // Fetch profile data on component mount
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        const response = await fetch("http://192.168.1.40:8000/user/getProfile");
+        const data = await response.json();
+
+        if (response.ok) {
+          setName(data.fullName || "");
+          setUsername(data.username || "");
+          setWebsite(data.website || "");
+          setBio(data.bio || "");
+          setLocation(data.location);
+          setProfileImage(data.profilePicture || null); 
+        } else {
+          console.log("profile data not found", data);
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    };
+
+    fetchProfileData();
+    getLocation(); // Get the user's location when the component mounts
+  }, []); // Empty dependency array ensures this runs only once on component mount
+
+  // Function to fetch the current location
+  const getLocation = async () => {
+    try {
+      // Request permission for location access
+      const { status } = await Location.requestForegroundPermissionsAsync();
+
+      if (status === 'granted') {
+        const location = await Location.getCurrentPositionAsync({});
+        console.log(location);
+
+        // Set the fetched latitude and longitude in the state
+        setLocation({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+        });
+      } else {
+        Alert.alert('Permission Denied', 'Location permission is required');
+      }
+    } catch (error) {
+      console.warn('Error fetching location:', error);
+      Alert.alert('Error', 'Unable to fetch location');
+    }
+  };
+
+  // Function to pick an image
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.cancelled) {
+      setProfileImage(result.uri); // Set selected image URI
+    }
+  };
+
+  // Save the profile data
+  const handleSave = async () => {
+    const profileData = {
+      fullName: name,
+      username,
+      website,
+      bio,
+      location: JSON.stringify(location),
+    };
+
+    if (profileImage) {
+      const uri = profileImage;
+      const fileName = uri.split("/").pop();
+      const type = `image/${fileName.split(".").pop()}`;
+      profileData.profilePicture = {
+        uri,
+        name: fileName,
+        type,
+      };
+    }
+
+    const accessToken = await AsyncStorage.getItem('accessToken');
+
+    try {
+      const response = await fetch("http://192.168.1.40:8000/user/editProfile", {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(profileData),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Profile updated successfully", data);
+        Alert.alert('Success', 'Profile updated successfully!');
+        navigation.goBack();
+      } else {
+        throw new Error('Error updating profile');
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      Alert.alert('Error', 'Failed to update profile. Please try again.');
+    }
   };
 
   return (
@@ -40,11 +149,18 @@ const ProfilePage = ({ navigation }) => {
 
       {/* Profile Image */}
       <View style={styles.profileImageContainer}>
-        <TouchableOpacity style={styles.imageUploadButton}>
-          <Image
-            source={require("../../assets/profileimage.jpg")}
-            style={styles.profileImage}
-          />
+        <TouchableOpacity onPress={pickImage} style={styles.imageUploadButton}>
+          {profileImage ? (
+            <Image
+              source={{ uri: profileImage }}
+              style={styles.profileImage}
+            />
+          ) : (
+            <Image
+              source={require("../../assets/profileimage.jpg")}
+              style={styles.profileImage}
+            />
+          )}
           <Text style={styles.imageUploadText}>Change Profile Photo</Text>
         </TouchableOpacity>
       </View>
@@ -102,60 +218,6 @@ const ProfilePage = ({ navigation }) => {
               placeholder="Write about yourself"
               value={bio}
               onChangeText={setBio}
-            />
-            <View style={styles.divider} />
-          </View>
-        </View>
-      </View>
-
-      {/* Switch to Professional Account */}
-      <TouchableOpacity style={styles.professionalButton}>
-        <Text style={styles.professionalButtonText}>
-          Switch to Professional Account
-        </Text>
-      </TouchableOpacity>
-
-      {/* Private Information Section */}
-      <View style={styles.inputWrapper}>
-        <Text style={styles.sectionTitle}>Private Information</Text>
-
-        {/* Email */}
-        <View style={styles.inputRow}>
-          <Text style={styles.inputLabel}>Email</Text>
-          <View style={styles.inputFieldContainer}>
-            <TextInput
-              style={styles.inputField}
-              placeholder="Enter your email"
-              value={email}
-              onChangeText={setEmail}
-            />
-            <View style={styles.divider} />
-          </View>
-        </View>
-
-        {/* Phone */}
-        <View style={styles.inputRow}>
-          <Text style={styles.inputLabel}>Phone</Text>
-          <View style={styles.inputFieldContainer}>
-            <TextInput
-              style={styles.inputField}
-              placeholder="Enter your phone number"
-              value={phone}
-              onChangeText={setPhone}
-            />
-            <View style={styles.divider} />
-          </View>
-        </View>
-
-        {/* Gender */}
-        <View style={styles.inputRow}>
-          <Text style={styles.inputLabel}>Gender</Text>
-          <View style={styles.inputFieldContainer}>
-            <TextInput
-              style={styles.inputField}
-              placeholder="Enter your gender"
-              value={gender}
-              onChangeText={setGender}
             />
             <View style={styles.divider} />
           </View>
@@ -247,21 +309,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.graycolor,
     width: "100%",
     marginTop: 5,
-  },
-  professionalButton: {
-    marginBottom: 30,
-    alignItems: "center",
-  },
-  professionalButtonText: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: colors.blueColor,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: colors.black,
-    marginBottom: 10,
   },
 });
 

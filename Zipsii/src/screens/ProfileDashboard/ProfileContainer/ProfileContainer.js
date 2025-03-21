@@ -36,7 +36,7 @@ function ProfileContainer({profileInfo}) {
           <Image source={{uri:profileInfo.image}} style={styles.profileImage} />
           <TouchableOpacity
             style={styles.editIcon}
-            onPress={() => navigation.navigate('EditingProfile')}>
+            onPress={() => navigation.navigate('PageCreation')}>
             <Feather name="edit" size={18} color={colors.white} />
           </TouchableOpacity>
           <TextDefault style={styles.profileName} H4>
