@@ -110,6 +110,7 @@ const styles = StyleSheet.create({
   },
   postImage: {
     width: '100%',
+    marginRight: 20,
     height: 400,
   },
   actionsContainer: {

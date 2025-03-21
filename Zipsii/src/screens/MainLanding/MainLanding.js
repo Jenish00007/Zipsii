@@ -332,7 +332,7 @@ function MainLanding(props) {
 
   const renderBestDestination = () => (
     best_destination.length > 0 && (
-      <View style={styles.titleSpacer}>
+      <View style={styles.titleSpacerdesti}>
         <TextDefault textColor={colors.fontMainColor} H5 bold >
           {'Best Destination'}
         </TextDefault>

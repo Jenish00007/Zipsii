@@ -131,10 +131,10 @@ const styles = StyleSheet.create({
   },
   itemCardContainer: {
     width: scale(180),
-    height: scale(230),
+    height: scale(200),
     borderRadius: scale(6),
     borderColor: colors.whiteColor,
-    borderWidth: scale(8),
+    borderWidth: scale(3),
     ...alignment.MTsmall,
     ...alignment.MRlarge
   },
@@ -162,14 +162,18 @@ const styles = StyleSheet.create({
   },
   titleSpacer: {
     marginLeft: '5%',
-    marginTop: scale(35)
+    marginTop: scale(15)
+  },
+  titleSpacerdesti: {
+    marginLeft: '5%',
+    marginTop: scale(25)
   },
   productCard: {
     marginLeft: '5%',
     width: '43%',
-    height: scale(200),
+    height: scale(180),
     marginTop: scale(10),
-    marginBottom: scale(20),
+    marginBottom: scale(10),
     borderColor: colors.whiteColor,
     borderWidth: scale(8),
   },
@@ -209,7 +213,7 @@ const styles = StyleSheet.create({
   categoryWrapper: {
     alignItems: 'center', // Center align the icon and text
     marginRight: scale(17), // Add some spacing between categories
-    padding: 10,
+    padding: 12,
     marginLeft: scale(-6),
   },
   buttonContainer: {
