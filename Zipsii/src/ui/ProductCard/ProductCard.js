@@ -17,45 +17,33 @@ function ProductCard(props) {
     setLoading(true); // Start loading
 
     try {
-      // Toggle the like status
       const newLikedStatus = !liked;
-      const postData = {
-        productId: props.id,  // Assuming `id` is the product identifier
-        liked: newLikedStatus,
-      };
       const accessToken = await AsyncStorage.getItem('accessToken'); // Get the access token
-
       // Make the POST request to update like status
-      const response = await fetch('http://192.168.213.179:8000/update-like-status', {
+      const response = await fetch(`http://192.168.85.179:8000/update-like-status?id=${props.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${accessToken}`, // Attach the JWT token to the request header
         },
-        body: JSON.stringify(postData),
       });
 
       if (response.ok) {
         const data = await response.json(); // Parse JSON response
 
         if (!data.error) {
-          // Successful like/unlike update
           Alert.alert('Success', newLikedStatus ? 'Product liked' : 'Product unliked');
           setLiked(newLikedStatus); // Update liked state
         } else {
-          // Show error if any error occurred from the backend
           Alert.alert('Error', data.message || 'Failed to update like status');
         }
       } else {
-        // If response is not OK (e.g., 400 or 500 error)
         Alert.alert('Error', 'Failed to update like status, please try again.');
       }
     } catch (error) {
-      // Network or fetch error
       console.error('Network or fetch error:', error);
       Alert.alert('Error', 'Failed to update like status due to a network error');
     } finally {
-      // Set loading state to false after completion
       setLoading(false);
     }
   };
