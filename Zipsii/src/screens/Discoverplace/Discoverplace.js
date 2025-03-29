@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Image, ScrollView, TouchableOpacity } from 'react-native';
-import styles from './styles';
-
+import styles from '../../utils/styles'
 import BottomTab from '../../components/BottomTab/BottomTab';
 import { BackHeader } from '../../components/Headers/Headers'; 
 import { MaterialCommunityIcons, SimpleLineIcons, Ionicons } from '@expo/vector-icons'; 
 import { colors } from '../../utils';
 import { TextDefault } from '../../components';
 import { textStyles } from '../../utils';
-const baseUrl = 'http://192.168.18.179:8000'; 
+const baseUrl = 'http://172.20.10.5:8000'; 
 function DiscoverPlace({ navigation }) {
   const backPressed = () => {
     navigation.goBack(); // Navigate to the previous screen when the back arrow is pressed
