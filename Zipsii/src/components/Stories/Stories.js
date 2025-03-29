@@ -1,9 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, Alert, Modal, ActivityIndicator } from 'react-native';
+import { 
+  View, 
+  Text, 
+  FlatList, 
+  TouchableOpacity, 
+  Image, 
+  Alert, 
+  Modal 
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Entypo from 'react-native-vector-icons/Entypo';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import SkeletonLoader from '../Loader/SkeletonLoader';
 
 const Stories = () => {
   const navigation = useNavigation();
@@ -12,7 +21,31 @@ const Stories = () => {
   const [storyInfo, setStoryInfo] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [viewedStoryId, setViewedStoryId] = useState(null);
-  const baseUrl = 'http://192.168.1.14:8000';
+  const [error, setError] = useState(null);
+  const baseUrl = 'http://172.20.10.5:8000';
+
+  // 1. First define all helper functions
+  const loadViewedStories = async () => {
+    try {
+      const viewedStories = await AsyncStorage.getItem('viewedStories');
+      return viewedStories ? JSON.parse(viewedStories) : [];
+    } catch (error) {
+      console.error('Error loading viewed stories: ', error);
+      return [];
+    }
+  };
+
+  const saveViewedStory = async (storyId) => {
+    try {
+      const viewedStories = await loadViewedStories();
+      if (!viewedStories.includes(storyId)) {
+        viewedStories.push(storyId);
+        await AsyncStorage.setItem('viewedStories', JSON.stringify(viewedStories));
+      }
+    } catch (error) {
+      console.error('Error saving viewed story: ', error);
+    }
+  };
 
   const pickImage = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -32,6 +65,41 @@ const Stories = () => {
     }
   };
 
+  // 2. Then define the data fetching function
+  const fetchStoryData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const response = await fetch(baseUrl + '/stories');
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const viewedStories = await loadViewedStories();
+
+      const updatedData = data.map(item => ({
+        ...item,
+        image: baseUrl + item.image,
+        viewed: viewedStories.includes(item.id),
+      }));
+      
+      setStoryInfo(updatedData);
+    } catch (err) {
+      console.error('Error fetching stories:', err);
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 3. Then use the functions in useEffect
+  useEffect(() => {
+    fetchStoryData();
+  }, []);
+
   useEffect(() => {
     if (modalVisible) {
       const timer = setTimeout(() => {
@@ -42,72 +110,14 @@ const Stories = () => {
     }
   }, [modalVisible]);
 
-  // Fetch the viewed story IDs from AsyncStorage
-  const loadViewedStories = async () => {
-    try {
-      const viewedStories = await AsyncStorage.getItem('viewedStories');
-      return viewedStories ? JSON.parse(viewedStories) : [];
-    } catch (error) {
-      console.error('Error loading viewed stories: ', error);
-      return [];
-    }
-  };
-
-  // Store the viewed story IDs in AsyncStorage
-  const saveViewedStory = async (storyId) => {
-    try {
-      const viewedStories = await loadViewedStories();
-      if (!viewedStories.includes(storyId)) {
-        viewedStories.push(storyId);
-        await AsyncStorage.setItem('viewedStories', JSON.stringify(viewedStories));
-      }
-    } catch (error) {
-      console.error('Error saving viewed story: ', error);
-    }
-  };
-
-  useEffect(() => {
-    const fetchStoryData = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetch(baseUrl + '/stories');
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        const viewedStories = await loadViewedStories();
-
-        const updatedData = data.map(item => ({
-          ...item,
-          image: baseUrl + item.image,
-          viewed: viewedStories.includes(item.id), // Mark as viewed based on AsyncStorage
-        }));
-        setStoryInfo(updatedData);
-      } catch (error) {
-        console.error('Error fetching data: ', error);
-        Alert.alert('Error', `Failed to load stories: ${error.message}`);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchStoryData();
-  }, []);
-
   const handleStoryPress = async (data) => {
     if (data.id === 1) {
       pickImage();
     } else {
       setImage(data.image);
       setModalVisible(true);
-
-      // Mark the currently viewed story and save it in AsyncStorage
       setViewedStoryId(data.id);
       await saveViewedStory(data.id);
-
-      // Update the storyInfo to reflect the viewed state
       setStoryInfo(prevStoryInfo =>
         prevStoryInfo.map(item =>
           item.id === data.id ? { ...item, viewed: true } : item
@@ -116,62 +126,93 @@ const Stories = () => {
     }
   };
 
+  const renderStoryItem = ({ item }) => (
+    <TouchableOpacity onPress={() => handleStoryPress(item)}>
+      <View style={{ flexDirection: 'column', paddingHorizontal: 8, position: 'relative' }}>
+        {item.id === 1 ? (
+          <View style={{ position: 'absolute', bottom: 15, right: 10, zIndex: 1 }}>
+            <Entypo
+              name="circle-with-plus"
+              style={{
+                fontSize: 20,
+                color: '#405de6',
+                backgroundColor: 'white',
+                borderRadius: 100,
+              }}
+            />
+          </View>
+        ) : null}
+        <View
+          style={{
+            width: 68,
+            height: 68,
+            backgroundColor: 'white',
+            borderWidth: 1.8,
+            borderRadius: 100,
+            borderColor: item.viewed ? 'transparent' : '#c13584',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+          <Image
+            source={{ uri: item.image }}
+            style={{
+              resizeMode: 'cover',
+              width: '92%',
+              height: '92%',
+              borderRadius: 100,
+              backgroundColor: 'orange',
+            }}
+          />
+        </View>
+        <Text style={{ textAlign: 'center', fontSize: 10, opacity: item.id === 0 ? 1 : 0.5 }}>
+          {item.name}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
+
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <SkeletonLoader 
+          count={6} 
+          circleSize={68}
+          textWidth={40}
+          textHeight={10}
+          containerStyle={{ paddingHorizontal: 8 }}
+        />
+      );
+    }
+
+    if (error) {
+      return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ color: 'red' }}>Error: {error}</Text>
+          <TouchableOpacity 
+            onPress={fetchStoryData}
+            style={{ marginTop: 10, padding: 10, backgroundColor: '#ddd' }}
+          >
+            <Text>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    return (
+      <FlatList
+        data={storyInfo}
+        renderItem={renderStoryItem}
+        keyExtractor={(item) => item.id.toString()}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingVertical: 20 }}
+      />
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
-      {isLoading ? (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color="#c13584" />
-        </View>
-      ) : (
-        <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} style={{ paddingVertical: 20 }}>
-          {storyInfo.map((data, index) => (
-            <TouchableOpacity
-              key={index}
-              onPress={() => handleStoryPress(data)}>
-              <View style={{ flexDirection: 'column', paddingHorizontal: 8, position: 'relative' }}>
-                {data.id === 1 ? (
-                  <View style={{ position: 'absolute', bottom: 15, right: 10, zIndex: 1 }}>
-                    <Entypo
-                      name="circle-with-plus"
-                      style={{
-                        fontSize: 20,
-                        color: '#405de6',
-                        backgroundColor: 'white',
-                        borderRadius: 100,
-                      }}
-                    />
-                  </View>
-                ) : null}
-                <View
-                  style={{
-                    width: 68,
-                    height: 68,
-                    backgroundColor: 'white',
-                    borderWidth: 1.8,
-                    borderRadius: 100,
-                    borderColor: data.viewed ? 'transparent' : '#c13584',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}>
-                  <Image
-                    source={{ uri: data.image }}
-                    style={{
-                      resizeMode: 'cover',
-                      width: '92%',
-                      height: '92%',
-                      borderRadius: 100,
-                      backgroundColor: 'orange',
-                    }}
-                  />
-                </View>
-                <Text style={{ textAlign: 'center', fontSize: 10, opacity: data.id === 0 ? 1 : 0.5 }}>
-                  {data.name}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      )}
+      {renderContent()}
 
       <Modal transparent={true} visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
         <View

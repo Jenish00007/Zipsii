@@ -1,5 +1,14 @@
-import React from 'react';
-import { View, FlatList,Alert, ScrollView, ImageBackground, TouchableOpacity, NativeModules } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { 
+  View, 
+  FlatList, 
+  Alert, 
+  ScrollView, 
+  ImageBackground, 
+  TouchableOpacity, 
+  NativeModules,
+  Image 
+} from 'react-native';
 import SwiperFlatList from 'react-native-swiper-flatlist';
 import styles from './styles';
 import CategoryCard from '../../ui/CategoryCard/CategoryCard';
@@ -9,9 +18,8 @@ import ProductCard from '../../ui/ProductCard/ProductCard';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { TextInput, Image } from 'react-native';
+import { TextInput } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useState, useEffect } from 'react';
 import { WebView } from 'react-native-webview';
 import { useSchedule } from '../../context/ScheduleContext';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -19,27 +27,38 @@ import Stories from '../../components/Stories/Stories';
 import Post from '../../components/Posts/Post';
 import DiscoverByNearest from '../../components/DiscoverByNearest/DiscoverByNearest';
 import Schedule from '../MySchedule/Schedule/AllSchedule';
-const baseUrl = 'http://192.168.1.14:8000';
+import SkeletonLoader from '../../components/Loader/SkeletonLoader';
 import { BackHandler } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 
+const baseUrl = 'http://172.20.10.5:8000';
 
 function MainLanding(props) {
-  const navigation = useNavigation()
-  const { scheduleData } = useSchedule()
-  const [selectedButton, setSelectedButton] = useState('All')
-  const buttons = ['All', 'Schedule', 'Shorts', 'Posts']
-  const handleCardPress = (item) => {
-    navigation.navigate('TripDetail', { tripData: item })
-  }
-  const [discover_by_intrest, setDiscover_by_intrest] = useState([])
-  const [best_destination, setBest_destination] = useState([])
-  const [all_destination, setAll_destination] = useState([])
-  const [all_schedule, setAll_schedule] = useState([])
-  const [all_posts, setAllPosts] = useState([])
-  const [all_shorts, setAllShorts] = useState([])
-  const [discoverbynearest, setDiscoverbyNearest] = useState([])
+  const navigation = useNavigation();
+  const { scheduleData } = useSchedule();
+  const [selectedButton, setSelectedButton] = useState('All');
+  const buttons = ['All', 'Schedule', 'Shorts', 'Posts'];
+  
+  // Loading states
+  const [isDiscoverByInterestLoading, setIsDiscoverByInterestLoading] = useState(true);
+  const [isBestDestinationLoading, setIsBestDestinationLoading] = useState(true);
+  const [isAllDestinationLoading, setIsAllDestinationLoading] = useState(true);
+  const [isScheduleLoading, setIsScheduleLoading] = useState(true);
+  const [isPostsLoading, setIsPostsLoading] = useState(true);
+  const [isShortsLoading, setIsShortsLoading] = useState(true);
+  const [isNearestLoading, setIsNearestLoading] = useState(true);
+  const [isStoriesLoading, setIsStoriesLoading] = useState(true);
 
+  // Data states
+  const [discover_by_intrest, setDiscover_by_intrest] = useState([]);
+  const [best_destination, setBest_destination] = useState([]);
+  const [all_destination, setAll_destination] = useState([]);
+  const [all_schedule, setAll_schedule] = useState([]);
+  const [all_posts, setAllPosts] = useState([]);
+  const [all_shorts, setAllShorts] = useState([]);
+  const [discoverbynearest, setDiscoverbyNearest] = useState([]);
+
+  // Back handler
   useFocusEffect(
     React.useCallback(() => {
       const backAction = () => {
@@ -55,80 +74,88 @@ function MainLanding(props) {
             { text: "YES", onPress: () => BackHandler.exitApp() }
           ]
         );
-        return true; // Prevent default behavior (exit app)
+        return true;
       };
 
-      // Add the event listener
       const backHandler = BackHandler.addEventListener(
         "hardwareBackPress",
         backAction
       );
 
-      // Clean up the event listener when the screen is unfocused
       return () => backHandler.remove();
-    }, []) // Empty dependency array ensures this runs only on mount/unmount
+    }, [])
   );
 
-
+  // Data fetching effects
   useEffect(() => {
     const fetch_Discover_by_intrest = async() => {
       try {
-        const response = await fetch(baseUrl + '/discover_by_intrest')
-        const data = await response.json()
+        setIsDiscoverByInterestLoading(true);
+        const response = await fetch(baseUrl + '/discover_by_intrest');
+        const data = await response.json();
         const formattedData = data.slice(0, 100).map(item => ({
           id: item.id,
-          image: baseUrl + item.image, // Make sure the URL is correct
+          image: baseUrl + item.image,
           name: item.name
-        }))
-        setDiscover_by_intrest(formattedData)
+        }));
+        setDiscover_by_intrest(formattedData);
       } catch (error) {
-        console.error('Error fetching data:', error)
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsDiscoverByInterestLoading(false);
       }
-    }
-    fetch_Discover_by_intrest()
-  }, [])
+    };
+    fetch_Discover_by_intrest();
+  }, []);
 
   useEffect(() => {
     const fetch_best_destination = async() => {
       try {
-        const response = await fetch(baseUrl + '/best_destination')
-        const data = await response.json()
+        setIsBestDestinationLoading(true);
+        const response = await fetch(baseUrl + '/best_destination');
+        const data = await response.json();
         const formattedData = data.slice(0, 100).map(item => ({
           id: item.id,
           image: baseUrl + item.image,
           name: item.name
-        }))
-        setBest_destination(formattedData)
+        }));
+        setBest_destination(formattedData);
       } catch (error) {
-        console.error('Error fetching data:', error)
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsBestDestinationLoading(false);
       }
-    }
-    fetch_best_destination()
-  }, [])
+    };
+    fetch_best_destination();
+  }, []);
 
   useEffect(() => {
     const fetch_all_destination = async() => {
       try {
-        const response = await fetch(baseUrl + '/all_destination')
-        const data = await response.json()
+        setIsAllDestinationLoading(true);
+        const response = await fetch(baseUrl + '/all_destination');
+        const data = await response.json();
         const formattedData = data.slice(0, 100).map(item => ({
           id: item.id,
           image: baseUrl + item.image,
           name: item.name
-        }))
-        setAll_destination(formattedData)
+        }));
+        setAll_destination(formattedData);
       } catch (error) {
-        console.error('Error fetching data:', error)
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsAllDestinationLoading(false);
       }
-    }
-    fetch_all_destination()
-  }, [])
+    };
+    fetch_all_destination();
+  }, []);
 
   useEffect(() => {
     const fetch_all_schedule = async() => {
       try {
-        const response = await fetch(baseUrl + '/get_all_schedule')
-        const data = await response.json()
+        setIsScheduleLoading(true);
+        const response = await fetch(baseUrl + '/get_all_schedule');
+        const data = await response.json();
         const formattedData = data.slice(0, 100).map((item) => ({
           id: item.id,
           title: item.title,
@@ -140,20 +167,23 @@ function MainLanding(props) {
           imageUrl: item.imageUrl,
           day1Locations: item.day1Locations,
           day2Locations: item.day2Locations
-        }))
-        setAll_schedule(formattedData)
+        }));
+        setAll_schedule(formattedData);
       } catch (error) {
-        console.error('Error fetching data:', error)
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsScheduleLoading(false);
       }
-    }
-    fetch_all_schedule()
-  }, [])
+    };
+    fetch_all_schedule();
+  }, []);
 
   useEffect(() => {
     const fetch_all_posts = async() => {
       try {
-        const response = await fetch(baseUrl + '/get_all_posts')
-        const data = await response.json()
+        setIsPostsLoading(true);
+        const response = await fetch(baseUrl + '/get_all_posts');
+        const data = await response.json();
         const formattedData = data.slice(0, 100).map(item => ({
           id: item.id,
           postPersonImage: item.postPersonImage,
@@ -161,20 +191,23 @@ function MainLanding(props) {
           postImage: item.postImage,
           likes: item.likes,
           isLiked: item.isLiked
-        }))
-        setAllPosts(formattedData)
+        }));
+        setAllPosts(formattedData);
       } catch (error) {
-        console.error('Error fetching data:', error)
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsPostsLoading(false);
       }
-    }
-    fetch_all_posts()
-  }, [])
+    };
+    fetch_all_posts();
+  }, []);
 
   useEffect(() => {
     const fetch_all_Shorts = async() => {
       try {
-        const response = await fetch(baseUrl + '/get_all_shorts')
-        const data = await response.json()
+        setIsShortsLoading(true);
+        const response = await fetch(baseUrl + '/get_all_shorts');
+        const data = await response.json();
         const formattedData = data.slice(0, 100).map(item => ({
           id: item.id,
           video: item.video.url,
@@ -182,44 +215,71 @@ function MainLanding(props) {
           videoImage: item.videoImage,
           likes: item.likes,
           isLiked: item.isLiked
-        }))
-        // console.log(data)
-        setAllShorts(formattedData)
+        }));
+        setAllShorts(formattedData);
       } catch (error) {
-        console.error('Error fetching data:', error)
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsShortsLoading(false);
       }
-    }
-    fetch_all_Shorts()
-  }, [])
+    };
+    fetch_all_Shorts();
+  }, []);
 
-  // Fetch data from an open-source API (JSONPlaceholder API for demonstration)
   useEffect(() => {
     const fetchDiscoverbyNearest = async() => {
       try {
-        const response = await fetch(baseUrl + '/discover_by_nearest')
-        const data = await response.json()
-
-        // Log to verify the data structure
-        // console.log(data);
-
+        setIsNearestLoading(true);
+        const response = await fetch(baseUrl + '/discover_by_nearest');
+        const data = await response.json();
         const formattedData = data.slice(0, 100).map(item => ({
           id: item.id,
           image: item.image,
           title: item.name,
           subtitle: item.subtitle
-        }))
-
-        // console.log(formattedData); // Check the formatted data with image URLs
-
-        setDiscoverbyNearest(formattedData)
+        }));
+        setDiscoverbyNearest(formattedData);
       } catch (error) {
-        console.error('Error fetching data:', error)
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsNearestLoading(false);
       }
-    }
+    };
+    fetchDiscoverbyNearest();
+  }, []);
 
-    fetchDiscoverbyNearest()
-  }, [])
+  // Loader components
+  const HorizontalListLoader = ({ count = 8 }) => (
+    <View style={{ paddingVertical: 10 }}>
+      <SkeletonLoader 
+        count={count} 
+        circleSize={80}
+        textWidth={60}
+        textHeight={12}
+        containerStyle={{ paddingHorizontal: 8 }}
+      />
+    </View>
+  );
 
+  const VerticalListLoader = ({ count = 5 }) => (
+    <View style={{ padding: 10 }}>
+      {Array(count).fill(0).map((_, index) => (
+        <View key={index} style={{ marginBottom: 20 }}>
+          <SkeletonLoader 
+            count={1} 
+            circleSize={40}
+            textWidth={'100%'}
+            textHeight={100}
+            containerStyle={{ paddingHorizontal: 0, alignItems: 'flex-start' }}
+            circleStyle={{ marginBottom: 10 }}
+            textStyle={{ borderRadius: 8, height: 150 }}
+          />
+        </View>
+      ))}
+    </View>
+  );
+
+  // Render functions
   const renderVideoShorts = () => (
     <View style={styles.videoShortsContainer}>
       <TextDefault textColor={colors.fontMainColor} H5 bold>
@@ -241,7 +301,7 @@ function MainLanding(props) {
         )}
       />
     </View>
-  )
+  );
 
   const renderScheduleContainer = () => (
     <View style={styles.scheduleContainer}>
@@ -256,28 +316,23 @@ function MainLanding(props) {
         </TouchableOpacity>
       </View>
 
-      {all_schedule && all_schedule.length > 0 ? (
+      {isScheduleLoading ? (
+        <HorizontalListLoader count={5} />
+      ) : (
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
           keyExtractor={(item, index) => index.toString()}
           data={all_schedule?.slice(0, 8) || []}
-          renderItem={({ item }) => (
-            <Schedule
-              item={item}
-            />
-          )}
-
+          renderItem={({ item }) => <Schedule item={item} />}
         />
-      ) : (
-        <TextDefault>No schedule available</TextDefault>
       )}
     </View>
-  )
+  );
 
   const renderDiscoverByInterest = () => (
     <View style={styles.titleSpacer}>
-      <TextDefault textColor={colors.fontMainColor} H5 bold >
+      <TextDefault textColor={colors.fontMainColor} H5 bold>
         {'Discover by Interest'}
       </TextDefault>
       <View style={styles.seeAllTextContainer}>
@@ -286,36 +341,41 @@ function MainLanding(props) {
         </TouchableOpacity>
       </View>
 
-      <FlatList
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        keyExtractor={(item, index) => index.toString()}
-        data={discover_by_intrest?.slice(0, 8) || []}
-        renderItem={({ item }) => (
-          <CategoryCard
-            id={item.id}
-            icon={item.image}
-            cardLabel={item.name}
-            style={styles.categoryWrapper}
-          />
-        )}
-      />
+      {isDiscoverByInterestLoading ? (
+        <HorizontalListLoader count={8} />
+      ) : (
+        <FlatList
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item, index) => index.toString()}
+          data={discover_by_intrest?.slice(0, 8) || []}
+          renderItem={({ item }) => (
+            <CategoryCard
+              id={item.id}
+              icon={item.image}
+              cardLabel={item.name}
+              style={styles.categoryWrapper}
+            />
+          )}
+        />
+      )}
     </View>
-  )
+  );
 
   const renderDiscoverByNearest = () => (
-    discoverbynearest.length > 0 && (
-      <View style={styles.titleSpacer}>
-        <TextDefault textColor={colors.fontMainColor} H5 bold >
-          {/* {'Discover by Nearest'} */}
-          Discover by Nearest
-        </TextDefault>
-        <View style={styles.seeAllTextContainer}>
-          <TouchableOpacity onPress={() => navigation.navigate('DiscoverPlace')}>
-            <TextDefault textColor={colors.greenColor} H5 style={styles.seeAllText}>View All</TextDefault>
-          </TouchableOpacity>
-        </View>
+    <View style={styles.titleSpacer}>
+      <TextDefault textColor={colors.fontMainColor} H5 bold>
+        {'Discover by Nearest'}
+      </TextDefault>
+      <View style={styles.seeAllTextContainer}>
+        <TouchableOpacity onPress={() => navigation.navigate('DiscoverPlace')}>
+          <TextDefault textColor={colors.greenColor} H5 style={styles.seeAllText}>View All</TextDefault>
+        </TouchableOpacity>
+      </View>
 
+      {isNearestLoading ? (
+        <HorizontalListLoader count={8} />
+      ) : (
         <FlatList
           horizontal={true}
           showsHorizontalScrollIndicator={false}
@@ -325,22 +385,24 @@ function MainLanding(props) {
             <DiscoverByNearest styles={styles.itemCardContainer} {...item} />
           )}
         />
-
-      </View>
-    )
-  )
+      )}
+    </View>
+  );
 
   const renderBestDestination = () => (
-    best_destination.length > 0 && (
-      <View style={styles.titleSpacerdesti}>
-        <TextDefault textColor={colors.fontMainColor} H5 bold >
-          {'Best Destination'}
-        </TextDefault>
-        <View style={styles.seeAllTextContainer}>
-          <TouchableOpacity onPress={() => navigation.navigate('WhereToGo')}>
-            <TextDefault textColor={colors.greenColor} H5 style={styles.seeAllText}>View All</TextDefault>
-          </TouchableOpacity>
-        </View>
+    <View style={styles.titleSpacerdesti}>
+      <TextDefault textColor={colors.fontMainColor} H5 bold>
+        {'Best Destination'}
+      </TextDefault>
+      <View style={styles.seeAllTextContainer}>
+        <TouchableOpacity onPress={() => navigation.navigate('WhereToGo')}>
+          <TextDefault textColor={colors.greenColor} H5 style={styles.seeAllText}>View All</TextDefault>
+        </TouchableOpacity>
+      </View>
+
+      {isBestDestinationLoading ? (
+        <HorizontalListLoader count={8} />
+      ) : (
         <FlatList
           horizontal={true}
           showsHorizontalScrollIndicator={false}
@@ -350,24 +412,10 @@ function MainLanding(props) {
             <ProductCard styles={styles.itemCardContainer} {...item} />
           )}
         />
-
-      </View>
-    )
-  )
-
-  const renderPosts = () => (
-    <View style={styles.titleSpacer}>
-      <TextDefault textColor={colors.fontMainColor} H4>
-        {'Posts'}
-      </TextDefault>
-      <FlatList
-        data={all_posts}
-        renderItem={renderItem}
-        keyExtractor={(item, index) => index.toString()}
-        contentContainerStyle={{ paddingBottom: 20 }}
-      />
+      )}
     </View>
-  )
+  );
+
   const renderItem = ({ item }) => {
     return (
       <Post
@@ -377,8 +425,26 @@ function MainLanding(props) {
         likes={item.likes}
         isLiked={item.isLiked}
       />
-    )
-  }
+    );
+  };
+
+  const renderPosts = () => (
+    <View style={styles.titleSpacer}>
+      <TextDefault textColor={colors.fontMainColor} H4>
+        {'Posts'}
+      </TextDefault>
+      {isPostsLoading ? (
+        <VerticalListLoader count={5} />
+      ) : (
+        <FlatList
+          data={all_posts}
+          renderItem={renderItem}
+          keyExtractor={(item, index) => index.toString()}
+          contentContainerStyle={{ paddingBottom: 20 }}
+        />
+      )}
+    </View>
+  );
 
   const renderAllDestination = () => (
     <View style={styles.titleSpacer}>
@@ -386,45 +452,71 @@ function MainLanding(props) {
         {'All Destination'}
       </TextDefault>
     </View>
-  )
+  );
 
-  // Determine what content to show based on selected button
   const renderContent = () => {
     switch (selectedButton) {
       case 'Shorts':
-        return renderVideoShorts()
+        return isShortsLoading ? (
+          <VerticalListLoader count={3} />
+        ) : (
+          renderVideoShorts()
+        );
       case 'Schedule':
-        return renderScheduleContainer()
+        return isScheduleLoading ? (
+          <HorizontalListLoader count={5} />
+        ) : (
+          renderScheduleContainer()
+        );
       case 'Posts':
-        return renderPosts()
+        return isPostsLoading ? (
+          <VerticalListLoader count={5} />
+        ) : (
+          renderPosts()
+        );
       case 'All':
       default:
         return (
           <>
-            {renderScheduleContainer()}
-            {renderDiscoverByInterest()}
-            {renderDiscoverByNearest()}
-            {renderBestDestination()}
+            {isScheduleLoading ? (
+              <HorizontalListLoader count={5} />
+            ) : (
+              renderScheduleContainer()
+            )}
+            {isDiscoverByInterestLoading ? (
+              <HorizontalListLoader count={8} />
+            ) : (
+              renderDiscoverByInterest()
+            )}
+            {isNearestLoading ? (
+              <HorizontalListLoader count={8} />
+            ) : (
+              renderDiscoverByNearest()
+            )}
+            {isBestDestinationLoading ? (
+              <HorizontalListLoader count={8} />
+            ) : (
+              renderBestDestination()
+            )}
             {renderAllDestination()}
           </>
-        )
+        );
     }
-  }
+  };
 
-  function renderHeader() {
-    return (
-      <>
-        <View style={styles.headerContainer}>
-          <View style={styles.locationWrapper}>
-            <View style={styles.locationContainer}>
-              <Image
-                source={require('../../assets/zipsii.png')}
-                style={styles.locationImage}
-              />
-              <TextDefault style={styles.locationText} H5 bold>Zypsii</TextDefault>
-            </View>
+  const renderHeader = () => (
+    <>
+      <View style={styles.headerContainer}>
+        <View style={styles.locationWrapper}>
+          <View style={styles.locationContainer}>
+            <Image
+              source={require('../../assets/zipsii.png')}
+              style={styles.locationImage}
+            />
+            <TextDefault style={styles.locationText} H5 bold>Zypsii</TextDefault>
           </View>
-          <View style={styles.rightIconsContainer}>
+        </View>
+        <View style={styles.rightIconsContainer}>
           <TouchableOpacity
             onPress={() => navigation.navigate('SearchPage')}
             style={styles.notificationIconWrapper}
@@ -448,56 +540,35 @@ function MainLanding(props) {
               style={styles.notificationIcon}
             />
           </TouchableOpacity>
-
-          {/* <TouchableOpacity
-            onPress={() => navigation.navigate("LocationPage")}
-            style={styles.notificationIconWrapper}
-          >
-            <MaterialIcons
-              name="my-location"
-              size={28}
-              color="#000"
-            />
-          </TouchableOpacity> */}
-
-          {/* Create Poll Icon */}
-          {/* <TouchableOpacity
-            onPress={() => navigation.navigate('CreatePoll')}
-            style={styles.notificationIconWrapper}
-          >
-            <MaterialCommunityIcons name="poll" size={28} color="#000" />
-          </TouchableOpacity> */}
         </View>
-        </View>
-        <Stories />
+      </View>
+      <Stories />
 
-        <View style={styles.buttonContainer}>
-          {buttons.map(button => (
-            <TouchableOpacity
-              key={button}
+      <View style={styles.buttonContainer}>
+        {buttons.map(button => (
+          <TouchableOpacity
+            key={button}
+            style={[
+              styles.button,
+              selectedButton === button && styles.selectedButton
+            ]}
+            onPress={() => setSelectedButton(button)}
+          >
+            <TextDefault
               style={[
-                styles.button,
-                selectedButton === button && styles.selectedButton
+                styles.buttonText,
+                selectedButton === button && styles.selectedButtonText
               ]}
-              onPress={() => setSelectedButton(button)}
             >
-              <TextDefault
-                style={[
-                  styles.buttonText,
-                  selectedButton === button && styles.selectedButtonText
-                ]}
-              >
-                {button}
-              </TextDefault>
-            </TouchableOpacity>
-          ))}
-        </View>
+              {button}
+            </TextDefault>
+          </TouchableOpacity>
+        ))}
+      </View>
 
-        {/* Render content based on selected button */}
-        {renderContent()}
-      </>
-    )
-  }
+      {renderContent()}
+    </>
+  );
 
   return (
     <SafeAreaView style={[styles.flex, styles.safeAreaStyle]}>
@@ -515,6 +586,7 @@ function MainLanding(props) {
         <BottomTab screen="HOME" />
       </View>
     </SafeAreaView>
-  )
+  );
 }
-export default MainLanding
+
+export default MainLanding;
