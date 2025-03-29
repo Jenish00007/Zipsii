@@ -5,7 +5,7 @@ import { BackHeader, BottomTab, TextDefault } from '../../components';
 import { SafeAreaView } from "react-native-safe-area-context";
 import Schedule from './Schedule/AllSchedule';
 
-const baseUrl = 'http://192.168.85.179:8000'; // Update the base URL if necessary
+const baseUrl = 'http://172.20.10.5:8000'; // Update the base URL if necessary
 
 function MySchedule({ navigation }) {
   const [selectedDate, setSelectedDate] = useState(new Date());

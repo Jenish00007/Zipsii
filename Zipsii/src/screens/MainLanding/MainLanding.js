@@ -19,7 +19,7 @@ import Stories from '../../components/Stories/Stories';
 import Post from '../../components/Posts/Post';
 import DiscoverByNearest from '../../components/DiscoverByNearest/DiscoverByNearest';
 import Schedule from '../MySchedule/Schedule/AllSchedule';
-const baseUrl = 'http://192.168.1.14:8000';
+const baseUrl = 'http://172.20.10.5:8000';
 import { BackHandler } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -243,37 +243,68 @@ function MainLanding(props) {
     </View>
   )
 
-  const renderScheduleContainer = () => (
-    <View style={styles.scheduleContainer}>
-      <View style={styles.scheduleheadContainer}>
-        <TextDefault textColor={colors.fontMainColor} H5 bold>
-          {'Schedule'}
-        </TextDefault>
-        <TouchableOpacity onPress={() => navigation.navigate('MySchedule')}>
-          <TextDefault textColor={colors.btncolor} H5>
-            {'View All'}
-          </TextDefault>
-        </TouchableOpacity>
-      </View>
+  // const renderScheduleContainer = () => (
+  //   <View style={styles.scheduleContainer}>
+  //     <View style={styles.scheduleheadContainer}>
+  //       <TextDefault textColor={colors.fontMainColor} H5 bold>
+  //         {'Schedule'}
+  //       </TextDefault>
+  //       <TouchableOpacity onPress={() => navigation.navigate('MySchedule')}>
+  //         <TextDefault textColor={colors.btncolor} H5>
+  //           {'View All'}
+  //         </TextDefault>
+  //       </TouchableOpacity>
+  //     </View>
 
-      {all_schedule && all_schedule.length > 0 ? (
+  //     {all_schedule && all_schedule.length > 0 ? (
+  //       <FlatList
+  //         horizontal
+  //         showsHorizontalScrollIndicator={false}
+  //         keyExtractor={(item, index) => index.toString()}
+  //         data={all_schedule?.slice(0, 8) || []}
+  //         renderItem={({ item }) => (
+  //           <Schedule
+  //             item={item}
+  //           />
+  //         )}
+
+  //       />
+  //     ) : (
+  //       <TextDefault>No schedule available</TextDefault>
+  //     )}
+  //   </View>
+  // )
+  const renderScheduleContainer = () => {
+    if (!all_schedule || all_schedule.length === 0) {
+      return <TextDefault>No schedule available</TextDefault>;
+    }
+  
+    return (
+      <View style={styles.scheduleContainer}>
+        <View style={styles.scheduleheadContainer}>
+          <TextDefault textColor={colors.fontMainColor} H5 bold>
+            {'Schedule'}
+          </TextDefault>
+          <TouchableOpacity onPress={() => navigation.navigate('MySchedule')}>
+            <TextDefault textColor={colors.btncolor} H5>
+              {'View All'}
+            </TextDefault>
+          </TouchableOpacity>
+        </View>
+  
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
           keyExtractor={(item, index) => index.toString()}
-          data={all_schedule?.slice(0, 8) || []}
+          data={all_schedule.slice(0, 8) || []}
           renderItem={({ item }) => (
-            <Schedule
-              item={item}
-            />
+            <Schedule item={item} />
           )}
-
         />
-      ) : (
-        <TextDefault>No schedule available</TextDefault>
-      )}
-    </View>
-  )
+      </View>
+    );
+  };
+  
 
   const renderDiscoverByInterest = () => (
     <View style={styles.titleSpacer}>

@@ -8,7 +8,7 @@ import { MaterialCommunityIcons, SimpleLineIcons, Ionicons } from '@expo/vector-
 import { colors } from '../../utils';
 import { TextDefault } from '../../components';
 import { textStyles } from '../../utils';
-const baseUrl = 'http://192.168.18.179:8000'; 
+const baseUrl = 'http://172.20.10.5:8000'; 
 function DiscoverPlace({ navigation }) {
   const backPressed = () => {
     navigation.goBack(); // Navigate to the previous screen when the back arrow is pressed

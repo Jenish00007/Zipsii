@@ -26,7 +26,7 @@ function ProductCard(props) {
       const accessToken = await AsyncStorage.getItem('accessToken'); // Get the access token
 
       // Make the POST request to update like status
-      const response = await fetch('http://192.168.213.179:8000/update-like-status', {
+      const response = await fetch('http://172.20.10.5:8000/update-like-status', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -10,7 +10,7 @@ import {
 import Icon from "react-native-vector-icons/Ionicons";
 import { colors } from "../../utils"; // Import colors if you have them
 
-const baseUrl = 'http://192.168.18.179:8000'; // Backend API base URL
+const baseUrl = 'http://172.20.10.5:8000'; // Backend API base URL
 
 function FavoritesPage({ navigation }) {
   const [favorites, setFavorites] = useState([]);
