@@ -57,7 +57,7 @@ function ReelUpload() {
         return;
       }
 
-      const response = await fetch('http://192.168.18.179:8000/reels_upload', {
+      const response = await fetch('http://172.20.10.5:8000/reels_upload', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

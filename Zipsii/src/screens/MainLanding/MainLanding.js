@@ -303,32 +303,68 @@ function MainLanding(props) {
     </View>
   );
 
-  const renderScheduleContainer = () => (
-    <View style={styles.scheduleContainer}>
-      <View style={styles.scheduleheadContainer}>
-        <TextDefault textColor={colors.fontMainColor} H5 bold>
-          {'Schedule'}
-        </TextDefault>
-        <TouchableOpacity onPress={() => navigation.navigate('MySchedule')}>
-          <TextDefault textColor={colors.btncolor} H5>
-            {'View All'}
-          </TextDefault>
-        </TouchableOpacity>
-      </View>
+  // const renderScheduleContainer = () => (
+  //   <View style={styles.scheduleContainer}>
+  //     <View style={styles.scheduleheadContainer}>
+  //       <TextDefault textColor={colors.fontMainColor} H5 bold>
+  //         {'Schedule'}
+  //       </TextDefault>
+  //       <TouchableOpacity onPress={() => navigation.navigate('MySchedule')}>
+  //         <TextDefault textColor={colors.btncolor} H5>
+  //           {'View All'}
+  //         </TextDefault>
+  //       </TouchableOpacity>
+  //     </View>
 
-      {isScheduleLoading ? (
-        <HorizontalListLoader count={5} />
-      ) : (
+  //     {all_schedule && all_schedule.length > 0 ? (
+  //       <FlatList
+  //         horizontal
+  //         showsHorizontalScrollIndicator={false}
+  //         keyExtractor={(item, index) => index.toString()}
+  //         data={all_schedule?.slice(0, 8) || []}
+  //         renderItem={({ item }) => (
+  //           <Schedule
+  //             item={item}
+  //           />
+  //         )}
+
+  //       />
+  //     ) : (
+  //       <TextDefault>No schedule available</TextDefault>
+  //     )}
+  //   </View>
+  // )
+  const renderScheduleContainer = () => {
+    if (!all_schedule || all_schedule.length === 0) {
+      return <TextDefault>No schedule available</TextDefault>;
+    }
+  
+    return (
+      <View style={styles.scheduleContainer}>
+        <View style={styles.scheduleheadContainer}>
+          <TextDefault textColor={colors.fontMainColor} H5 bold>
+            {'Schedule'}
+          </TextDefault>
+          <TouchableOpacity onPress={() => navigation.navigate('MySchedule')}>
+            <TextDefault textColor={colors.btncolor} H5>
+              {'View All'}
+            </TextDefault>
+          </TouchableOpacity>
+        </View>
+  
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
           keyExtractor={(item, index) => index.toString()}
-          data={all_schedule?.slice(0, 8) || []}
-          renderItem={({ item }) => <Schedule item={item} />}
+          data={all_schedule.slice(0, 8) || []}
+          renderItem={({ item }) => (
+            <Schedule item={item} />
+          )}
         />
-      )}
-    </View>
-  );
+      </View>
+    );
+  };
+  
 
   const renderDiscoverByInterest = () => (
     <View style={styles.titleSpacer}>

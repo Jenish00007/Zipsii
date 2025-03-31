@@ -8,7 +8,7 @@ import { useNavigation } from "@react-navigation/native";
 import { TextDefault } from '../../components';
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import DiscoverByNearest from '../../components/DiscoverByNearest/DiscoverByNearest';
-const baseUrl = 'http://192.168.1.14:8000';
+const baseUrl = 'http://172.20.10.5:8000';
 const Map = ({ route }) => {
   const navigation = useNavigation();
   const backPressed = () => {
