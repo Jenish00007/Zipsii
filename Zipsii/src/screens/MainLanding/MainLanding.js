@@ -31,7 +31,7 @@ import SkeletonLoader from '../../components/Loader/SkeletonLoader';
 import { BackHandler } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 
-const baseUrl = 'http://172.20.10.5:8000';
+const baseUrl = 'http://192.168.1.24:3030';
 
 function MainLanding(props) {
   const navigation = useNavigation();
@@ -85,169 +85,214 @@ function MainLanding(props) {
       return () => backHandler.remove();
     }, [])
   );
-
-  // Data fetching effects
   useEffect(() => {
-    const fetch_Discover_by_intrest = async() => {
+    const fetchDiscoverByInterest = async () => {
       try {
         setIsDiscoverByInterestLoading(true);
         const response = await fetch(baseUrl + '/discover_by_intrest');
         const data = await response.json();
-        const formattedData = data.slice(0, 100).map(item => ({
-          id: item.id,
-          image: baseUrl + item.image,
-          name: item.name
-        }));
-        setDiscover_by_intrest(formattedData);
+
+        // Check if data is an array
+        if (Array.isArray(data)) {
+          const formattedData = data.slice(0, 100).map(item => ({
+            id: item.id,
+            image: baseUrl + item.image,
+            name: item.name
+          }));
+          setDiscoverByInterest(formattedData);
+        } else {
+          console.error('Fetched data is not an array:', data);
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
         setIsDiscoverByInterestLoading(false);
       }
     };
-    fetch_Discover_by_intrest();
+    fetchDiscoverByInterest();
   }, []);
 
+  // Fetch Best Destination
   useEffect(() => {
-    const fetch_best_destination = async() => {
+    const fetchBestDestination = async () => {
       try {
         setIsBestDestinationLoading(true);
         const response = await fetch(baseUrl + '/best_destination');
         const data = await response.json();
-        const formattedData = data.slice(0, 100).map(item => ({
-          id: item.id,
-          image: baseUrl + item.image,
-          name: item.name
-        }));
-        setBest_destination(formattedData);
+
+        // Check if data is an array
+        if (Array.isArray(data)) {
+          const formattedData = data.slice(0, 100).map(item => ({
+            id: item.id,
+            image: baseUrl + item.image,
+            name: item.name
+          }));
+          setBestDestination(formattedData);
+        } else {
+          console.error('Fetched data is not an array:', data);
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
         setIsBestDestinationLoading(false);
       }
     };
-    fetch_best_destination();
+    fetchBestDestination();
   }, []);
 
+  // Fetch All Destination
   useEffect(() => {
-    const fetch_all_destination = async() => {
+    const fetchAllDestination = async () => {
       try {
         setIsAllDestinationLoading(true);
         const response = await fetch(baseUrl + '/all_destination');
         const data = await response.json();
-        const formattedData = data.slice(0, 100).map(item => ({
-          id: item.id,
-          image: baseUrl + item.image,
-          name: item.name
-        }));
-        setAll_destination(formattedData);
+
+        // Check if data is an array
+        if (Array.isArray(data)) {
+          const formattedData = data.slice(0, 100).map(item => ({
+            id: item.id,
+            image: baseUrl + item.image,
+            name: item.name
+          }));
+          setAllDestination(formattedData);
+        } else {
+          console.error('Fetched data is not an array:', data);
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
         setIsAllDestinationLoading(false);
       }
     };
-    fetch_all_destination();
+    fetchAllDestination();
   }, []);
 
+  // Fetch All Schedule
   useEffect(() => {
-    const fetch_all_schedule = async() => {
+    const fetchAllSchedule = async () => {
       try {
         setIsScheduleLoading(true);
         const response = await fetch(baseUrl + '/get_all_schedule');
         const data = await response.json();
-        const formattedData = data.slice(0, 100).map((item) => ({
-          id: item.id,
-          title: item.title,
-          from: item.from,
-          to: item.to,
-          date: item.date,
-          riders: item.riders,
-          joined: item.joined,
-          imageUrl: item.imageUrl,
-          day1Locations: item.day1Locations,
-          day2Locations: item.day2Locations
-        }));
-        setAll_schedule(formattedData);
+
+        // Check if data is an array
+        if (Array.isArray(data)) {
+          const formattedData = data.slice(0, 100).map(item => ({
+            id: item.id,
+            title: item.title,
+            from: item.from,
+            to: item.to,
+            date: item.date,
+            riders: item.riders,
+            joined: item.joined,
+            imageUrl: item.imageUrl,
+            day1Locations: item.day1Locations,
+            day2Locations: item.day2Locations
+          }));
+          setAllSchedule(formattedData);
+        } else {
+          console.error('Fetched data is not an array:', data);
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
         setIsScheduleLoading(false);
       }
     };
-    fetch_all_schedule();
+    fetchAllSchedule();
   }, []);
 
+  // Fetch All Posts
   useEffect(() => {
-    const fetch_all_posts = async() => {
+    const fetchAllPosts = async () => {
       try {
         setIsPostsLoading(true);
         const response = await fetch(baseUrl + '/get_all_posts');
         const data = await response.json();
-        const formattedData = data.slice(0, 100).map(item => ({
-          id: item.id,
-          postPersonImage: item.postPersonImage,
-          postTitle: item.postTitle,
-          postImage: item.postImage,
-          likes: item.likes,
-          isLiked: item.isLiked
-        }));
-        setAllPosts(formattedData);
+
+        // Check if data is an array
+        if (Array.isArray(data)) {
+          const formattedData = data.slice(0, 100).map(item => ({
+            id: item.id,
+            postPersonImage: item.postPersonImage,
+            postTitle: item.postTitle,
+            postImage: item.postImage,
+            likes: item.likes,
+            isLiked: item.isLiked
+          }));
+          setAllPosts(formattedData);
+        } else {
+          console.error('Fetched data is not an array:', data);
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
         setIsPostsLoading(false);
       }
     };
-    fetch_all_posts();
+    fetchAllPosts();
   }, []);
 
+  // Fetch All Shorts
   useEffect(() => {
-    const fetch_all_Shorts = async() => {
+    const fetchAllShorts = async () => {
       try {
         setIsShortsLoading(true);
         const response = await fetch(baseUrl + '/get_all_shorts');
         const data = await response.json();
-        const formattedData = data.slice(0, 100).map(item => ({
-          id: item.id,
-          video: item.video.url,
-          videoTitle: item.videoTitle,
-          videoImage: item.videoImage,
-          likes: item.likes,
-          isLiked: item.isLiked
-        }));
-        setAllShorts(formattedData);
+
+        // Check if data is an array
+        if (Array.isArray(data)) {
+          const formattedData = data.slice(0, 100).map(item => ({
+            id: item.id,
+            video: item.video.url,
+            videoTitle: item.videoTitle,
+            videoImage: item.videoImage,
+            likes: item.likes,
+            isLiked: item.isLiked
+          }));
+          setAllShorts(formattedData);
+        } else {
+          console.error('Fetched data is not an array:', data);
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
         setIsShortsLoading(false);
       }
     };
-    fetch_all_Shorts();
+    fetchAllShorts();
   }, []);
 
+  // Fetch Discover by Nearest
   useEffect(() => {
-    const fetchDiscoverbyNearest = async() => {
+    const fetchDiscoverByNearest = async () => {
       try {
         setIsNearestLoading(true);
         const response = await fetch(baseUrl + '/discover_by_nearest');
         const data = await response.json();
-        const formattedData = data.slice(0, 100).map(item => ({
-          id: item.id,
-          image: item.image,
-          title: item.name,
-          subtitle: item.subtitle
-        }));
-        setDiscoverbyNearest(formattedData);
+
+        // Check if data is an array
+        if (Array.isArray(data)) {
+          const formattedData = data.slice(0, 100).map(item => ({
+            id: item.id,
+            image: item.image,
+            title: item.name,
+            subtitle: item.subtitle
+          }));
+          setDiscoverByNearest(formattedData);
+        } else {
+          console.error('Fetched data is not an array:', data);
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
         setIsNearestLoading(false);
       }
     };
-    fetchDiscoverbyNearest();
+    fetchDiscoverByNearest();
   }, []);
-
   // Loader components
   const HorizontalListLoader = ({ count = 8 }) => (
     <View style={{ paddingVertical: 10 }}>

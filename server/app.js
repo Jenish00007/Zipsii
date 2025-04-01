@@ -1,29 +1,55 @@
-require("dotenv").config()
-const bcrypt = require("bcrypt")
-const express = require("express")
-const cors = require("cors")
-const jwt = require("jsonwebtoken")
-const config = require("./config.json")
-const mongoose = require("mongoose")
-const { authenticateToken } = require('./utilities')
-const upload = require('./multer')
-const fs = require('fs')
-const path = require('path')
+require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
+const mongoose = require("mongoose");
+const helmet = require("helmet");
+const mongoSanitize = require("express-mongo-sanitize");
+const xss = require("xss-clean");
+const rateLimit = require("express-rate-limit");
+const hpp = require("hpp");
 
-mongoose.connect((config.connectionString)).then(() => {
-    console.log("database connected")
+//import all the routes here:
+const userRoutes = require('./components/users/routers');
+
+// Database Connection
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
 })
-    ;
-const app = express()
-app.use(express.json())
-app.use(cors({ origin: "*" }))
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
+  .then(() => console.log("Database connected"))
+  .catch((err) => console.error("Database connection error:", err));
 
-app.listen(8000, '0.0.0.0', () => {
-    console.log('Server running on port 8000');
+const app = express();
+
+
+// Security Middleware
+app.disable("x-powered-by"); // Hide Express Server Info
+app.use(helmet());
+app.use(mongoSanitize());
+app.use(xss());
+app.use(hpp());
+app.use(express.json());
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
+
+// CORS Configuration
+const corsOptions = {
+  origin: process.env.ORIGINS, // Change to your frontend URL
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+
+// Rate Limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: "Too many requests, please try again later.",
 });
 
+app.use(limiter);
 
+/** 
 const User = require("./models/user.model")
 const TravelStory = require("./models/travelStory.model")
 const TutorialVideos = require("./models/tutorialVideos.model")
@@ -74,7 +100,7 @@ app.get("/comments", async (req, res) => {
       res.json(comments);
     } catch (error) {
       console.error("Error fetching comments:", error);
-      res.status(400).json({ error: "Internal server error" });
+      res.status(500).json({ error: "Internal server error" });
     }
   });
   
@@ -119,9 +145,8 @@ app.get('/descriptionexplore', async (req, res) => {
 });
 //create account
 app.post("/create-account", async (req, res) => {
-  console.log(req.body);
-    const { fullName, email, password,latitude,longitude } = req.body
-    if (!fullName || !email || !password || !latitude || !longitude ) {
+    const { fullName, email, password } = req.body
+    if (!fullName || !email || !password) {
         return res.status(400).json({ error: "all fields are required." })
     }
     const isUser = await User.findOne({ email })
@@ -134,9 +159,7 @@ app.post("/create-account", async (req, res) => {
     const user = new User({
         fullName,
         email,
-        password: hashedPassword,
-        latitude,
-        longitude
+        password: hashedPassword
     })
     await user.save()
 
@@ -445,11 +468,11 @@ app.get('/stories', (req, res) => {
     try {
         const stories = [
             { id: 1, name: 'Your Story', image: '/uploads/userProfile.png' },
-            { id: 2, name: 'Ram_Charan', image: '/uploads/profile1.jpg' },
-            { id: 3, name: 'Tom', image: '/uploads/profile2.jpg' },
-            { id: 4, name: 'The_Groot', image: '/uploads/profile3.jpg' },
-            { id: 5, name: 'loverland', image: '/uploads/profile4.jpg' },
-            { id: 6, name: 'chillhouse', image: '/uploads/profile5.jpg' }
+            { id: 0, name: 'Ram_Charan', image: '/uploads/profile1.jpg' },
+            { id: 0, name: 'Tom', image: '/uploads/profile2.jpg' },
+            { id: 0, name: 'The_Groot', image: '/uploads/profile3.jpg' },
+            { id: 0, name: 'loverland', image: '/uploads/profile4.jpg' },
+            { id: 0, name: 'chillhouse', image: '/uploads/profile5.jpg' }
         ];
         res.json(stories); // Ensure this returns a valid JSON
     } catch (error) {
@@ -855,7 +878,7 @@ app.get('/get_all_schedule', (req, res) => {
             {
                 id: 1,
                 title: 'Bikers club',
-                from: 'Ch',
+                from: 'Chennai----------',
                 to: 'Mysore',
                 date: '02-02-25',
                 riders: 20,
@@ -867,7 +890,7 @@ app.get('/get_all_schedule', (req, res) => {
               {
                 id: 2,
                 title: 'R15 club',
-                from: 'Coimbatore---',
+                from: 'Coimbatore----------',
                 to: 'Goa',
                 date: '10-12-24',
                 riders: 2,
@@ -879,7 +902,7 @@ app.get('/get_all_schedule', (req, res) => {
               {
                 id: 3,
                 title: 'R16 club',
-                from: 'Coimbatore---',
+                from: 'Coimbatore----------',
                 to: 'Goa',
                 date: '17-12-24',
                 riders: 2,
@@ -891,7 +914,7 @@ app.get('/get_all_schedule', (req, res) => {
               {
                 id: 4,
                 title: 'Bikers club',
-                from: 'Chennai---',
+                from: 'Chennai----------',
                 to: 'Mysore',
                 date: '14-02-25',
                 riders: 20,
@@ -903,7 +926,7 @@ app.get('/get_all_schedule', (req, res) => {
               {
                 id: 5,
                 title: 'Route 46',
-                from: 'Chennai---',
+                from: 'Chennai----------',
                 to: 'Mysore',
                 date: '12-02-25',
                 riders: 20,
@@ -932,6 +955,7 @@ app.post('/makeschedule', authenticateToken, upload.single('coverImage'), async 
       }
   
       // Handle file upload and generate file path
+      console.log(scheduleData);
     //   if (req.coverImage) {
 
     //     const uploadedImagePath = path.join('uploads', req.coverImage);
@@ -1015,40 +1039,69 @@ app.post('/makeschedule', authenticateToken, upload.single('coverImage'), async 
       res.status(400).json({ message: 'Failed to upload reel' });
     }
   });
-    
-  app.post('/update-like-status',(req, res) => {
-    const productId = req.query.id;  
-    const updatedProducts = {
-      productId: productId,
-    };    
-    const productsFilePath = path.join(__dirname, 'whistlist'); 
-    const fileName = `whistlist_${Date.now()}.json`;
-    const filePath = path.join(productsFilePath, fileName);
   
-    
-    fs.writeFile(filePath, JSON.stringify(updatedProducts, null, 2), 'utf8', (err) => {
-      if (err) {
-        console.error('Error writing to the file:', err);
-        return res.status(500).json({
-          message: 'Failed to save the wishlist',
-          error: err.message,
-        });
+app.put('/edit_profile', authenticateToken, async (req, res) => {
+  try {
+    const { fullName, email } = req.body;
+    const userId = req.user.userId; // Assuming user ID is stored in req.user after authentication
+
+    // **Check if at least one field is provided**
+    if (!fullName && !email) {
+      return res.status(400).json({ message: 'Please provide fullName or email to update.' });
+    }
+
+    // **Validation**
+    const updateData = {};
+
+    if (fullName) {
+      if (typeof fullName !== 'string' || fullName.length < 3) {
+        return res.status(400).json({ message: 'Full name must be at least 3 characters long.' });
       }
-      
-      // Respond with success
-      res.status(200).json({
-        message: 'Wishlist saved successfully',
-        receivedData: updatedProducts,
-        productId: productId, 
-        user: req.user,
-      });
-    });
-  });
+      updateData.fullName = fullName;
+    }
+
+    if (email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ message: 'Invalid email format.' });
+      }
+
+      // **Check if Email Already Exists (excluding current user)**
+      const existingUser = await User.findOne({ email, _id: { $ne: userId } });
+      if (existingUser) {
+        return res.status(400).json({ message: 'Email is already in use by another user.' });
+      }
+
+      updateData.email = email;
+    }
+
+    // **Update User Profile**
+    const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true, runValidators: true });
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    res.json({ message: 'Profile updated successfully.', user: updatedUser });
+
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+});
   
+*/
 
+// Use Routes
+app.use(userRoutes);
 
+// Catch-all 404 handler
+app.use((req, res) => {
+  res.status(404).json({ error: "Route not found" });
+});
 
-  
-app.listen(8000)
-module.exports = app
+app.listen(process.env.SERVER_PORT, () => {
+  console.log(`http://localhost:${process.env.SERVER_PORT}`)
+})
 
+module.exports = app;

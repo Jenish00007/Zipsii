@@ -6,7 +6,7 @@ import { Feather } from '@expo/vector-icons';
 import { useAuth } from '../../components/Auth/AuthContext'; // Adjust the path as needed
 import * as Google from 'expo-auth-session/providers/google'
 const SignInScreen = () => {
-  const [email, setEmail] = useState('');
+  const [userNameOrEmail, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [passwordIsVisible, setPasswordIsVisible] = useState(false);
@@ -26,33 +26,34 @@ const SignInScreen = () => {
   }, [navigation]);
 
   const handleLogin = async () => {
-    if (!email || !password) {
+    if (!userNameOrEmail || !password) {
       Alert.alert('Error', 'Please enter email and password');
       return;
     }
 
     setLoading(true);
     try {
-      const response = await fetch('http://172.20.10.5:8000/login/', {
+      const response = await fetch('http://192.168.1.24:3030/user/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ userNameOrEmail, password }),
       });
 
       if (response.ok) {
         const data = await response.json();
+        console.log(data);
         if (!data.error) {
           Alert.alert('Success', 'Logged in successfully');
-          const { accessToken, user } = data;
-
+          const { token, userDetails } = data;
+        
           // Store the accessToken and user info
-          await AsyncStorage.setItem('accessToken', accessToken);
-          await AsyncStorage.setItem('user', JSON.stringify(user));
+          await AsyncStorage.setItem('accessToken', token);
+          await AsyncStorage.setItem('user', JSON.stringify(userDetails));
 
           // Use the login function from AuthContext to set the user
-          login(user);
+          login(userDetails);
 
           navigation.navigate('MainLanding');
         } else {
@@ -92,7 +93,7 @@ const SignInScreen = () => {
           placeholderTextColor="#7C808D"
           selectionColor="#3662AA"
           onChangeText={setEmail}
-          value={email}
+          value={userNameOrEmail}
         />
       </View>
 

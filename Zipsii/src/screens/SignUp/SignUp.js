@@ -46,7 +46,7 @@ const SignUpScreen = () => {
 
     setLoading(true);
     try {
-      const response = await fetch('http://172.20.10.5:8000/create-account/', {
+      const response = await fetch('http://192.168.1.24:3030/user/signUp', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -58,11 +58,11 @@ const SignUpScreen = () => {
         const data = await response.json();
         if (!data.error) {
           Alert.alert('Success', 'Account created successfully');
-          const { accessToken, user } = data;
-          await AsyncStorage.setItem('accessToken', accessToken);
-          await AsyncStorage.setItem('user', JSON.stringify(user));
+          // const { accessToken, user } = data;
+          // await AsyncStorage.setItem('accessToken', accessToken);
+          // await AsyncStorage.setItem('user', JSON.stringify(user));
 
-          navigation.navigate('MainLanding');
+          navigation.navigate('Login');
         } else {
           Alert.alert('Error', data.message || 'Signup failed');
         }

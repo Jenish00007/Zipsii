@@ -22,7 +22,7 @@ const Stories = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [viewedStoryId, setViewedStoryId] = useState(null);
   const [error, setError] = useState(null);
-  const baseUrl = 'http://172.20.10.5:8000';
+  const baseUrl = 'http://192.168.1.24:3030';
 
   // 1. First define all helper functions
   const loadViewedStories = async () => {
@@ -70,22 +70,30 @@ const Stories = () => {
     try {
       setIsLoading(true);
       setError(null);
-      
+  
       const response = await fetch(baseUrl + '/stories');
-
+  
       if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+        console.error('Failed to fetch stories.');
+        return; // Exit early if the response is not ok
       }
-
+  
       const data = await response.json();
+      
+      // Check if data is not empty
+      if (!data || data.length === 0) {
+        console.error('No stories found.');
+        return; // Exit early if data is empty
+      }
+  
       const viewedStories = await loadViewedStories();
-
+  
       const updatedData = data.map(item => ({
         ...item,
         image: baseUrl + item.image,
         viewed: viewedStories.includes(item.id),
       }));
-      
+  
       setStoryInfo(updatedData);
     } catch (err) {
       console.error('Error fetching stories:', err);
@@ -94,6 +102,7 @@ const Stories = () => {
       setIsLoading(false);
     }
   };
+  
 
   // 3. Then use the functions in useEffect
   useEffect(() => {
