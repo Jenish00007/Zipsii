@@ -24,12 +24,27 @@ const ProfilePage = ({ navigation }) => {
   // Fetch profile data on component mount
   useEffect(() => {
     const fetchProfileData = async () => {
+
       try {
-        const response = await fetch("http://192.168.1.40:8000/user/getProfile");
+        const response = await fetch("http://192.168.1.24:3030/user/getProfile");
         const data = await response.json();
+        const userString = await AsyncStorage.getItem('user');
+
+        // Check if the user exists and parse it
+        if (userString) {
+          const user = JSON.parse(userString);
+          const fullName = user.fullName;
+          const user_name = user.userName;
+          
+          setName(fullName || "");
+          setUsername(user_name || "");
+
+        } else {
+          console.log('No user found in AsyncStorage');
+        }
 
         if (response.ok) {
-          setName(data.fullName || "");
+          setName(data.fullName || fullName || '');
           setUsername(data.username || "");
           setWebsite(data.website || "");
           setBio(data.bio || "");
@@ -109,7 +124,7 @@ const ProfilePage = ({ navigation }) => {
     const accessToken = await AsyncStorage.getItem('accessToken');
 
     try {
-      const response = await fetch("http://192.168.1.40:8000/user/editProfile", {
+      const response = await fetch("http://192.168.1.24:3030/edit_profile", {
         method: "POST",
         headers: {
           'Content-Type': 'application/json',
@@ -190,6 +205,7 @@ const ProfilePage = ({ navigation }) => {
               placeholder="Enter your username"
               value={username}
               onChangeText={setUsername}
+              editable={false} 
             />
             <View style={styles.divider} />
           </View>

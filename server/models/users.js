@@ -32,4 +32,4 @@ const userSchema = new Schema(
     { timestamps: true } // Enables createdAt & updatedAt
 );
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = userSchema;

@@ -23,8 +23,8 @@ const Stories = () => {
   const [viewedStoryId, setViewedStoryId] = useState(null);
   const [error, setError] = useState(null);
   const baseUrl = 'http://192.168.1.24:3030';
+  const [userId, setUserId] = useState(null); // assuming userId is fetched from authentication
 
-  // 1. First define all helper functions
   const loadViewedStories = async () => {
     try {
       const viewedStories = await AsyncStorage.getItem('viewedStories');
@@ -59,42 +59,75 @@ const Stories = () => {
 
       if (!result.canceled) {
         setImage(result.assets[0]);
+        uploadStory(result.assets[0]);
       }
     } else {
       Alert.alert("Permission required", "You need to allow access to your photos to upload an image.");
     }
   };
 
-  // 2. Then define the data fetching function
+  // Function to upload the story to the backend
+  const uploadStory = async (imageAsset) => {
+    const formData = new FormData();
+    formData.append('file', {
+      uri: imageAsset.uri,
+      name: imageAsset.uri.split('/').pop(), // Get the image name
+      type: 'image/jpeg', // Assume it's an image
+    });
+    formData.append('userId', userId); // You can add any other necessary data here
+
+    try {
+      const response = await fetch(baseUrl + '/upload-story', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log('Story uploaded successfully:', data.story);
+        // Optionally, update storyInfo state here to reflect the new story
+        setStoryInfo(prevState => [data.story, ...prevState]); // Add the uploaded story to the top of the list
+      } else {
+        console.error('Failed to upload story:', data.message);
+      }
+    } catch (error) {
+      console.error('Error uploading story:', error);
+    }
+  };
+
   const fetchStoryData = async () => {
     try {
       setIsLoading(true);
       setError(null);
-  
+
       const response = await fetch(baseUrl + '/stories');
-  
+
       if (!response.ok) {
-        console.error('Failed to fetch stories.');
-        return; // Exit early if the response is not ok
+        console.log('Failed to fetch stories.');
+        return;
       }
-  
+
       const data = await response.json();
-      
-      // Check if data is not empty
+
       if (!data || data.length === 0) {
         console.error('No stories found.');
-        return; // Exit early if data is empty
+        return;
       }
-  
+
       const viewedStories = await loadViewedStories();
-  
-      const updatedData = data.map(item => ({
-        ...item,
-        image: baseUrl + item.image,
-        viewed: viewedStories.includes(item.id),
-      }));
-  
-      setStoryInfo(updatedData);
+
+      if (Array.isArray(data)) {
+        const updatedData = data.map(item => ({
+          ...item,
+          image: item.image ? baseUrl + item.image : '', // Safe concatenation
+          viewed: viewedStories.includes(item.id),
+        }));
+        setStoryInfo(updatedData);
+      }
     } catch (err) {
       console.error('Error fetching stories:', err);
       setError(err.message);
@@ -102,9 +135,7 @@ const Stories = () => {
       setIsLoading(false);
     }
   };
-  
 
-  // 3. Then use the functions in useEffect
   useEffect(() => {
     fetchStoryData();
   }, []);
@@ -120,37 +151,25 @@ const Stories = () => {
   }, [modalVisible]);
 
   const handleStoryPress = async (data) => {
-    if (data.id === 1) {
-      pickImage();
-    } else {
-      setImage(data.image);
-      setModalVisible(true);
-      setViewedStoryId(data.id);
-      await saveViewedStory(data.id);
-      setStoryInfo(prevStoryInfo =>
-        prevStoryInfo.map(item =>
-          item.id === data.id ? { ...item, viewed: true } : item
-        )
-      );
+    if (!data || Object.keys(data).length === 0) {
+      console.log('Data is empty!');
+      return;
     }
+
+    setImage(data.image);
+    setModalVisible(true);
+    setViewedStoryId(data.id);
+    await saveViewedStory(data.id);
+    setStoryInfo(prevStoryInfo =>
+      prevStoryInfo.map(item =>
+        item.id === data.id ? { ...item, viewed: true } : item
+      )
+    );
   };
 
   const renderStoryItem = ({ item }) => (
     <TouchableOpacity onPress={() => handleStoryPress(item)}>
       <View style={{ flexDirection: 'column', paddingHorizontal: 8, position: 'relative' }}>
-        {item.id === 1 ? (
-          <View style={{ position: 'absolute', bottom: 15, right: 10, zIndex: 1 }}>
-            <Entypo
-              name="circle-with-plus"
-              style={{
-                fontSize: 20,
-                color: '#405de6',
-                backgroundColor: 'white',
-                borderRadius: 100,
-              }}
-            />
-          </View>
-        ) : null}
         <View
           style={{
             width: 68,
@@ -162,16 +181,20 @@ const Stories = () => {
             justifyContent: 'center',
             alignItems: 'center',
           }}>
-          <Image
-            source={{ uri: item.image }}
-            style={{
-              resizeMode: 'cover',
-              width: '92%',
-              height: '92%',
-              borderRadius: 100,
-              backgroundColor: 'orange',
-            }}
-          />
+          {item.image ? (
+            <Image
+              source={{ uri: item.image }}
+              style={{
+                resizeMode: 'cover',
+                width: '92%',
+                height: '92%',
+                borderRadius: 100,
+                backgroundColor: 'orange',
+              }}
+            />
+          ) : (
+            <Text>No Image</Text> // Default text if no image is available
+          )}
         </View>
         <Text style={{ textAlign: 'center', fontSize: 10, opacity: item.id === 0 ? 1 : 0.5 }}>
           {item.name}
@@ -183,8 +206,8 @@ const Stories = () => {
   const renderContent = () => {
     if (isLoading) {
       return (
-        <SkeletonLoader 
-          count={6} 
+        <SkeletonLoader
+          count={6}
           circleSize={68}
           textWidth={40}
           textHeight={10}
@@ -197,7 +220,7 @@ const Stories = () => {
       return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <Text style={{ color: 'red' }}>Error: {error}</Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={fetchStoryData}
             style={{ marginTop: 10, padding: 10, backgroundColor: '#ddd' }}
           >
@@ -221,7 +244,27 @@ const Stories = () => {
 
   return (
     <View style={{ flex: 1 }}>
-      {renderContent()}
+      <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8 }}>
+        {/* The round button with the plus sign on the left side */}
+        <TouchableOpacity
+          onPress={pickImage}
+          style={{
+            width: 68,
+            height: 68,
+            backgroundColor: 'white',
+            borderWidth: 1.8,
+            borderRadius: 100,
+            borderColor: '#c13584',
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginRight: 20, // Space between the add button and the stories
+          }}>
+          <Entypo name="circle-with-plus" style={{ fontSize: 30, color: '#c13584' }} />
+        </TouchableOpacity>
+
+        {/* Render the stories next to the "Add Story" button */}
+        {renderContent()}
+      </View>
 
       <Modal transparent={true} visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
         <View
@@ -240,7 +283,6 @@ const Stories = () => {
               position: 'relative',
             }}>
             <Image source={{ uri: image }} style={{ width: '100%', height: '100%', resizeMode: 'contain' }} />
-
             <TouchableOpacity
               onPress={() => setModalVisible(false)}
               style={{

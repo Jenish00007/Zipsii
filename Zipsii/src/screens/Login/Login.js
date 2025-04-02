@@ -33,7 +33,7 @@ const SignInScreen = () => {
 
     setLoading(true);
     try {
-      const response = await fetch('http://192.168.1.24:3030/user/login', {
+      const response = await fetch('http://192.168.1.24:3030/user/login/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -46,14 +46,14 @@ const SignInScreen = () => {
         console.log(data);
         if (!data.error) {
           Alert.alert('Success', 'Logged in successfully');
-          const { token, userDetails } = data;
+          const { token, user } = data;
         
           // Store the accessToken and user info
           await AsyncStorage.setItem('accessToken', token);
-          await AsyncStorage.setItem('user', JSON.stringify(userDetails));
+          await AsyncStorage.setItem('user', JSON.stringify(user));
 
           // Use the login function from AuthContext to set the user
-          login(userDetails);
+          login(user);
 
           navigation.navigate('MainLanding');
         } else {
