@@ -24,29 +24,34 @@ function ReelUpload() {
 
   // Function to handle image selection
   const pickImage = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (permissionResult.granted) {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
-      });
-
-      if (!result.canceled) {
-        setImage(result.assets[0]);
-      }
-    } else {
-      Alert.alert("Permission required", "You need to allow access to your photos to upload an image.");
-    }
-  };
-
+     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+     if (permissionResult.granted) {
+       const result = await ImagePicker.launchImageLibraryAsync({
+         mediaTypes: ImagePicker.MediaTypeOptions.Images,
+         allowsEditing: true,
+         aspect: [4, 3],
+         quality: 1,
+       });
+ 
+       if (!result.canceled) {
+         setImage(result.assets[0]);
+         uploadStory(result.assets[0]);
+       }
+     } else {
+       Alert.alert("Permission required", "You need to allow access to your photos to upload an image.");
+     }
+   };
   // Function to handle form submission
   const handleSubmit = async () => {
-    const reelData = {
-      title: title,
+    if (!image) {
+      Alert.alert("Error", "Please select an image or video to upload.");
+      return;
+    }
+    const file = {
+      caption: title,
       description: description,
-      coverImageUrl: image ? image.uri : null, // If an image is selected, use its URI
+      file: image.uri.split('/').pop(),
+      mimetype: image.type || '', // Use the mimeType from the ImagePicker result
     };
 
     try {
@@ -57,13 +62,13 @@ function ReelUpload() {
         return;
       }
 
-      const response = await fetch('http://172.20.10.5:8000/reels_upload', {
+      const response = await fetch('http://192.168.1.6:3030/post/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${accessToken}`, // Attach the JWT token to the request header
         },
-        body: JSON.stringify(reelData), // Send the reel data as JSON
+        body: JSON.stringify(file), // Send the reel data as JSON
       });
 
       const responseData = await response.json();
@@ -88,7 +93,7 @@ function ReelUpload() {
         {image ? (
           <Image source={{ uri: image.uri }} style={styles.image} />
         ) : (
-          <Text>Select an Image</Text>
+          <Text>Select an Image or Video</Text>
         )}
       </TouchableOpacity>
 
@@ -112,6 +117,5 @@ function ReelUpload() {
     </SafeAreaView>
   );
 }
-
 
 export default ReelUpload;

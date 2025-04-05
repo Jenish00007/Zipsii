@@ -11,7 +11,7 @@ const SignInScreen = () => {
   const [loading, setLoading] = useState(false);
   const [passwordIsVisible, setPasswordIsVisible] = useState(false);
   const navigation = useNavigation();
-  const { login, user } = useAuth(); // Assuming useAuth provides the current user and login function
+  const { login, userDetails } = useAuth(); // Assuming useAuth provides the current user and login function
 
   useEffect(() => {
     const checkUser = async () => {
@@ -33,7 +33,7 @@ const SignInScreen = () => {
 
     setLoading(true);
     try {
-      const response = await fetch('http://192.168.1.24:3030/user/login/', {
+      const response = await fetch('http://192.168.1.6:3030/user/login/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -43,18 +43,16 @@ const SignInScreen = () => {
 
       if (response.ok) {
         const data = await response.json();
-        console.log(data);
         if (!data.error) {
           Alert.alert('Success', 'Logged in successfully');
-          const { token, user } = data;
-        
+          const { token, userDetails } = data;
           // Store the accessToken and user info
           await AsyncStorage.setItem('accessToken', token);
-          await AsyncStorage.setItem('user', JSON.stringify(user));
+          await AsyncStorage.setItem('user', JSON.stringify(userDetails));
 
           // Use the login function from AuthContext to set the user
-          login(user);
-
+          login(login);
+          
           navigation.navigate('MainLanding');
         } else {
           Alert.alert('Error', data.message || 'Login failed');
@@ -71,14 +69,13 @@ const SignInScreen = () => {
   };
 
   // If user is already logged in, don't render the SignInScreen
-  if (user) {
+  if (login) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#3662AA" />
       </View>
     );
-  }
-
+  }else{
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Login</Text>
@@ -153,6 +150,7 @@ const SignInScreen = () => {
     </ScrollView>
   );
 };
+}
 
 const styles = StyleSheet.create({
   container: {

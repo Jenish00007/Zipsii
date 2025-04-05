@@ -1,19 +1,41 @@
 const { post: Post } = require('../../../models'); // Import the registered model from index.js
+const cloudinary = require('../../../config/cloudinary');
+const fs = require('fs');
 
 // Create a new post
 exports.createPost = async (req, res) => {
   try {
-    const mediaType = req.file.mimetype.startsWith('image/') ? 'image' : 'video';
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    // Upload to Cloudinary
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      resource_type: req.file.mimetype.startsWith('image/') ? 'image' : 'video',
+      folder: 'posts'
+    });
+
+    // Delete the local file after successful upload
+    fs.unlink(req.file.path, (err) => {
+      if (err) console.error('Error deleting local file:', err);
+    });
+
     const post = new Post({
       user: req.user._id,
-      mediaUrl: `/uploads/posts/${req.file.filename}`,
-      mediaType,
+      mediaUrl: result.secure_url,
+      mediaType: req.file.mimetype.startsWith('image/') ? 'image' : 'video',
       caption: req.body.caption,
       description: req.body.description
     });
     await post.save();
     res.status(201).json(post);
   } catch (error) {
+    // Delete uploaded file if post creation fails
+    if (req.file && req.file.path) {
+      fs.unlink(req.file.path, (err) => {
+        if (err) console.error('Error deleting file:', err);
+      });
+    }
     res.status(400).json({ message: error.message });
   }
 };
@@ -57,7 +79,30 @@ exports.updatePost = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized to update this post' });
     }
     
-    // Update fields if provided
+    // If new media is uploaded
+    if (req.file) {
+      // Delete old media from Cloudinary
+      const oldPublicId = post.mediaUrl.split('/').pop().split('.')[0];
+      await cloudinary.uploader.destroy(`posts/${oldPublicId}`, {
+        resource_type: post.mediaType === 'image' ? 'image' : 'video'
+      });
+
+      // Upload new media to Cloudinary
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        resource_type: req.file.mimetype.startsWith('image/') ? 'image' : 'video',
+        folder: 'posts'
+      });
+
+      // Delete the local file after successful upload
+      fs.unlink(req.file.path, (err) => {
+        if (err) console.error('Error deleting local file:', err);
+      });
+
+      post.mediaUrl = result.secure_url;
+      post.mediaType = req.file.mimetype.startsWith('image/') ? 'image' : 'video';
+    }
+    
+    // Update other fields if provided
     if (req.body.caption) {
       post.caption = req.body.caption;
     }
@@ -68,6 +113,12 @@ exports.updatePost = async (req, res) => {
     await post.save();
     res.json(post);
   } catch (error) {
+    // Delete uploaded file if update fails
+    if (req.file && req.file.path) {
+      fs.unlink(req.file.path, (err) => {
+        if (err) console.error('Error deleting file:', err);
+      });
+    }
     res.status(400).json({ message: error.message });
   }
 };
@@ -82,6 +133,15 @@ exports.deletePost = async (req, res) => {
     if (post.user.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Not authorized to delete this post' });
     }
+
+    // Delete media from Cloudinary
+    if (post.mediaUrl) {
+      const publicId = post.mediaUrl.split('/').pop().split('.')[0];
+      await cloudinary.uploader.destroy(`posts/${publicId}`, {
+        resource_type: post.mediaType === 'image' ? 'image' : 'video'
+      });
+    }
+
     await Post.deleteOne({ _id: req.params.id });
     res.json({ message: 'Post deleted successfully' });
   } catch (error) {

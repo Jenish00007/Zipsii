@@ -1,6 +1,7 @@
 const { stories } = require('../../../models');
 const path = require('path');
 const fs = require('fs');
+const cloudinary = require('../../../config/cloudinary');
 
 class StoryController {
     async uploadStory(req, res) {
@@ -13,11 +14,22 @@ class StoryController {
                 return res.status(400).json({ message: 'No file uploaded' });
             }
 
-            console.log('User ID:', req.user._id); // Debug log
+            console.log('User ID:', req.user._id);
+
+            // Upload to Cloudinary
+            const result = await cloudinary.uploader.upload(req.file.path, {
+                resource_type: req.file.mimetype.startsWith('image/') ? 'image' : 'video',
+                folder: 'stories'
+            });
+
+            // Delete the local file after successful upload
+            fs.unlink(req.file.path, (err) => {
+                if (err) console.error('Error deleting local file:', err);
+            });
 
             const story = await stories.create({
                 userId: req.user._id,
-                mediaUrl: req.file.path,
+                mediaUrl: result.secure_url,
                 mediaType: req.file.mimetype.startsWith('image/') ? 'image' : 'video',
                 expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours from now
             });
@@ -80,10 +92,11 @@ class StoryController {
                 return res.status(401).json({ message: 'User not authenticated' });
             }
 
-            // Delete the file from storage
+            // Delete from Cloudinary
             if (req.story.mediaUrl) {
-                fs.unlink(req.story.mediaUrl, (err) => {
-                    if (err) console.error('Error deleting file:', err);
+                const publicId = req.story.mediaUrl.split('/').pop().split('.')[0];
+                await cloudinary.uploader.destroy(`stories/${publicId}`, {
+                    resource_type: req.story.mediaType === 'image' ? 'image' : 'video'
                 });
             }
             

@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Entypo from 'react-native-vector-icons/Entypo';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SkeletonLoader from '../Loader/SkeletonLoader';
@@ -22,8 +23,9 @@ const Stories = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [viewedStoryId, setViewedStoryId] = useState(null);
   const [error, setError] = useState(null);
-  const baseUrl = 'http://192.168.1.24:3030';
-  const [userId, setUserId] = useState(null); // assuming userId is fetched from authentication
+  const baseUrl = 'http://192.168.1.6:3030'; // Ensure this is the correct base URL.
+  const [userId, setUserId] = useState(); // assuming userId is fetched from authentication
+  const [currentStoryIndex, setCurrentStoryIndex] = useState({}); // Store current index of stories for each user
 
   const loadViewedStories = async () => {
     try {
@@ -34,6 +36,25 @@ const Stories = () => {
       return [];
     }
   };
+
+  const loadUserId = async () => {
+    try {
+      const user = await AsyncStorage.getItem('user');
+      const parsedUser = user ? JSON.parse(user) : null;
+
+      if (parsedUser && parsedUser._id) {
+        setUserId(parsedUser._id);
+      } else {
+        console.error('User not found or user ID is missing');
+      }
+    } catch (error) {
+      console.error('Error loading user ID:', error);
+    }
+  };
+
+  useEffect(() => {
+    loadUserId();
+  }, []);
 
   const saveViewedStory = async (storyId) => {
     try {
@@ -66,31 +87,40 @@ const Stories = () => {
     }
   };
 
-  // Function to upload the story to the backend
   const uploadStory = async (imageAsset) => {
     const formData = new FormData();
-    formData.append('file', {
+    formData.append('media', {
       uri: imageAsset.uri,
-      name: imageAsset.uri.split('/').pop(), // Get the image name
-      type: 'image/jpeg', // Assume it's an image
+      name: imageAsset.uri.split('/').pop(),
+      type: 'image/jpeg',
     });
-    formData.append('userId', userId); // You can add any other necessary data here
-
+    formData.append('userId', userId); // Add other necessary data here
+    const accessToken = await AsyncStorage.getItem('accessToken');
+  
     try {
-      const response = await fetch(baseUrl + '/upload-story', {
+      const response = await fetch(baseUrl + '/story/upload', {
         method: 'POST',
         headers: {
-          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${accessToken}`,
         },
         body: formData,
       });
-
+  
       const data = await response.json();
+      const stories = data.stories?.stories || [];
+
 
       if (response.ok) {
         console.log('Story uploaded successfully:', data.story);
-        // Optionally, update storyInfo state here to reflect the new story
-        setStoryInfo(prevState => [data.story, ...prevState]); // Add the uploaded story to the top of the list
+        setStoryInfo(prevState => {
+          const updatedStory = {
+            ...data.story,
+            userId: data.story._id,  // Set the userId for the new story
+          };
+        
+          // Add the new story at the start of the list, or you can use push to add it at the end
+          return [updatedStory, ...prevState];
+        });
       } else {
         console.error('Failed to upload story:', data.message);
       }
@@ -103,34 +133,53 @@ const Stories = () => {
     try {
       setIsLoading(true);
       setError(null);
-
-      const response = await fetch(baseUrl + '/stories');
-
+  
+      // Retrieve the access token from AsyncStorage
+      const accessToken = await AsyncStorage.getItem('accessToken');
+  
+      // Fetch stories from the API
+      const response = await fetch(baseUrl + '/story/all', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      });
+  
       if (!response.ok) {
-        console.log('Failed to fetch stories.');
+        const text = await response.text();
+        console.error('Error response from server:', text);
+        setError(text);
         return;
       }
-
-      const data = await response.json();
-
-      if (!data || data.length === 0) {
-        console.error('No stories found.');
-        return;
-      }
-
-      const viewedStories = await loadViewedStories();
-
-      if (Array.isArray(data)) {
-        const updatedData = data.map(item => ({
-          ...item,
-          image: item.image ? baseUrl + item.image : '', // Safe concatenation
-          viewed: viewedStories.includes(item.id),
+  
+      const contentType = response.headers.get('Content-Type');
+      if (contentType && contentType.includes('application/json')) {
+        const data = await response.json();
+  
+        if (!Array.isArray(data.stories) || data.stories.length === 0) {
+          console.log('No stories found or data.stories is not an array.');
+          return;
+        }
+  
+        const stories = data.stories[0]?.stories || [];
+  
+        const viewedStories = await loadViewedStories();
+  
+        const updatedData = stories.map(story => ({
+          id: story._id,
+          image: story.mediaUrl,
+          viewed: viewedStories.includes(story._id),
+          userId: story.userId._id,
         }));
+  
         setStoryInfo(updatedData);
+      } else {
+        const text = await response.text();
+        console.error('Received non-JSON response:', text);
+        setError(text);
       }
     } catch (err) {
       console.error('Error fetching stories:', err);
-      setError(err.message);
     } finally {
       setIsLoading(false);
     }
@@ -151,7 +200,7 @@ const Stories = () => {
   }, [modalVisible]);
 
   const handleStoryPress = async (data) => {
-    if (!data || Object.keys(data).length === 0) {
+    if (!data || !data.id) {
       console.log('Data is empty!');
       return;
     }
@@ -193,7 +242,7 @@ const Stories = () => {
               }}
             />
           ) : (
-            <Text>No Image</Text> // Default text if no image is available
+            <Text>No Image</Text>
           )}
         </View>
         <Text style={{ textAlign: 'center', fontSize: 10, opacity: item.id === 0 ? 1 : 0.5 }}>
@@ -230,14 +279,52 @@ const Stories = () => {
       );
     }
 
+    const groupedStories = storyInfo.reduce((acc, story) => {
+      if (!acc[story.userId]) {
+        acc[story.userId] = [];
+      }
+      acc[story.userId].push(story);
+      return acc;
+    }, {});
+
     return (
       <FlatList
-        data={storyInfo}
-        renderItem={renderStoryItem}
-        keyExtractor={(item) => item.id.toString()}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingVertical: 20 }}
+        data={Object.keys(groupedStories)}
+        renderItem={({ item: userId }) => {
+          const userStories = groupedStories[userId];
+          const currentStoryIndex = 0;
+          const currentStory = userStories[currentStoryIndex];
+  
+          return (
+            <View style={{ flexDirection: 'column', paddingVertical: 5, alignItems: 'center', justifyContent: 'center' }}>
+              <FlatList
+                data={[currentStory]}
+                renderItem={renderStoryItem}
+                keyExtractor={(story) => story.id ? story.id.toString() : ''}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+              />
+              <TouchableOpacity
+                style={{
+                  width: 20,
+                  height: 20,
+                  borderRadius: 20,
+                  backgroundColor: '#870E6B',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginHorizontal: 0,
+                  marginTop: -40,
+                  marginLeft: 40
+                }}
+                onPress={pickImage}
+              >
+                <Icon name="add" size={20} color="white" />
+              </TouchableOpacity>
+              <Text style={{ marginTop: 10, textAlign: 'center', fontSize: 16, fontWeight: 'bold' }}>Your Story</Text>
+            </View>
+          );
+        }}
+        keyExtractor={(item) => item}
       />
     );
   };
@@ -245,26 +332,29 @@ const Stories = () => {
   return (
     <View style={{ flex: 1 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8 }}>
-        {/* The round button with the plus sign on the left side */}
-        <TouchableOpacity
-          onPress={pickImage}
-          style={{
-            width: 68,
-            height: 68,
-            backgroundColor: 'white',
-            borderWidth: 1.8,
-            borderRadius: 100,
-            borderColor: '#c13584',
-            justifyContent: 'center',
-            alignItems: 'center',
-            marginRight: 20, // Space between the add button and the stories
-          }}>
-          <Entypo name="circle-with-plus" style={{ fontSize: 30, color: '#c13584' }} />
-        </TouchableOpacity>
+  {storyInfo.filter(story => story.userId === userId).length === 0 ? (
+    <TouchableOpacity
+      onPress={pickImage}
+      style={{
+        width: 68,
+        height: 68,
+        backgroundColor: 'white',
+        borderWidth: 1.8,
+        borderRadius: 100,
+        borderColor: '#c13584',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginLeft: 12,
+      }}>
+      <Entypo name="circle-with-plus" style={{ fontSize: 30, color: '#c13584' }} />
+    </TouchableOpacity>
+  ) : null}
 
-        {/* Render the stories next to the "Add Story" button */}
-        {renderContent()}
-      </View>
+  {console.log("Filtered stories length: ", storyInfo.filter(story => story.userId === userId).length)}
+  
+  {renderContent()}
+</View>
+
 
       <Modal transparent={true} visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
         <View
