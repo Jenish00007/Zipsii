@@ -31,7 +31,7 @@ import SkeletonLoader from '../../components/Loader/SkeletonLoader';
 import { BackHandler } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 
-const baseUrl = 'http://192.168.1.24:3030';
+const baseUrl = 'http://192.168.1.6:3030';
 
 function MainLanding(props) {
   const navigation = useNavigation();
@@ -381,7 +381,9 @@ function MainLanding(props) {
   // )
   const renderScheduleContainer = () => {
     if (!all_schedule || all_schedule.length === 0) {
-      return <TextDefault>No schedule available</TextDefault>;
+      return <TextDefault style={{ marginLeft: 20 }}>
+      No schedule available
+    </TextDefault>
     }
   
     return (

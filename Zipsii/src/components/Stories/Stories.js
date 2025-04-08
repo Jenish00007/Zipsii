@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Entypo from 'react-native-vector-icons/Entypo';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SkeletonLoader from '../Loader/SkeletonLoader';
@@ -18,12 +19,14 @@ const Stories = () => {
   const navigation = useNavigation();
   const [image, setImage] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [confirmationModalVisible, setConfirmationModalVisible] = useState(false);  // Confirmation modal
   const [storyInfo, setStoryInfo] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [viewedStoryId, setViewedStoryId] = useState(null);
   const [error, setError] = useState(null);
-  const baseUrl = 'http://192.168.1.24:3030';
-  const [userId, setUserId] = useState(null); // assuming userId is fetched from authentication
+  const baseUrl = 'http://192.168.1.6:3030'; // Ensure this is the correct base URL.
+  const [userId, setUserId] = useState(); // assuming userId is fetched from authentication
+  const [storyToDelete, setStoryToDelete] = useState(null);  // Store the story to delete
 
   const loadViewedStories = async () => {
     try {
@@ -34,6 +37,25 @@ const Stories = () => {
       return [];
     }
   };
+
+  const loadUserId = async () => {
+    try {
+      const user = await AsyncStorage.getItem('user');
+      const parsedUser = user ? JSON.parse(user) : null;
+
+      if (parsedUser && parsedUser._id) {
+        setUserId(parsedUser._id);
+      } else {
+        console.error('User not found or user ID is missing');
+      }
+    } catch (error) {
+      console.error('Error loading user ID:', error);
+    }
+  };
+
+  useEffect(() => {
+    loadUserId();
+  }, []);
 
   const saveViewedStory = async (storyId) => {
     try {
@@ -66,31 +88,38 @@ const Stories = () => {
     }
   };
 
-  // Function to upload the story to the backend
   const uploadStory = async (imageAsset) => {
     const formData = new FormData();
-    formData.append('file', {
+    formData.append('media', {
       uri: imageAsset.uri,
-      name: imageAsset.uri.split('/').pop(), // Get the image name
-      type: 'image/jpeg', // Assume it's an image
+      name: imageAsset.uri.split('/').pop(),
+      type: 'image/jpeg',
     });
-    formData.append('userId', userId); // You can add any other necessary data here
-
+    formData.append('userId', userId); // Add other necessary data here
+    const accessToken = await AsyncStorage.getItem('accessToken');
+  
     try {
-      const response = await fetch(baseUrl + '/upload-story', {
+      const response = await fetch(baseUrl + '/story/upload', {
         method: 'POST',
         headers: {
-          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${accessToken}`,
         },
         body: formData,
       });
-
+  
       const data = await response.json();
+      const stories = data.stories?.stories || [];
 
       if (response.ok) {
         console.log('Story uploaded successfully:', data.story);
-        // Optionally, update storyInfo state here to reflect the new story
-        setStoryInfo(prevState => [data.story, ...prevState]); // Add the uploaded story to the top of the list
+        setStoryInfo(prevState => {
+          const updatedStory = {
+            ...data.story,
+            userId: data.story._id,  // Set the userId for the new story
+          };
+        
+          return [updatedStory, ...prevState];
+        });
       } else {
         console.error('Failed to upload story:', data.message);
       }
@@ -103,34 +132,51 @@ const Stories = () => {
     try {
       setIsLoading(true);
       setError(null);
-
-      const response = await fetch(baseUrl + '/stories');
-
+  
+      const accessToken = await AsyncStorage.getItem('accessToken');
+  
+      const response = await fetch(baseUrl + '/story/all', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      });
+  
       if (!response.ok) {
-        console.log('Failed to fetch stories.');
+        const text = await response.text();
+        console.error('Error response from server:', text);
+        setError(text);
         return;
       }
-
-      const data = await response.json();
-
-      if (!data || data.length === 0) {
-        console.error('No stories found.');
-        return;
-      }
-
-      const viewedStories = await loadViewedStories();
-
-      if (Array.isArray(data)) {
-        const updatedData = data.map(item => ({
-          ...item,
-          image: item.image ? baseUrl + item.image : '', // Safe concatenation
-          viewed: viewedStories.includes(item.id),
+  
+      const contentType = response.headers.get('Content-Type');
+      if (contentType && contentType.includes('application/json')) {
+        const data = await response.json();
+  
+        if (!Array.isArray(data.stories) || data.stories.length === 0) {
+          console.log('No stories found or data.stories is not an array.');
+          return;
+        }
+  
+        const stories = data.stories[0]?.stories || [];
+  
+        const viewedStories = await loadViewedStories();
+  
+        const updatedData = stories.map(story => ({
+          id: story._id,
+          image: story.mediaUrl,
+          viewed: viewedStories.includes(story._id),
+          userId: story.userId._id,
         }));
+  
         setStoryInfo(updatedData);
+      } else {
+        const text = await response.text();
+        console.error('Received non-JSON response:', text);
+        setError(text);
       }
     } catch (err) {
       console.error('Error fetching stories:', err);
-      setError(err.message);
     } finally {
       setIsLoading(false);
     }
@@ -140,35 +186,31 @@ const Stories = () => {
     fetchStoryData();
   }, []);
 
-  useEffect(() => {
-    if (modalVisible) {
-      const timer = setTimeout(() => {
-        setModalVisible(false);
-      }, 10000);
+  const deleteStory = async (storyId) => {
+    try {
+      const accessToken = await AsyncStorage.getItem('accessToken');
+      const response = await fetch(`${baseUrl}/story/${storyId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      });
 
-      return () => clearTimeout(timer);
+      if (response.ok) {
+        console.log('Story deleted successfully');
+        setStoryInfo(prevStories => prevStories.filter(story => story.id !== storyId));
+        setConfirmationModalVisible(false);  // Close confirmation modal
+      } else {
+        const data = await response.json();
+        console.error('Error deleting story:', data.message);
+      }
+    } catch (error) {
+      console.error('Error deleting story:', error);
     }
-  }, [modalVisible]);
-
-  const handleStoryPress = async (data) => {
-    if (!data || Object.keys(data).length === 0) {
-      console.log('Data is empty!');
-      return;
-    }
-
-    setImage(data.image);
-    setModalVisible(true);
-    setViewedStoryId(data.id);
-    await saveViewedStory(data.id);
-    setStoryInfo(prevStoryInfo =>
-      prevStoryInfo.map(item =>
-        item.id === data.id ? { ...item, viewed: true } : item
-      )
-    );
   };
 
   const renderStoryItem = ({ item }) => (
-    <TouchableOpacity onPress={() => handleStoryPress(item)}>
+    <TouchableOpacity onPress={() => setModalVisible(true)}>
       <View style={{ flexDirection: 'column', paddingHorizontal: 8, position: 'relative' }}>
         <View
           style={{
@@ -193,12 +235,31 @@ const Stories = () => {
               }}
             />
           ) : (
-            <Text>No Image</Text> // Default text if no image is available
+            <Text>No Image</Text>
           )}
         </View>
         <Text style={{ textAlign: 'center', fontSize: 10, opacity: item.id === 0 ? 1 : 0.5 }}>
           {item.name}
         </Text>
+
+        {/* Delete button */}
+        {item.userId === userId && (
+          <TouchableOpacity
+            onPress={() => {
+              setStoryToDelete(item.id);  // Set story to delete
+              setConfirmationModalVisible(true);  // Show confirmation modal
+            }}
+            style={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              backgroundColor: 'red',
+              borderRadius: 20,
+              padding: 5,
+            }}>
+            <Text style={{ color: 'white', fontSize: 12 }}>Delete</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -234,67 +295,65 @@ const Stories = () => {
       <FlatList
         data={storyInfo}
         renderItem={renderStoryItem}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item.id ? item.id.toString() : ''}
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingVertical: 20 }}
       />
     );
   };
 
   return (
     <View style={{ flex: 1 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8 }}>
-        {/* The round button with the plus sign on the left side */}
-        <TouchableOpacity
-          onPress={pickImage}
-          style={{
-            width: 68,
-            height: 68,
+      {renderContent()}
+
+      {/* Confirmation Modal for deleting story */}
+      <Modal
+        visible={confirmationModalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setConfirmationModalVisible(false)}
+      >
+        <View style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        }}>
+          <View style={{
+            width: 300,
+            padding: 20,
             backgroundColor: 'white',
-            borderWidth: 1.8,
-            borderRadius: 100,
-            borderColor: '#c13584',
-            justifyContent: 'center',
-            alignItems: 'center',
-            marginRight: 20, // Space between the add button and the stories
+            borderRadius: 10,
           }}>
-          <Entypo name="circle-with-plus" style={{ fontSize: 30, color: '#c13584' }} />
-        </TouchableOpacity>
-
-        {/* Render the stories next to the "Add Story" button */}
-        {renderContent()}
-      </View>
-
-      <Modal transparent={true} visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
-        <View
-          style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          }}>
-          <View
-            style={{
-              width: '100%',
-              height: '100%',
-              justifyContent: 'center',
-              alignItems: 'center',
-              position: 'relative',
-            }}>
-            <Image source={{ uri: image }} style={{ width: '100%', height: '100%', resizeMode: 'contain' }} />
-            <TouchableOpacity
-              onPress={() => setModalVisible(false)}
-              style={{
-                position: 'absolute',
-                top: 20,
-                right: 20,
-                backgroundColor: 'rgba(255, 255, 255, 0.6)',
-                borderRadius: 50,
-                padding: 10,
-              }}>
-              <Text style={{ fontSize: 20, color: '#333' }}>X</Text>
-            </TouchableOpacity>
+            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Are you sure you want to delete this story?</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 20 }}>
+              <TouchableOpacity
+                onPress={() => setConfirmationModalVisible(false)}
+                style={{
+                  paddingVertical: 10,
+                  paddingHorizontal: 20,
+                  backgroundColor: '#ccc',
+                  borderRadius: 5,
+                }}
+              >
+                <Text>No</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  if (storyToDelete) {
+                    deleteStory(storyToDelete);  // Delete story when confirmed
+                  }
+                }}
+                style={{
+                  paddingVertical: 10,
+                  paddingHorizontal: 20,
+                  backgroundColor: 'red',
+                  borderRadius: 5,
+                }}
+              >
+                <Text style={{ color: 'white' }}>Yes</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
