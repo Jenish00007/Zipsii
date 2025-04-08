@@ -46,7 +46,7 @@ const SignUpScreen = () => {
 
     setLoading(true);
     try {
-      const response = await fetch('http://192.168.1.24:3030/user/signUp', {
+      const response = await fetch('http://172.20.10.5:3030/create-account/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

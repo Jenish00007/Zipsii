@@ -70,8 +70,7 @@ function MakeSchedule() {
     const accessToken = await AsyncStorage.getItem('accessToken');
 
     try {
-      // Replace with your API URL
-      const response = await fetch('http://172.20.10.5:8000/makeschedule', {
+      const response = await fetch('http://172.20.10.5:3030/makeschedule', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
