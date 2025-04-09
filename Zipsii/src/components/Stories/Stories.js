@@ -19,14 +19,13 @@ const Stories = () => {
   const navigation = useNavigation();
   const [image, setImage] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [confirmationModalVisible, setConfirmationModalVisible] = useState(false);  // Confirmation modal
   const [storyInfo, setStoryInfo] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [viewedStoryId, setViewedStoryId] = useState(null);
   const [error, setError] = useState(null);
   const baseUrl = 'http://192.168.1.6:3030'; // Ensure this is the correct base URL.
   const [userId, setUserId] = useState(); // assuming userId is fetched from authentication
-  const [storyToDelete, setStoryToDelete] = useState(null);  // Store the story to delete
+  const [currentStoryIndex, setCurrentStoryIndex] = useState({}); // Store current index of stories for each user
 
   const loadViewedStories = async () => {
     try {
@@ -118,6 +117,7 @@ const Stories = () => {
             userId: data.story._id,  // Set the userId for the new story
           };
         
+          // Add the new story at the start of the list, or you can use push to add it at the end
           return [updatedStory, ...prevState];
         });
       } else {
@@ -133,8 +133,10 @@ const Stories = () => {
       setIsLoading(true);
       setError(null);
   
+      // Retrieve the access token from AsyncStorage
       const accessToken = await AsyncStorage.getItem('accessToken');
   
+      // Fetch stories from the API
       const response = await fetch(baseUrl + '/story/all', {
         method: 'GET',
         headers: {
@@ -186,23 +188,43 @@ const Stories = () => {
     fetchStoryData();
   }, []);
 
-  const deleteStory = async (storyId) => {
+  const handleStoryPress = async (data) => {
+    if (!data || !data.id) {
+      console.log('Data is empty!');
+      return;
+    }
+
+    setImage(data.image);
+    setModalVisible(true);
+    setViewedStoryId(data.id);
+    await saveViewedStory(data.id);
+    setStoryInfo(prevStoryInfo =>
+      prevStoryInfo.map(item =>
+        item.id === data.id ? { ...item, viewed: true } : item
+      )
+    );
+  };
+
+  const deleteStory = async () => {
     try {
       const accessToken = await AsyncStorage.getItem('accessToken');
-      const response = await fetch(`${baseUrl}/story/${storyId}`, {
+      const response = await fetch(`${baseUrl}/story/${viewedStoryId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
         },
       });
 
+      const data = await response.json();
+
       if (response.ok) {
-        console.log('Story deleted successfully');
-        setStoryInfo(prevStories => prevStories.filter(story => story.id !== storyId));
-        setConfirmationModalVisible(false);  // Close confirmation modal
+        console.log('Story deleted successfully:', data);
+        setStoryInfo(prevStoryInfo =>
+          prevStoryInfo.filter(item => item.id !== viewedStoryId)
+        );
+        setModalVisible(false); // Close modal after deletion
       } else {
-        const data = await response.json();
-        console.error('Error deleting story:', data.message);
+        console.error('Failed to delete story:', data.message);
       }
     } catch (error) {
       console.error('Error deleting story:', error);
@@ -210,7 +232,7 @@ const Stories = () => {
   };
 
   const renderStoryItem = ({ item }) => (
-    <TouchableOpacity onPress={() => setModalVisible(true)}>
+    <TouchableOpacity onPress={() => handleStoryPress(item)}>
       <View style={{ flexDirection: 'column', paddingHorizontal: 8, position: 'relative' }}>
         <View
           style={{
@@ -241,25 +263,6 @@ const Stories = () => {
         <Text style={{ textAlign: 'center', fontSize: 10, opacity: item.id === 0 ? 1 : 0.5 }}>
           {item.name}
         </Text>
-
-        {/* Delete button */}
-        {item.userId === userId && (
-          <TouchableOpacity
-            onPress={() => {
-              setStoryToDelete(item.id);  // Set story to delete
-              setConfirmationModalVisible(true);  // Show confirmation modal
-            }}
-            style={{
-              position: 'absolute',
-              top: 0,
-              right: 0,
-              backgroundColor: 'red',
-              borderRadius: 20,
-              padding: 5,
-            }}>
-            <Text style={{ color: 'white', fontSize: 12 }}>Delete</Text>
-          </TouchableOpacity>
-        )}
       </View>
     </TouchableOpacity>
   );
@@ -291,69 +294,120 @@ const Stories = () => {
       );
     }
 
+    const groupedStories = storyInfo.reduce((acc, story) => {
+      if (!acc[story.userId]) {
+        acc[story.userId] = [];
+      }
+      acc[story.userId].push(story);
+      return acc;
+    }, {});
+
     return (
       <FlatList
-        data={storyInfo}
-        renderItem={renderStoryItem}
-        keyExtractor={(item) => item.id ? item.id.toString() : ''}
-        horizontal
-        showsHorizontalScrollIndicator={false}
+        data={Object.keys(groupedStories)}
+        renderItem={({ item: userId }) => {
+          const userStories = groupedStories[userId];
+          const currentStoryIndex = 0;
+          const currentStory = userStories[currentStoryIndex];
+  
+          return (
+            <View style={{ flexDirection: 'column', paddingVertical: 5, alignItems: 'center', justifyContent: 'center' }}>
+              <FlatList
+                data={[currentStory]}
+                renderItem={renderStoryItem}
+                keyExtractor={(story) => story.id ? story.id.toString() : ''}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+              />
+              <TouchableOpacity
+                style={{
+                  width: 20,
+                  height: 20,
+                  borderRadius: 20,
+                  backgroundColor: '#870E6B',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginHorizontal: 0,
+                  marginTop: -40,
+                  marginLeft: 40
+                }}
+                onPress={pickImage}
+              >
+                <Icon name="add" size={20} color="white" />
+              </TouchableOpacity>
+              <Text style={{ marginTop: 10, textAlign: 'center', fontSize: 16, fontWeight: 'bold' }}>Your Story</Text>
+            </View>
+          );
+        }}
+        keyExtractor={(item) => item}
       />
     );
   };
 
   return (
     <View style={{ flex: 1 }}>
-      {renderContent()}
+      <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8 }}>
+        {storyInfo.filter(story => story.userId === userId).length === 0 ? (
+          <TouchableOpacity
+            onPress={pickImage}
+            style={{
+              width: 68,
+              height: 68,
+              backgroundColor: 'white',
+              borderWidth: 1.8,
+              borderRadius: 100,
+              borderColor: '#c13584',
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginLeft: 12,
+            }}>
+            <Entypo name="circle-with-plus" style={{ fontSize: 30, color: '#c13584' }} />
+          </TouchableOpacity>
+        ) : null}  
+        {renderContent()}
+      </View>
 
-      {/* Confirmation Modal for deleting story */}
-      <Modal
-        visible={confirmationModalVisible}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setConfirmationModalVisible(false)}
-      >
-        <View style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        }}>
-          <View style={{
-            width: 300,
-            padding: 20,
-            backgroundColor: 'white',
-            borderRadius: 10,
+      <Modal transparent={false} visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
           }}>
-            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Are you sure you want to delete this story?</Text>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 20 }}>
-              <TouchableOpacity
-                onPress={() => setConfirmationModalVisible(false)}
-                style={{
-                  paddingVertical: 10,
-                  paddingHorizontal: 20,
-                  backgroundColor: '#ccc',
-                  borderRadius: 5,
-                }}
-              >
-                <Text>No</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  if (storyToDelete) {
-                    deleteStory(storyToDelete);  // Delete story when confirmed
-                  }
-                }}
-                style={{
-                  paddingVertical: 10,
-                  paddingHorizontal: 20,
-                  backgroundColor: 'red',
-                  borderRadius: 5,
-                }}
-              >
-                <Text style={{ color: 'white' }}>Yes</Text>
-              </TouchableOpacity>
-            </View>
+          <View
+            style={{
+              width: '100%',
+              height: '100%',
+              justifyContent: 'center',
+              alignItems: 'center',
+              position: 'relative',
+            }}>
+            <Image source={{ uri: image }} style={{ width: '100%', height: '100%', resizeMode: 'contain' }} />
+            <TouchableOpacity
+              onPress={() => setModalVisible(false)}
+              style={{
+                position: 'absolute',
+                top: 20,
+                right: 20,
+                backgroundColor: 'rgba(255, 255, 255, 0.6)',
+                borderRadius: 50,
+                padding: 10,
+              }}>
+              <Text style={{ fontSize: 20, color: '#333' }}>X</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={deleteStory}
+              style={{
+                position: 'absolute',
+                bottom: 20,
+                backgroundColor: '#e74c3c',
+                padding: 10,
+                borderRadius: 50,
+              }}>
+              <Text style={{ color: 'white', fontSize: 16 }}>Delete</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
