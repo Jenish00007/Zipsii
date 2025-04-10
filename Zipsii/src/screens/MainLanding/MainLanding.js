@@ -30,8 +30,9 @@ import Schedule from '../MySchedule/Schedule/AllSchedule';
 import SkeletonLoader from '../../components/Loader/SkeletonLoader';
 import { BackHandler } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { base_url } from '../../utils/base_url';
 
-const baseUrl = 'http://192.168.1.6:3030';
+//const baseUrl = 'http://192.168.1.6:3030';
 
 function MainLanding(props) {
   const navigation = useNavigation();
@@ -89,14 +90,14 @@ function MainLanding(props) {
     const fetchDiscoverByInterest = async () => {
       try {
         setIsDiscoverByInterestLoading(true);
-        const response = await fetch(baseUrl + '/discover_by_intrest');
+        const response = await fetch(`${base_url}/discover_by_intrest`);
         const data = await response.json();
 
         // Check if data is an array
         if (Array.isArray(data)) {
           const formattedData = data.slice(0, 100).map(item => ({
             id: item.id,
-            image: baseUrl + item.image,
+            image: base_url + item.image,
             name: item.name
           }));
           setDiscoverByInterest(formattedData);
@@ -117,14 +118,14 @@ function MainLanding(props) {
     const fetchBestDestination = async () => {
       try {
         setIsBestDestinationLoading(true);
-        const response = await fetch(baseUrl + '/best_destination');
+        const response = await fetch(`${base_url}/best_destination`);
         const data = await response.json();
 
         // Check if data is an array
         if (Array.isArray(data)) {
           const formattedData = data.slice(0, 100).map(item => ({
             id: item.id,
-            image: baseUrl + item.image,
+            image: base_url + item.image,
             name: item.name
           }));
           setBestDestination(formattedData);
@@ -145,14 +146,14 @@ function MainLanding(props) {
     const fetchAllDestination = async () => {
       try {
         setIsAllDestinationLoading(true);
-        const response = await fetch(baseUrl + '/all_destination');
+        const response = await fetch(`${base_url}/all_destinatio`);
         const data = await response.json();
 
         // Check if data is an array
         if (Array.isArray(data)) {
           const formattedData = data.slice(0, 100).map(item => ({
             id: item.id,
-            image: baseUrl + item.image,
+            image: base_url + item.image,
             name: item.name
           }));
           setAllDestination(formattedData);
@@ -173,7 +174,7 @@ function MainLanding(props) {
     const fetchAllSchedule = async () => {
       try {
         setIsScheduleLoading(true);
-        const response = await fetch(baseUrl + '/get_all_schedule');
+        const response = await fetch(`${base_url}/get_all_schedule`);
         const data = await response.json();
 
         // Check if data is an array
@@ -208,7 +209,7 @@ function MainLanding(props) {
     const fetchAllPosts = async () => {
       try {
         setIsPostsLoading(true);
-        const response = await fetch(baseUrl + '/get_all_posts');
+        const response = await fetch(`${base_url}/get_all_posts`);
         const data = await response.json();
 
         // Check if data is an array
@@ -239,7 +240,7 @@ function MainLanding(props) {
     const fetchAllShorts = async () => {
       try {
         setIsShortsLoading(true);
-        const response = await fetch(baseUrl + '/get_all_shorts');
+        const response = await fetch(`${base_url}/get_all_shorts`);
         const data = await response.json();
 
         // Check if data is an array
@@ -270,7 +271,7 @@ function MainLanding(props) {
     const fetchDiscoverByNearest = async () => {
       try {
         setIsNearestLoading(true);
-        const response = await fetch(baseUrl + '/discover_by_nearest');
+        const response = await fetch(`${base_url}/discover_by_nearest`);
         const data = await response.json();
 
         // Check if data is an array
