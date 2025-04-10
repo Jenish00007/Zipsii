@@ -25,9 +25,10 @@ const MainStack = createStackNavigator();
 function Drawer() {
   return (
     <NavigationStack.Navigator screenOptions={{ headerShown: false }}>
+      <NavigationStack.Screen name='Login' component={Screen.Login}/>
       <NavigationStack.Screen name="MainLanding" component={Screen.MainLanding} />
       <NavigationStack.Screen name="DeleteButton" component={Screen.DeleteButton} />
-    
+      <NavigationStack.Screen name="Logout" component={Screen.LogoutButton} />
       <NavigationStack.Screen name="ProfileDashboard" component={Screen.ProfileDashboard} />
       <NavigationStack.Screen name="Review" component={Screen.Review} />
       <NavigationStack.Screen name="DummyScreen" component={Screen.DummyScreen} />
@@ -38,7 +39,6 @@ function Drawer() {
       <NavigationStack.Screen name="TripDetail" component={Screen.TripDetail}/>
       <NavigationStack.Screen name="Map" component={Screen.Map}/>
       <NavigationStack.Screen name='Schedule' component={Screen.Schedule}/>
-      <NavigationStack.Screen name='Login' component={Screen.Login}/>
       <NavigationStack.Screen name="DiscoverPlace" component={Screen.DiscoverPlace} />
       <NavigationStack.Screen name='SearchPage' component={Screen.SearchPage}/>
       <NavigationStack.Screen name='Notification' component={Screen.Notification}/>
@@ -48,6 +48,11 @@ function Drawer() {
       <NavigationStack.Screen name='LocationPage' component={Screen.LocationPage}/>
       <NavigationStack.Screen name="ChatScreen" component={Screen.ChatScreen} />
       <NavigationStack.Screen name="MessageList" component={Screen.MessageList} />
+      <NavigationStack.Screen name="SignUp" component={Screen.SignUp} />
+      <NavigationStack.Screen name="Favourite" component={Screen.FavoritesPage} />
+      <NavigationStack.Screen name="MapScreen" component={Screen.MapScreen} />
+
+
       
     </NavigationStack.Navigator>
   );

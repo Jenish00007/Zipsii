@@ -1,77 +1,83 @@
-import React, { useState, useEffect } from 'react'
-import AppContainer from './src/routes/routes'
-import * as Notifications from 'expo-notifications'
-import { StatusBar, Platform } from 'react-native'
-import { colors } from './src/utils/colors'
-import * as Font from 'expo-font'
-import FlashMessage from 'react-native-flash-message'
-import { Spinner } from './src/components'
-import { ScheduleProvider } from './src/context/ScheduleContext'
+import React, { useState, useEffect } from 'react';
+import { StatusBar, Platform } from 'react-native';
+import * as Font from 'expo-font';
+import * as Notifications from 'expo-notifications';
+import FlashMessage from 'react-native-flash-message';
+import AppContainer from './src/routes/routes';
+import { colors } from './src/utils/colors';
+import { Spinner } from './src/components';
+import { ScheduleProvider } from './src/context/ScheduleContext';
+import { AuthProvider } from './src/components/Auth/AuthContext'; // Import the AuthProvider
 
 export default function App() {
-  const [fontLoaded, setFontLoaded] = useState(false)
-
+  const [fontLoaded, setFontLoaded] = useState(false);
 
   useEffect(() => {
-    loadAppData()
-  }, [])
+    loadAppData();
+  }, []);
 
   async function loadAppData() {
-
- 
+    // Load custom fonts
     await Font.loadAsync({
       'Poppins-Regular': require('./src/assets/font/Poppins/Poppins-Regular.ttf'),
-      'Poppins-Bold': require('./src/assets/font/Poppins/Poppins-Bold.ttf')
-    })
+      'Poppins-Bold': require('./src/assets/font/Poppins/Poppins-Bold.ttf'),
+    });
 
-    await permissionForPushNotificationsAsync()
+    // Request permissions for push notifications
+    await permissionForPushNotificationsAsync();
 
-    setFontLoaded(true)
+    // Set fontLoaded to true once all data is loaded
+    setFontLoaded(true);
   }
 
   async function permissionForPushNotificationsAsync() {
-    const { status: existingStatus } = await Notifications.getPermissionsAsync()
-    let finalStatus = existingStatus
-    // only ask if permissions have not already been determined, because
-    // iOS won't necessarily prompt the user a second time.
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+
+    // Only ask for permissions if not already granted
     if (existingStatus !== 'granted') {
-      // Android remote notification permissions are granted during the app
-      // install, so this will only ask on iOS
-      const { status } = await Notifications.requestPermissionsAsync()
-      finalStatus = status
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
     }
 
-    // Stop here if the user did not grant permissions
+    // Stop if permissions are not granted
     if (finalStatus !== 'granted') {
-      return
+      return;
     }
 
+    // Configure notification channel for Android
     if (Platform.OS === 'android') {
       Notifications.setNotificationChannelAsync('default', {
         name: 'default',
         importance: Notifications.AndroidImportance.HIGH,
         vibrationPattern: [0, 250, 250, 250],
-        lightColor: colors.brownColor
-      })
+        lightColor: colors.brownColor,
+      });
     }
   }
 
-  if (fontLoaded) {
-    return (
-      <>
-        <StatusBar
-          barStyle={'dark-content'}
-          backgroundColor={colors.headerbackground}
-        />
-      
-        
-            <ScheduleProvider>
-            <AppContainer />
-            </ScheduleProvider>
-         
-       
-        <FlashMessage position="top" />
-        </>
-    )
-  } else return <Spinner spinnerColor={colors.spinnerColor} />
+  // Show a spinner while fonts and data are loading
+  if (!fontLoaded) {
+    return <Spinner spinnerColor={colors.spinnerColor} />;
+  }
+
+  // Render the main app once everything is loaded
+  return (
+    <>
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor={colors.headerbackground}
+      />
+
+      {/* Wrap the app with AuthProvider and ScheduleProvider */}
+      <AuthProvider>
+        <ScheduleProvider>
+          <AppContainer />
+        </ScheduleProvider>
+      </AuthProvider>
+
+      {/* FlashMessage for global notifications */}
+      <FlashMessage position="top" />
+    </>
+  );
 }

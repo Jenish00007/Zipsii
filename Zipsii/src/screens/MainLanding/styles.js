@@ -1,4 +1,5 @@
 import { Dimensions, StyleSheet } from 'react-native'
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen'; // Ensure correct import
 import {
   alignment,
   fontStyles,
@@ -59,6 +60,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', // Vertically aligns items in the row
   },
   notificationIconWrapper: {
+    marginLeft: 10,
     justifyContent: 'flex-end', // Positions the icon on the far right
     alignItems: 'flex-start', // Aligns vertically with the rest of the content
   },
@@ -129,10 +131,10 @@ const styles = StyleSheet.create({
   },
   itemCardContainer: {
     width: scale(180),
-    height: scale(230),
+    height: scale(200),
     borderRadius: scale(6),
     borderColor: colors.whiteColor,
-    borderWidth: scale(8),
+    borderWidth: scale(3),
     ...alignment.MTsmall,
     ...alignment.MRlarge
   },
@@ -160,14 +162,18 @@ const styles = StyleSheet.create({
   },
   titleSpacer: {
     marginLeft: '5%',
-    marginTop: scale(35)
+    marginTop: scale(15)
+  },
+  titleSpacerdesti: {
+    marginLeft: '5%',
+    marginTop: scale(25)
   },
   productCard: {
     marginLeft: '5%',
     width: '43%',
-    height: scale(200),
+    height: scale(180),
     marginTop: scale(10),
-    marginBottom: scale(20),
+    marginBottom: scale(10),
     borderColor: colors.whiteColor,
     borderWidth: scale(8),
   },
@@ -185,6 +191,15 @@ const styles = StyleSheet.create({
     fontSize: 16,  // Adjust text size
     color: '#333',  // Adjust text color
   },
+
+  icon: {
+    paddingHorizontal: 5,
+  },
+
+  rightIconsContainer: {
+    flexDirection: 'row', // Align icons in a row
+    alignItems: 'center', // Center them vertically
+  },
   
   seeAllText: {
     textAlign: 'right', // Align the text itself to the right
@@ -198,7 +213,7 @@ const styles = StyleSheet.create({
   categoryWrapper: {
     alignItems: 'center', // Center align the icon and text
     marginRight: scale(17), // Add some spacing between categories
-    padding: 10,
+    padding: 12,
     marginLeft: scale(-6),
   },
   buttonContainer: {
@@ -263,13 +278,16 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   scheduleContainer: {
-    marginTop: verticalScale(20),
+    padding: wp('4%'), // Dynamic padding based on screen width
+    marginTop: hp('2%'),
+    // marginTop: verticalScale(20),
     paddingHorizontal: scale(16),
     backgroundColor: '#fff',
     paddingBottom: verticalScale(20),
   },
   scheduleheadContainer:{
     flexDirection: 'row',
+    marginBottom: hp('2%'),
     justifyContent: 'space-between',
     alignItems: 'center',
     ...alignment.PxSmall
@@ -344,5 +362,23 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: 14,
   },
+  discoverRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 15,
+    marginVertical: 10,
+    ...alignment.MBmedium,
+  },
+  discoverText: {
+   fontSize: 16,
+   fontWeight: "bold",
+   color: colors.fontMainColor,
+ },
+ viewAllText: {
+   fontSize: 14,
+   color: colors.btncolor,
+   fontWeight: "500",
+ },
 })
 export default styles

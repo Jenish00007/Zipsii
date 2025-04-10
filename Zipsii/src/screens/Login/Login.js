@@ -1,167 +1,261 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
-import FlashMessage, { showMessage } from "react-native-flash-message";
-import { Buffer } from "buffer";
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, Image, ActivityIndicator } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
+import { Feather } from '@expo/vector-icons';
+import { useAuth } from '../../components/Auth/AuthContext'; // Adjust the path as needed
+import * as Google from 'expo-auth-session/providers/google'
+const SignInScreen = () => {
+  const [userNameOrEmail, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [passwordIsVisible, setPasswordIsVisible] = useState(false);
+  const navigation = useNavigation();
+  const { login, userDetails } = useAuth(); // Assuming useAuth provides the current user and login function
 
-// Ensure Buffer is globally available
-global.Buffer = global.Buffer || Buffer;
-
-// Twilio credentials (replace with your own)
-const ACCOUNT_SID = "ACde7e235ee22878fb0d0510d19a99d57f"; // Replace with your Twilio Account SID
-const AUTH_TOKEN = "6266af55daf6af3746b6390306734ac6";   // Replace with your Twilio Auth Token
-const TWILIO_PHONE_NUMBER = "+919894579863"; // Replace with your Twilio phone number
-
-function Login() {
-    const [step, setStep] = useState(1);
-    const [mobileNumber, setMobileNumber] = useState("");
-    const [generatedOtp, setGeneratedOtp] = useState("");
-    const [enteredOtp, setEnteredOtp] = useState("");
-
-    const generateOtp = () => {
-        return Math.floor(1000 + Math.random() * 9000).toString(); // Generate a 4-digit OTP
+  useEffect(() => {
+    const checkUser = async () => {
+      const storedUser = await AsyncStorage.getItem('user');
+      if (storedUser) {
+        // If user is already logged in, navigate to MainLanding
+        navigation.navigate('MainLanding');
+      }
     };
 
-    const sendOtp = async (otp) => {
-        const message = `Your OTP for login is: ${otp}`;
-        const formattedNumber = `+91${mobileNumber.trim()}`;
+    checkUser();
+  }, [navigation]);
 
-        if (!formattedNumber) {
-            showMessage({ message: "Mobile number is empty or invalid", type: "danger" });
-            return;
-        }
+  const handleLogin = async () => {
+    if (!userNameOrEmail || !password) {
+      Alert.alert('Error', 'Please enter email and password');
+      return;
+    }
 
-        if (!/^[6-9]\d{9}$/.test(mobileNumber)) {
-            showMessage({ message: "Invalid Mobile Number Format", type: "danger" });
-            return;
-        }
+    setLoading(true);
+    try {
+      const response = await fetch('http://192.168.1.6:3030/user/login/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userNameOrEmail, password }),
+      });
 
-        console.log("Sending OTP to:", formattedNumber);
+      if (response.ok) {
+        const data = await response.json();
+        if (!data.error) {
+          Alert.alert('Success', 'Logged in successfully');
+          const { token, userDetails } = data;
+          // Store the accessToken and user info
+          await AsyncStorage.setItem('accessToken', token);
+          await AsyncStorage.setItem('user', JSON.stringify(userDetails));
 
-        try {
-            const response = await fetch(
-                `https://api.twilio.com/2010-04-01/Accounts/${ACCOUNT_SID}/Messages.json`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Authorization": "Basic " + Buffer.from(`${ACCOUNT_SID}:${AUTH_TOKEN}`).toString("base64"),
-                        "Content-Type": "application/x-www-form-urlencoded",
-                    },
-                    body: new URLSearchParams({
-                        From: TWILIO_PHONE_NUMBER,
-                        To: formattedNumber,
-                        Body: message,
-                    }),
-                }
-            );
-
-            const data = await response.json();
-            if (response.ok) {
-                console.log("OTP sent successfully:", data);
-                showMessage({ message: "OTP Sent Successfully", type: "success" });
-                setGeneratedOtp(otp);
-            } else {
-                console.error("Twilio error:", data);
-                showMessage({ message: `Failed to send OTP: ${data.message}`, type: "danger" });
-            }
-        } catch (error) {
-            console.error("Error sending OTP:", error);
-            showMessage({ message: "Error sending OTP. Please try again.", type: "danger" });
-        }
-    };
-
-    const handleMobileSubmit = () => {
-        const phoneRegex = /^[6-9]\d{9}$/; // Indian mobile numbers start with 6-9
-        if (phoneRegex.test(mobileNumber)) {
-            const otp = generateOtp();
-            sendOtp(otp);
-            setStep(2);
+          // Use the login function from AuthContext to set the user
+          login(login);
+          
+          navigation.navigate('MainLanding');
         } else {
-            showMessage({ message: "Invalid Mobile Number", type: "danger" });
+          Alert.alert('Error', data.message || 'Login failed');
         }
-    };
+      } else {
+        Alert.alert('Error', 'Login failed, please try again.');
+      }
+    } catch (error) {
+      console.error('Network or fetch error:', error);
+      Alert.alert('Error', 'Login failed due to a network error');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const handleOtpSubmit = () => {
-        if (enteredOtp === generatedOtp) {
-            showMessage({ message: "Login Successfully", type: "success" });
-        } else {
-            showMessage({ message: "Invalid OTP", type: "danger" });
-        }
-    };
-
+  // If user is already logged in, don't render the SignInScreen
+  if (login) {
     return (
-        <View style={styles.container}>
-            {step === 1 && (
-                <>
-                    <Text style={styles.title}>Enter Mobile Number</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Enter your mobile number"
-                        keyboardType="numeric"
-                        maxLength={10}
-                        value={mobileNumber}
-                        onChangeText={setMobileNumber}
-                    />
-                    <TouchableOpacity style={styles.button} onPress={handleMobileSubmit}>
-                        <Text style={styles.buttonText}>Submit</Text>
-                    </TouchableOpacity>
-                </>
-            )}
-            {step === 2 && (
-                <>
-                    <Text style={styles.title}>Enter OTP</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Enter the OTP"
-                        keyboardType="numeric"
-                        maxLength={4}
-                        value={enteredOtp}
-                        onChangeText={setEnteredOtp}
-                    />
-                    <TouchableOpacity style={styles.button} onPress={handleOtpSubmit}>
-                        <Text style={styles.buttonText}>Verify OTP</Text>
-                    </TouchableOpacity>
-                </>
-            )}
-            <FlashMessage position="top" />
-        </View>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#3662AA" />
+      </View>
     );
+  }else{
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>Login</Text>
+
+      <View style={styles.inputContainer}>
+        <View style={styles.icon}>
+          <Feather name="mail" size={22} color="#7C808D" />
+        </View>
+        <TextInput
+          style={styles.input}
+          placeholder="Email ID"
+          placeholderTextColor="#7C808D"
+          selectionColor="#3662AA"
+          onChangeText={setEmail}
+          value={userNameOrEmail}
+        />
+      </View>
+
+      <View style={styles.inputContainer}>
+        <View style={styles.icon}>
+          <Feather name="lock" size={22} color="#7C808D" />
+        </View>
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          secureTextEntry={!passwordIsVisible}
+          placeholderTextColor="#7C808D"
+          selectionColor="#3662AA"
+          onChangeText={setPassword}
+          value={password}
+        />
+        <TouchableOpacity
+          style={styles.passwordVisibleButton}
+          onPress={() => setPasswordIsVisible(!passwordIsVisible)}
+        >
+          <Feather name={passwordIsVisible ? 'eye' : 'eye-off'} size={20} color="#7C808D" />
+        </TouchableOpacity>
+      </View>
+
+      <TouchableOpacity style={styles.forgotPasswordButton}>
+        <Text style={styles.forgotPasswordButtonText}>Forgot password?</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={loading}>
+        <Text style={styles.loginButtonText}>{loading ? 'Signing in...' : 'Sign In'}</Text>
+      </TouchableOpacity>
+
+      <View style={styles.orContainer}>
+        <View style={styles.orLine} />
+        <Text style={styles.orText}>OR</Text>
+        <View style={styles.orLine} />
+      </View>
+
+      {/* Google Login Button */}
+      <TouchableOpacity style={styles.socialButton}>
+        <Image
+          style={styles.googleLogo}
+          source={require('../../assets/icons/google.png')}
+        />
+        <Text style={styles.googleButtonText}>Login with Google</Text>
+      </TouchableOpacity>
+
+      {/* Facebook Login Button */}
+      <TouchableOpacity style={styles.socialButton}>
+        <Feather name="facebook" size={22} color="#fff" />
+        <Text style={styles.socialButtonText}>Login with Facebook</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
+        <Text style={styles.signupText}>Don't have an account? Sign Up</Text>
+      </TouchableOpacity>
+    </ScrollView>
+  );
+};
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "#f8f9fa",
-        padding: 20,
-    },
-    title: {
-        fontSize: 18,
-        marginBottom: 20,
-        fontWeight: "bold",
-        color: "#333",
-    },
-    input: {
-        width: "100%",
-        padding: 15,
-        borderWidth: 1,
-        borderColor: "#ccc",
-        borderRadius: 8,
-        marginBottom: 20,
-        fontSize: 16,
-    },
-    button: {
-        width: "100%",
-        backgroundColor: "#2080b9",
-        padding: 15,
-        borderRadius: 8,
-        alignItems: "center",
-    },
-    buttonText: {
-        color: "#fff",
-        fontSize: 16,
-        fontWeight: "bold",
-    },
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    paddingHorizontal: 30,
+    paddingVertical: 20,
+  },
+  title: {
+    fontSize: 30,
+    fontWeight: 'bold',
+    marginBottom: 40,
+    textAlign: 'center',
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+    position: 'relative',
+  },
+  icon: {
+    marginRight: 15,
+  },
+  input: {
+    borderBottomWidth: 1.5,
+    flex: 1,
+    paddingBottom: 10,
+    borderBottomColor: '#eee',
+    fontSize: 16,
+  },
+  passwordVisibleButton: {
+    position: 'absolute',
+    right: 0,
+  },
+  forgotPasswordButton: {
+    alignSelf: 'flex-end',
+  },
+  forgotPasswordButtonText: {
+    color: '#3662AA',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  loginButton: {
+    backgroundColor: '#3662AA',
+    padding: 14,
+    borderRadius: 10,
+    marginTop: 20,
+  },
+  loginButtonText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  orContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  orLine: {
+    height: 1,
+    backgroundColor: '#eee',
+    flex: 1,
+  },
+  orText: {
+    color: '#7C808D',
+    marginRight: 10,
+    marginLeft: 10,
+    fontSize: 14,
+  },
+  socialButton: {
+    backgroundColor: '#3b5998',  // For Facebook
+    padding: 14,
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    marginBottom: 10,
+  },
+  socialButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  googleLogo: {
+    width: 20.03,
+    height: 20.44,
+    position: 'absolute',
+    left: 14,
+  },
+  signupText: {
+    color: '#007bff',
+    marginTop: 10,
+    textAlign: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
 
-export default Login;
+export default SignInScreen;

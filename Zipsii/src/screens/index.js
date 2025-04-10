@@ -16,7 +16,7 @@ import Destination from './Destination/Destination'
 import MakeSchedule from './MakeSchedule/MakeSchedule'
 import TripDetail from './TripDetail/TripDetail'
 import Map from './Map/Map'
-import Schedule from './MySchedule/Schedule/Schedule'
+import Schedule from './MySchedule/Schedule/AllSchedule'
 import Login from './Login/Login'
 import DiscoverPlace from './Discoverplace/Discoverplace'
 import SearchPage from './Searchbar/Searchbar'
@@ -25,6 +25,10 @@ import CreatePoll from './CreatePoll/CreatePoll'
 import PageCreation from './PageCreation/PageCreation'
 import ReelUpload from './ReelUpload/ReelUpload'
 import LocationPage from './LocationPage/LocationPage'
+import SignUp from './SignUp/SignUp'
+import FavoritesPage from './Favourite/Favourite'
+import LogoutButton from './Logout/Logout'
+import MapScreen from './mapscreen/MapScreen '
 
 
 export {
@@ -32,9 +36,9 @@ export {
   data,
   MainLanding,
   ProfileDashboard,
- 
+  MapScreen,
   Review,
-
+  FavoritesPage,
   DeleteButton,
   DummyScreen,
   MessageList,
@@ -53,5 +57,7 @@ export {
   CreatePoll,
   PageCreation,
   ReelUpload,
-  LocationPage
+  LocationPage,
+  SignUp,
+  LogoutButton,
 }

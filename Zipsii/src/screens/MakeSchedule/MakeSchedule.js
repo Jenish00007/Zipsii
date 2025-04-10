@@ -1,263 +1,246 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
-  Image,
   ScrollView,
+  Alert,
+  StyleSheet,
 } from "react-native";
-import { BackHeader, BottomTab } from "../../components";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import MapView, { Marker } from "react-native-maps"; // MapView for location selection
+import Icon from "react-native-vector-icons/Ionicons"; // Import Icon library
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as ImagePicker from 'expo-image-picker'; // Image picker for cover image
 import styles from "./styles";
-import Icon from "react-native-vector-icons/Ionicons";
-import { colors } from "../../utils";
 
 function MakeSchedule() {
   const navigation = useNavigation();
-  const [visibility, setVisibility] = useState("Public"); // Default visibility option
-  const [showVisibilityDropdown, setShowVisibilityDropdown] = useState(false);
+  const route = useRoute();
 
-  const [members, setMembers] = useState("1-2"); // Default member option
-  const [showMembersDropdown, setShowMembersDropdown] = useState(false);
+  // Initializing states based on the provided format
+  const [bannerImage, setBannerImage] = useState(null);
+  const [tripName, setTripName] = useState("");
+  const [travelMode, setTravelMode] = useState("Bike");
+  const [visible, setVisible] = useState("Public");
+  const [locationFrom, setLocationFrom] = useState("");
+  const [locationTo, setLocationTo] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [days, setDays] = useState([{ id: 1, description: "", latitude: "", longitude: "" }]);
 
-  const [travelMode, setTravelMode] = useState("Car"); // Default travel mode
-  const [showTravelModeDropdown, setShowTravelModeDropdown] = useState(false);
-
-  const [days, setDays] = useState([{ id: 1, details: "" }]); // Initial days array
-
-  const visibilityOptions = ["Public", "Private", "Friends Only"];
-  const membersOptions = Array.from({ length: 4 }, (_, i) => `1-${i + 2}`); // Members options: 1-2 to 1-11
-  const travelModeOptions = ["Car", "Bike", "Cycle"]; // Travel Mode options
-
-  // Add a new day container
-  const addDay = () => {
-    setDays([...days, { id: days.length + 1, details: "" }]);
+  // Function to calculate the number of days between two dates
+  const calculateNumberOfDays = (fromDate, toDate) => {
+    const startDate = new Date(fromDate);
+    const endDate = new Date(toDate);
+    const diffTime = Math.abs(endDate - startDate);
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // Adding 1 for inclusive date range
   };
 
-  // Remove a specific day container
+  // Function to handle the form submission
+  const handleSubmit = async () => {
+    const numberOfDays = calculateNumberOfDays(fromDate, toDate);
+
+    // Constructing the schedule data in the required format
+    const scheduleData = {
+      bannerImage,
+      tripName,
+      travelMode,
+      visible,
+      location: {
+        from: locationFrom,
+        to: locationTo,
+      },
+      dates: {
+        from: fromDate,
+        end: toDate,
+      },
+      numberOfDays,
+      planDescription: days.map(day => ({
+        description: day.description,
+        date: fromDate, // Using fromDate as a placeholder for day date
+        location: {
+          latitude: parseFloat(day.latitude),
+          longitude: parseFloat(day.longitude),
+        },
+      })),
+    };
+
+    const accessToken = await AsyncStorage.getItem('accessToken');
+
+    try {
+      // Replace with your API URL
+      const response = await fetch('http://172.20.10.5:8000/makeschedule', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(scheduleData),
+      });
+
+      if (response.ok) {
+        Alert.alert('Success', 'Schedule created successfully!');
+        navigation.navigate('MySchedule');
+      } else {
+        throw new Error('Failed to create schedule');
+      }
+    } catch (error) {
+      console.error('Error posting data:', error);
+      Alert.alert('Error', 'Failed to save schedule. Please try again.');
+    }
+  };
+
+  // Function to add a day to the trip plan
+  const addDay = () => {
+    setDays([...days, { id: days.length + 1, description: "", latitude: "", longitude: "" }]);
+  };
+
+  // Function to remove a day from the trip plan
   const removeDay = (id) => {
     const updatedDays = days.filter((day) => day.id !== id);
     setDays(updatedDays);
   };
 
-  // Update the details for a specific day
-  const updateDayDetails = (id, details) => {
+  // Function to update a day's description or location
+  const updateDayDetails = (id, field, value) => {
     const updatedDays = days.map((day) =>
-      day.id === id ? { ...day, details } : day
+      day.id === id ? { ...day, [field]: value } : day
     );
     setDays(updatedDays);
   };
 
+  // Open map for location selection for a specific day
+  const openMapForDay = (dayId) => {
+    navigation.navigate('MapScreen', { dayId });
+  };
+
+  // Updating day location details from the map screen
+  useEffect(() => {
+    if (route.params?.latitude && route.params?.longitude) {
+      const { latitude, longitude, dayId } = route.params;
+      updateDayDetails(dayId, "longitude", longitude.toString());
+      updateDayDetails(dayId, "latitude", route.params.latitude.toString());
+    }
+  }, [route.params]);
+
   return (
     <View style={styles.mainContainer}>
-      
-      <View style={styles.backgroundCurvedContainer} />
-       <View style={styles.protractorShape} />
-       
-     
-        <BackHeader title="Make a Schedule" />
-   
-        <ScrollView style={styles.container}>
-    
-      
+      <ScrollView style={styles.container}>
         <View style={styles.tripContainer}>
-        {/* Trip Name */}
-        <View style={styles.formGroupRow}>
-          <Text style={styles.labelRow}>Trip Name</Text>
-          <TextInput style={styles.underlineInput} />
-        </View>
-
-        {/* Location */}
-        <Text style={styles.maintitle}>LOCATION</Text>
-        <View style={styles.row}>
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>From</Text>
-            <TextInput style={styles.input} placeholder="From location" />
-          </View>
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>To</Text>
-            <TextInput style={styles.input} placeholder="To location" />
-          </View>
-        </View>
-
-        {/* Dates */}
-        <View style={styles.datescontainer}>
-        <Text style={styles.maintitle}>DATES</Text>
-        <View style={styles.row}>
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>From Date</Text>
-            <TextInput style={styles.input} placeholder="Start date" />
-          </View>
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>To Date</Text>
-            <TextInput style={styles.input} placeholder="End date" />
-          </View>
-        </View>
-        </View>
-
-        {/* Dropdowns for Visibility and Members */}
-        <Text style={styles.title}>Visibility & Members</Text>
-        <View style={styles.row}>
-          {/* Visibility Dropdown */}
-          <View style={styles.formGroup}>
-            <TouchableOpacity
-              style={styles.dropdownContainer}
-              onPress={() => setShowVisibilityDropdown(!showVisibilityDropdown)}
-            >
-              <Text style={styles.dropdownText}>{visibility}</Text>
-              <Icon
-                name={showVisibilityDropdown ? "chevron-up" : "chevron-down"}
-                size={20}
-                color="#555"
-                style={styles.icon}
-              />
-            </TouchableOpacity>
-            {showVisibilityDropdown && (
-              <View style={styles.dropdown}>
-                {visibilityOptions.map((option, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={styles.dropdownOption}
-                    onPress={() => {
-                      setVisibility(option);
-                      setShowVisibilityDropdown(false);
-                    }}
-                  >
-                    <Text style={styles.optionText}>{option}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
-          </View>
-
-          {/* Members Dropdown */}
-          <View style={styles.formGroup}>
-            <TouchableOpacity
-              style={styles.dropdownContainer}
-              onPress={() => setShowMembersDropdown(!showMembersDropdown)}
-            >
-              <Text style={styles.dropdownText}>{members}</Text>
-              <Icon
-                name={showMembersDropdown ? "chevron-up" : "chevron-down"}
-                size={20}
-                color="#555"
-                style={styles.icon}
-              />
-            </TouchableOpacity>
-            {showMembersDropdown && (
-              <View style={styles.dropdown}>
-                {membersOptions.map((option, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={styles.dropdownOption}
-                    onPress={() => {
-                      setMembers(option);
-                      setShowMembersDropdown(false);
-                    }}
-                  >
-                    <Text style={styles.optionText}>{option}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
-          </View>
-        </View>
-
-        {/* No of Days */}
-        <Text style={styles.title}>No of Days</Text>
-        <View style={styles.formGroup}>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter number of days"
-            keyboardType="numeric"
-          />
-        </View>
-
-        {/* Plan Description */}
-        <Text style={styles.title}>Plan Description</Text>
-        <View style={styles.planDescriptionContainer}>
-          {days.map((day) => (
-            <View key={day.id} style={styles.dayContainer}>
-              <Text style={styles.dayTitle}>{`Day ${day.id}`}</Text>
-              <TextInput
-                style={styles.dayInput}
-                placeholder={`Enter details for Day ${day.id}`}
-                value={day.details}
-                onChangeText={(text) => updateDayDetails(day.id, text)}
-                multiline
-              />
-              <TouchableOpacity
-                style={styles.removeDayButton}
-                onPress={() => removeDay(day.id)}
-              >
-                <Icon name="close-circle" size={20} color="#e53935" />
-              </TouchableOpacity>
-            </View>
-          ))}
-
-          <TouchableOpacity style={styles.addDayButton} onPress={addDay}>
-            <Icon name="add-circle" size={24} color={colors.btncolor} />
-          </TouchableOpacity>
-        </View>
-
-        {/* Travel Mode Section */}
-        <Text style={styles.title}>Travel Mode</Text>
-        <View style={styles.formGroup}>
-          <TouchableOpacity
-            style={styles.dropdownContainer}
-            onPress={() => setShowTravelModeDropdown(!showTravelModeDropdown)}
-          >
-            <Text style={styles.dropdownText}>{travelMode}</Text>
-            <Icon
-              name={showTravelModeDropdown ? "chevron-up" : "chevron-down"}
-              size={20}
-              color="#555"
-              style={styles.icon}
+          {/* Trip Name */}
+          <View style={styles.formGroupRow}>
+            <Text style={styles.labelRow}>Trip Name</Text>
+            <TextInput
+              style={styles.underlineInput}
+              value={tripName}
+              onChangeText={setTripName}
+              placeholder="Enter trip name"
             />
-          </TouchableOpacity>
-          {showTravelModeDropdown && (
-            <View style={styles.dropdown}>
-              {travelModeOptions.map((option, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.dropdownOption}
-                  onPress={() => {
-                    setTravelMode(option);
-                    setShowTravelModeDropdown(false);
+          </View>
+
+          {/* Location */}
+          <Text style={styles.maintitle}>LOCATION</Text>
+          <View style={styles.row}>
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>From</Text>
+              <TextInput
+                style={styles.input}
+                value={locationFrom}
+                onChangeText={setLocationFrom}
+                placeholder="From location"
+              />
+            </View>
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>To</Text>
+              <TextInput
+                style={styles.input}
+                value={locationTo}
+                onChangeText={setLocationTo}
+                placeholder="To location"
+              />
+            </View>
+          </View>
+
+          {/* Dates */}
+          <View style={styles.datescontainer}>
+            <Text style={styles.maintitle}>DATES</Text>
+            <View style={styles.row}>
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>From Date</Text>
+                <TextInput
+                  style={styles.input}
+                  value={fromDate}
+                  onChangeText={setFromDate}
+                  placeholder="Start date (dd/mm/yyyy)"
+                />
+              </View>
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>To Date</Text>
+                <TextInput
+                  style={styles.input}
+                  value={toDate}
+                  onChangeText={setToDate}
+                  placeholder="End date (dd/mm/yyyy)"
+                />
+              </View>
+            </View>
+          </View>
+
+          {/* Plan Description - Location Fields */}
+          <Text style={styles.title}>Plan Description</Text>
+          <View style={styles.planDescriptionContainer}>
+            {days.map((day) => (
+              <View key={day.id} style={styles.dayContainer}>
+                <Text style={styles.dayTitle}>{`Day ${day.id}`}</Text>
+                <TextInput
+                  style={styles.dayInput}
+                  placeholder={`Enter details for Day ${day.id}`}
+                  value={day.description}
+                  onChangeText={(text) => updateDayDetails(day.id, "description", text)}
+                  multiline
+                />
+                <View style={styles.mapButtonContainer}>
+                  <TouchableOpacity
+                    onPress={() => openMapForDay(day.id)}
+                    style={styles.mapButton}>
+                    <Icon name="location-sharp" size={24} color="white" />
+                    <Text style={styles.mapButtonText}>Select Location</Text>
+                  </TouchableOpacity>
+                </View>
+                <MapView
+                  style={styles.map}
+                  initialRegion={{
+                    latitude: day.latitude ? parseFloat(day.latitude) : 37.78825,
+                    longitude: day.longitude ? parseFloat(day.longitude) : -122.4324,
+                    latitudeDelta: 0.0922,
+                    longitudeDelta: 0.0421,
                   }}
                 >
-                  <Text style={styles.optionText}>{option}</Text>
+                  {day.latitude && day.longitude && (
+                    <Marker coordinate={{ latitude: parseFloat(day.latitude), longitude: parseFloat(day.longitude) }} />
+                  )}
+                </MapView>
+                <TouchableOpacity
+                  style={styles.removeDayButton}
+                  onPress={() => removeDay(day.id)}
+                >
+                  <Icon name="close-circle" size={20} color="#e53935" />
                 </TouchableOpacity>
-              ))}
-            </View>
-          )}
+              </View>
+            ))}
+            <TouchableOpacity style={styles.addDayButton} onPress={addDay}>
+              <Icon name="add-circle" size={24} color="#007bff" />
+            </TouchableOpacity>
+          </View>
+
+          {/* Done Button */}
+          <TouchableOpacity style={styles.doneButton} onPress={handleSubmit}>
+            <Text style={styles.doneButtonText}>Done</Text>
+          </TouchableOpacity>
         </View>
-
-        {/* Cover Image */}
-        <View style={styles.formGroup}>
-          <Text style={styles.title}>Cover Image</Text>
-          <Image
-            source={{
-              uri: "https://img.freepik.com/free-photo/straight-road-middle-desert-with-magnificent-mountains-sunset_181624-37698.jpg?semt=ais_hybrid",
-            }}
-            style={styles.image}
-          />
-        </View>
-
-        {/* Done Button */}
-        <TouchableOpacity style={styles.doneButton} 
-        onPress={()=>
-            navigation.navigate('MySchedule')
-        }>
-          <Text style={styles.doneButtonText}>DONE</Text>
-        </TouchableOpacity>
-      </View>
-      
-     </ScrollView>
-
-     {/* BottomTab Component */}
-     <BottomTab screen={"WhereToGo"} stye={styles.BottomTab}/>
+      </ScrollView>
     </View>
   );
 }

@@ -1,19 +1,48 @@
-import React from "react";
-import { View, Text, StyleSheet, Dimensions, ScrollView, Image } from "react-native";
+import React, { useState, useEffect } from 'react';
+import { View, Text,FlatList, StyleSheet, Dimensions, ScrollView, Image } from "react-native";
 import MapView, { Marker, Polyline } from "react-native-maps";
 import { BackHeader, BottomTab } from "../../components";
 import { alignment, colors } from "../../utils";
-import { cardData } from "../CardData/CardData";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { useNavigation } from "@react-navigation/native";
+import { TextDefault } from '../../components';
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-
+import DiscoverByNearest from '../../components/DiscoverByNearest/DiscoverByNearest';
+const baseUrl = 'http://172.20.10.5:8000';
 const Map = ({ route }) => {
   const navigation = useNavigation();
   const backPressed = () => {
     navigation.goBack(); // Navigate to the previous screen when the back arrow is pressed
   };
+  const [discoverbynearest, setDiscoverbyNearest] = useState([]);
 
+    // Fetch data from an open-source API (JSONPlaceholder API for demonstration)
+    useEffect(() => {
+      const fetchDiscoverbyNearest = async () => {
+        try {
+          const response = await fetch(baseUrl + '/discover_by_nearest');
+          const data = await response.json();
+  
+          // Log to verify the data structure
+         // console.log(data);
+  
+          const formattedData = data.slice(0, 100).map(item => ({
+            id: item.id,
+            image: item.image,
+            title: item.name,
+            subtitle: item.subtitle,
+          }));
+  
+          //console.log(formattedData); // Check the formatted data with image URLs
+  
+          setDiscoverbyNearest(formattedData);
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+      };
+  
+      fetchDiscoverbyNearest();
+    }, []);
   // Destructure the route params and set default values if they are undefined
   const { fromLocation = 'Unknown', toLocation = 'Unknown' } = route.params || {};
 
@@ -87,24 +116,22 @@ const Map = ({ route }) => {
 
         <Text style={styles.explore}>Explore Travel</Text>
 
-        {/* Discover Row */}
         <View style={styles.discoverRow}>
-          <Text style={styles.discoverText}>Discover by Nearest</Text>
-          <TouchableOpacity onPress={() => navigation.navigate("DiscoverPlace")}>
-            <Text style={styles.viewAllText}>View All</Text>
+          <TextDefault style={styles.discoverText}>Discover by Nearest</TextDefault>
+          <TouchableOpacity onPress={() => navigation.navigate('DiscoverPlace')}>
+            <TextDefault style={styles.viewAllText}>View All</TextDefault>
           </TouchableOpacity>
         </View>
+        <FlatList
+          horizontal={true}
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item, index) => item.id}
+          data={discoverbynearest}
+          renderItem={({ item, index }) => (
+            <DiscoverByNearest styles={styles.itemCardContainer} {...item} />
+          )}
+        />
 
-        {/* Horizontal Scroll for Cards */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {cardData.map((card) => (
-            <View key={card.id} style={styles.card}>
-              <Image source={{ uri: card.image }} style={styles.cardImage} />
-              <Text style={styles.cardTitle}>{card.title}</Text>
-              <Text style={styles.cardSubtitle}>{card.subtitle}</Text>
-            </View>
-          ))}
-        </ScrollView>
       </ScrollView>
 
       {/* Bottom Tab */}
@@ -195,32 +222,7 @@ const styles = StyleSheet.create({
     color: colors.btncolor,
     fontWeight: "500",
   },
-  card: {
-    width: 150,
-    marginRight: 10,
-    backgroundColor: colors.white,
-    borderRadius: 10,
-    ...alignment.PxSmall,
-    borderWidth: 1,
-    borderColor: colors.grayLinesColor,
-    borderRadius: 6,
-    elevation: 6,
-  },
-  cardImage: {
-    width: "100%",
-    height: 110,
-    borderRadius: 10,
-  },
-  cardTitle: {
-    marginTop: 5,
-    fontSize: 14,
-    fontWeight: "bold",
-    color: colors.fontMainColor,
-  },
-  cardSubtitle: {
-    fontSize: 12,
-    color: colors.fontThirdColor,
-  },
+ 
   explore: {
     ...alignment.Psmall,
     fontWeight: "bold",

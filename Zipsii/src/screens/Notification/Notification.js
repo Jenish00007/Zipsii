@@ -1,50 +1,66 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  SectionList,
-  TouchableOpacity,
-} from "react-native";
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, SectionList, TouchableOpacity } from "react-native";
 import { colors } from "../../utils";
-
+const baseUrl = 'http://172.20.10.5:8000'; 
 const Notification = () => {
   const [activeTab, setActiveTab] = useState("All");
 
-  const notifications = [
-    {
-      id: 1,
-      title: "New Recipe Alert!",
-      description:
-        "Lorem ipsum tempor incididunt ut labore et dolore, in voluptate velit esse cillum",
-      time: "10 mins ago",
-      date: "Today",
-    },
-    {
-      id: 2,
-      title: "Save Recipe Alert!",
-      description:
-        "Lorem ipsum tempor incididunt ut labore et dolore, in voluptate velit esse cillum",
-      time: "30 mins ago",
-      date: "Yesterday",
-    },
-  ];
+  const [notifications, setNotifications] = useState([]);
+
+   useEffect(() => {
+      const fetchCardData = async () => {
+        try {
+          const response = await fetch(baseUrl + '/get_all_Notification');
+          const data = await response.json();
+          const formattedData = data.slice(0, 100).map(item => ({
+            id: item.id,
+            description: item.description, 
+            title: item.title,
+            time: item.time,
+            date: item.date,
+            read: item.read,
+          }));
+          console.log(formattedData);
+          setNotifications(formattedData);
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+      };
+      fetchCardData();
+    }, []);
+
+  const handleToggleReadStatus = (id) => {
+    setNotifications((prevNotifications) =>
+      prevNotifications.map((notification) =>
+        notification.id === id
+          ? { ...notification, read: !notification.read }
+          : notification
+      )
+    );
+  };
+
+  const filteredNotifications = notifications.filter((notification) => {
+    if (activeTab === "All") return true;
+    if (activeTab === "Read") return notification.read;
+    if (activeTab === "Unread") return !notification.read;
+  });
 
   const groupedNotifications = [
     {
       title: "Today",
-      data: notifications.filter((notification) => notification.date === "Today"),
+      data: filteredNotifications.filter((notification) => notification.date === "Today"),
     },
     {
       title: "Yesterday",
-      data: notifications.filter(
-        (notification) => notification.date === "Yesterday"
-      ),
+      data: filteredNotifications.filter((notification) => notification.date === "Yesterday"),
     },
   ];
 
   const renderNotification = ({ item }) => (
-    <View style={styles.notificationCard}>
+    <TouchableOpacity
+      style={styles.notificationCard}
+      onPress={() => handleToggleReadStatus(item.id)}
+    >
       <View style={styles.notificationContent}>
         <Text style={styles.notificationTitle}>{item.title}</Text>
         <Text style={styles.notificationDescription}>{item.description}</Text>
@@ -53,7 +69,7 @@ const Notification = () => {
       <View style={styles.notificationIcon}>
         <Text style={styles.iconText}>🔔</Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   const renderSectionHeader = ({ section }) => (

@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   readMore: {
-    color: colors.blueColor, // Set this to your desired link color (e.g., purple or blue)
+    color: colors.Zipsii_color, // Set this to your desired link color (e.g., purple or blue)
     fontWeight: 'bold',
   },
   commenttitle:{
@@ -157,6 +157,56 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginLeft: 10,
     alignSelf: 'center',
+  },
+  discoverRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 15,
+    marginVertical: 10,
+    ...alignment.MBmedium,
+  },
+  discoverText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: colors.fontMainColor,
+  },
+  viewAllText: {
+    fontSize: 14,
+    color: colors.btncolor,
+    fontWeight: "500",
+  },
+  card: {
+    width: 150,
+    marginRight: 10,
+    backgroundColor: colors.white,
+    borderRadius: 10,
+    ...alignment.PxSmall,
+    borderWidth: 1,
+    borderColor: colors.grayLinesColor,
+    borderRadius: 6,
+    elevation: 6,
+  },
+  cardImage: {
+    width: "100%",
+    height: 110,
+    borderRadius: 10,
+  },
+  cardTitle: {
+    marginTop: 5,
+    fontSize: 14,
+    fontWeight: "bold",
+    color: colors.fontMainColor,
+  },
+  cardSubtitle: {
+    fontSize: 12,
+    color: colors.fontThirdColor,
+  },
+  explore: {
+    ...alignment.Psmall,
+    fontWeight: "bold",
+    alignSelf: "center",
+    fontSize: 16,
   },
   
 });

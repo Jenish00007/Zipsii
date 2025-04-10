@@ -1,77 +1,73 @@
-import React, { useState, useContext, useEffect } from 'react'
-import { View, Image, TouchableOpacity, FlatList } from 'react-native'
-import styles from './styles'
-import { TextDefault } from '../../components'
-import { colors, scale } from '../../utils'
-import { useNavigation } from '@react-navigation/native'
-import { Ionicons } from '@expo/vector-icons'
-
-
-
+import React, { useState, useEffect } from 'react';
+import { View, Image, TouchableOpacity, Alert, Text } from 'react-native';
+import styles from './styles';
+import { colors, scale } from '../../utils';
+import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
 
 function ProductCard(props) {
-  const navigation = useNavigation()
+  const navigation = useNavigation();
+  const [liked, setLiked] = useState(false);
+  const [loading, setLoading] = useState(false); // Loading state
 
-  const [liked, setLiked] = useState(false)
+  // Fetch user data from AsyncStorage on component mount
 
-  // useEffect(() => {
-  //   if (isLoggedIn) {
-  //     setLiked(
-  //       profile.whishlist
-  //         ? !!profile.whishlist.find(whishlist => whishlist._id === props._id)
-  //         : false
-  //     )
-  //   } else {
-  //     setLiked(false)
-  //   }
-  // }, [profile, isLoggedIn])
+  const handleLikeToggle = async () => {
+    setLoading(true); // Start loading
 
-  const dummyData = [
-   
-    
-  ];
+    try {
+      const newLikedStatus = !liked;
+      const accessToken = await AsyncStorage.getItem('accessToken'); // Get the access token
+      // Make the POST request to update like status
+      const response = await fetch(`http://192.168.85.179:8000/update-like-status?id=${props.id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`, // Attach the JWT token to the request header
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json(); // Parse JSON response
+
+        if (!data.error) {
+          Alert.alert('Success', newLikedStatus ? 'Product liked' : 'Product unliked');
+          setLiked(newLikedStatus); // Update liked state
+        } else {
+          Alert.alert('Error', data.message || 'Failed to update like status');
+        }
+      } else {
+        Alert.alert('Error', 'Failed to update like status, please try again.');
+      }
+    } catch (error) {
+      console.error('Network or fetch error:', error);
+      Alert.alert('Error', 'Failed to update like status due to a network error');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <TouchableOpacity
-      // disabled={loadingMutation}
       activeOpacity={1}
-      onPress={() =>
-        navigation.navigate('Destination', { product: props })
-      }
+      onPress={() => navigation.navigate('Destination', { product: props })}
       style={[styles.cardContainer, props.styles]}>
       
-      {/* Multiple Images Carousel */}
+      {/* Product Image */}
       <View style={styles.topCardContainer}>
-        <FlatList
-          data={props.image} // Assuming props.image is an array of image URLs
-          horizontal
-          renderItem={({ item }) => (
-            <Image
-              source={require('../../storage/images/profile4.jpg')}
-              style={styles.imgResponsive}
-              resizeMode="cover"
-            />
-          )}
-          keyExtractor={(item, index) => index.toString()}
-          showsHorizontalScrollIndicator={false}
+        <Image
+          source={{ uri: props.image }}  // Assuming `props.image` contains the product image URL
+          style={styles.imgResponsive}
+          resizeMode="cover"
         />
 
+        {/* Like Button */}
         <View style={styles.likeContainer}>
           <TouchableOpacity
-            // disabled={loadingMutation}
             activeOpacity={0.7}
-            // onPress={() => {
-            //   if (isLoggedIn) {
-            //     mutate({
-            //       variables: {
-            //         productId: props._id
-            //       }
-            //     });
-            //     setLiked((prev) => !prev);
-            //   } else {
-            //     navigation.navigate('SignIn');
-            //   }
-            // }}
+            onPress={handleLikeToggle} // Trigger like/unlike functionality
+            disabled={loading}  // Disable while loading
           >
             <Ionicons
               name={liked ? 'ios-bookmark' : 'ios-bookmark-outline'}
@@ -82,48 +78,20 @@ function ProductCard(props) {
         </View>
       </View>
 
-      {/* Product Info Section */}
+      {/* Product Information */}
       <View style={styles.botCardContainer}>
         <View style={styles.botSubCardContainer}>
-          <TextDefault numberOfLines={1} textColor={colors.fontMainColor}>
-            {props.title}
-          </TextDefault>
-          
-          <View style={styles.priceContainer}>
-            {/* <TextDefault
-              style={{ maxWidth: '70%' }}
-              numberOfLines={1}
-              textColor={colors.fontSecondColor}
-              small>
-              {props.subCategory.title}
-            </TextDefault> */}
-            <View style={styles.ratingContainer}>
-              {/* <TextDefault
-                textColor={colors.fontSecondColor}
-                style={{ marginLeft: 2 }}
-                small>
-                {`${props.reviewData.total} `}
-              </TextDefault> */}
-            </View>
-          </View>
-        </View>
+          <Text style={{ color: colors.fontMainColor }} numberOfLines={1}>
+            {props.name}
+          </Text>
 
-        {/* Dummy List Section */}
-        <View style={styles.priceContainer}>
-          <FlatList
-            data={dummyData}
-            renderItem={({ item }) => (
-              <View style={styles.listItem}>
-                <TextDefault textColor={colors.fontMainColor}>{item.title}</TextDefault>
-              </View>
-            )}
-            keyExtractor={item => item.id}
-            
-          />
+          <View style={styles.priceContainer}>
+            {/* Optionally add more product information like price or rating */}
+          </View>
         </View>
       </View>
     </TouchableOpacity>
-  )
+  );
 }
 
-export default ProductCard
+export default ProductCard;

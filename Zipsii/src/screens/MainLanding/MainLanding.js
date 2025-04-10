@@ -1,5 +1,14 @@
-import React from 'react';
-import { View, FlatList, ImageBackground, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { 
+  View, 
+  FlatList, 
+  Alert, 
+  ScrollView, 
+  ImageBackground, 
+  TouchableOpacity, 
+  NativeModules,
+  Image 
+} from 'react-native';
 import SwiperFlatList from 'react-native-swiper-flatlist';
 import styles from './styles';
 import CategoryCard from '../../ui/CategoryCard/CategoryCard';
@@ -7,67 +16,315 @@ import { BottomTab, TextDefault, TextError, Spinner, Hexagon } from '../../compo
 import { verticalScale, scale, colors, alignment } from '../../utils';
 import ProductCard from '../../ui/ProductCard/ProductCard';
 import { SafeAreaView } from 'react-native-safe-area-context';
-// import { HeaderBackButton } from '@react-navigation/stack';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { TextInput, Image } from 'react-native'; // Add this to your imports
+import { TextInput } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useState } from 'react';
 import { WebView } from 'react-native-webview';
 import { useSchedule } from '../../context/ScheduleContext';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Stories from '../../components/Stories/Stories';
 import Post from '../../components/Posts/Post';
+import DiscoverByNearest from '../../components/DiscoverByNearest/DiscoverByNearest';
+import Schedule from '../MySchedule/Schedule/AllSchedule';
+import SkeletonLoader from '../../components/Loader/SkeletonLoader';
+import { BackHandler } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 
-
-
-
-// import HexagonBlue from '../../components/Hexagon';
-
-const caroselImage = [
-  require('../../assets/images/MainLanding/slide1.jpg'),
-  require('../../assets/images/MainLanding/slide2.jpg'),
-  require('../../assets/images/MainLanding/slide3.jpg'),
-  require('../../assets/images/MainLanding/slide4.jpg'),
-  require('../../assets/images/MainLanding/slide5.jpg'),
-  require('../../assets/images/MainLanding/slide6.jpg')
-];
-
-const dummyData = [
-  { id: '1', title: 'Item 1', description: 'This is a description of item 1' },
-  { id: '2', title: 'Item 2', description: 'This is a description of item 2' },
-  { id: '3', title: 'Item 3', description: 'This is a description of item 3' },
-  { id: '4', title: 'Item 4', description: 'This is a description of item 4' },
-  { id: '5', title: 'Item 5', description: 'This is a description of item 5' }
-];
-const videoShorts = [
-  { id: '1', url: 'https://www.youtube.com/shorts/8OLAi6Eba98?feature=share' },
-  { id: '2', url: 'https://www.youtube.com/shorts/NsOfgaUD92Q?feature=share' },
-  { id: '3', url: 'https://www.youtube.com/shorts/QyGx_Z2tbTA?feature=share' }
-];
-
-const dummyDatacategory = [
-  { id: '1', cardLabel: 'Beach', icon: require('../../assets/th1.jpeg') },
-  { id: '2', cardLabel: 'Mountains', icon: require('../../assets/th1.jpeg') },
-  { id: '3', cardLabel: 'Forest', icon: require('../../assets/th1.jpeg') },
-  { id: '4', cardLabel: 'Desert', icon: require('../../assets/th1.jpeg') },
-  { id: '5', cardLabel: 'City', icon: require('../../assets/th1.jpeg') },
-];
+const baseUrl = 'http://192.168.1.6:3030';
 
 function MainLanding(props) {
   const navigation = useNavigation();
-
   const { scheduleData } = useSchedule();
-
-  // Button state
   const [selectedButton, setSelectedButton] = useState('All');
-  const buttons = ['All', 'Latest', 'Popular', 'Trending'];
+  const buttons = ['All', 'Schedule', 'Shorts', 'Posts'];
+  
+  // Loading states
+  const [isDiscoverByInterestLoading, setIsDiscoverByInterestLoading] = useState(true);
+  const [isBestDestinationLoading, setIsBestDestinationLoading] = useState(true);
+  const [isAllDestinationLoading, setIsAllDestinationLoading] = useState(true);
+  const [isScheduleLoading, setIsScheduleLoading] = useState(true);
+  const [isPostsLoading, setIsPostsLoading] = useState(true);
+  const [isShortsLoading, setIsShortsLoading] = useState(true);
+  const [isNearestLoading, setIsNearestLoading] = useState(true);
+  const [isStoriesLoading, setIsStoriesLoading] = useState(true);
 
+  // Data states
+  const [discover_by_intrest, setDiscover_by_intrest] = useState([]);
+  const [best_destination, setBest_destination] = useState([]);
+  const [all_destination, setAll_destination] = useState([]);
+  const [all_schedule, setAll_schedule] = useState([]);
+  const [all_posts, setAllPosts] = useState([]);
+  const [all_shorts, setAllShorts] = useState([]);
+  const [discoverbynearest, setDiscoverbyNearest] = useState([]);
 
-  const handleCardPress = (item) => {
-    navigation.navigate('TripDetail', { tripData: item }); // Navigate and pass data
-  };
+  // Back handler
+  useFocusEffect(
+    React.useCallback(() => {
+      const backAction = () => {
+        Alert.alert(
+          "Exit App",
+          "Are you sure you want to exit?",
+          [
+            {
+              text: "Cancel",
+              onPress: () => null,
+              style: "cancel"
+            },
+            { text: "YES", onPress: () => BackHandler.exitApp() }
+          ]
+        );
+        return true;
+      };
 
+      const backHandler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        backAction
+      );
+
+      return () => backHandler.remove();
+    }, [])
+  );
+  useEffect(() => {
+    const fetchDiscoverByInterest = async () => {
+      try {
+        setIsDiscoverByInterestLoading(true);
+        const response = await fetch(baseUrl + '/discover_by_intrest');
+        const data = await response.json();
+
+        // Check if data is an array
+        if (Array.isArray(data)) {
+          const formattedData = data.slice(0, 100).map(item => ({
+            id: item.id,
+            image: baseUrl + item.image,
+            name: item.name
+          }));
+          setDiscoverByInterest(formattedData);
+        } else {
+          console.error('Fetched data is not an array:', data);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsDiscoverByInterestLoading(false);
+      }
+    };
+    fetchDiscoverByInterest();
+  }, []);
+
+  // Fetch Best Destination
+  useEffect(() => {
+    const fetchBestDestination = async () => {
+      try {
+        setIsBestDestinationLoading(true);
+        const response = await fetch(baseUrl + '/best_destination');
+        const data = await response.json();
+
+        // Check if data is an array
+        if (Array.isArray(data)) {
+          const formattedData = data.slice(0, 100).map(item => ({
+            id: item.id,
+            image: baseUrl + item.image,
+            name: item.name
+          }));
+          setBestDestination(formattedData);
+        } else {
+          console.error('Fetched data is not an array:', data);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsBestDestinationLoading(false);
+      }
+    };
+    fetchBestDestination();
+  }, []);
+
+  // Fetch All Destination
+  useEffect(() => {
+    const fetchAllDestination = async () => {
+      try {
+        setIsAllDestinationLoading(true);
+        const response = await fetch(baseUrl + '/all_destination');
+        const data = await response.json();
+
+        // Check if data is an array
+        if (Array.isArray(data)) {
+          const formattedData = data.slice(0, 100).map(item => ({
+            id: item.id,
+            image: baseUrl + item.image,
+            name: item.name
+          }));
+          setAllDestination(formattedData);
+        } else {
+          console.error('Fetched data is not an array:', data);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsAllDestinationLoading(false);
+      }
+    };
+    fetchAllDestination();
+  }, []);
+
+  // Fetch All Schedule
+  useEffect(() => {
+    const fetchAllSchedule = async () => {
+      try {
+        setIsScheduleLoading(true);
+        const response = await fetch(baseUrl + '/get_all_schedule');
+        const data = await response.json();
+
+        // Check if data is an array
+        if (Array.isArray(data)) {
+          const formattedData = data.slice(0, 100).map(item => ({
+            id: item.id,
+            title: item.title,
+            from: item.from,
+            to: item.to,
+            date: item.date,
+            riders: item.riders,
+            joined: item.joined,
+            imageUrl: item.imageUrl,
+            day1Locations: item.day1Locations,
+            day2Locations: item.day2Locations
+          }));
+          setAllSchedule(formattedData);
+        } else {
+          console.error('Fetched data is not an array:', data);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsScheduleLoading(false);
+      }
+    };
+    fetchAllSchedule();
+  }, []);
+
+  // Fetch All Posts
+  useEffect(() => {
+    const fetchAllPosts = async () => {
+      try {
+        setIsPostsLoading(true);
+        const response = await fetch(baseUrl + '/get_all_posts');
+        const data = await response.json();
+
+        // Check if data is an array
+        if (Array.isArray(data)) {
+          const formattedData = data.slice(0, 100).map(item => ({
+            id: item.id,
+            postPersonImage: item.postPersonImage,
+            postTitle: item.postTitle,
+            postImage: item.postImage,
+            likes: item.likes,
+            isLiked: item.isLiked
+          }));
+          setAllPosts(formattedData);
+        } else {
+          console.error('Fetched data is not an array:', data);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsPostsLoading(false);
+      }
+    };
+    fetchAllPosts();
+  }, []);
+
+  // Fetch All Shorts
+  useEffect(() => {
+    const fetchAllShorts = async () => {
+      try {
+        setIsShortsLoading(true);
+        const response = await fetch(baseUrl + '/get_all_shorts');
+        const data = await response.json();
+
+        // Check if data is an array
+        if (Array.isArray(data)) {
+          const formattedData = data.slice(0, 100).map(item => ({
+            id: item.id,
+            video: item.video.url,
+            videoTitle: item.videoTitle,
+            videoImage: item.videoImage,
+            likes: item.likes,
+            isLiked: item.isLiked
+          }));
+          setAllShorts(formattedData);
+        } else {
+          console.error('Fetched data is not an array:', data);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsShortsLoading(false);
+      }
+    };
+    fetchAllShorts();
+  }, []);
+
+  // Fetch Discover by Nearest
+  useEffect(() => {
+    const fetchDiscoverByNearest = async () => {
+      try {
+        setIsNearestLoading(true);
+        const response = await fetch(baseUrl + '/discover_by_nearest');
+        const data = await response.json();
+
+        // Check if data is an array
+        if (Array.isArray(data)) {
+          const formattedData = data.slice(0, 100).map(item => ({
+            id: item.id,
+            image: item.image,
+            title: item.name,
+            subtitle: item.subtitle
+          }));
+          setDiscoverByNearest(formattedData);
+        } else {
+          console.error('Fetched data is not an array:', data);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsNearestLoading(false);
+      }
+    };
+    fetchDiscoverByNearest();
+  }, []);
+  // Loader components
+  const HorizontalListLoader = ({ count = 8 }) => (
+    <View style={{ paddingVertical: 10 }}>
+      <SkeletonLoader 
+        count={count} 
+        circleSize={80}
+        textWidth={60}
+        textHeight={12}
+        containerStyle={{ paddingHorizontal: 8 }}
+      />
+    </View>
+  );
+
+  const VerticalListLoader = ({ count = 5 }) => (
+    <View style={{ padding: 10 }}>
+      {Array(count).fill(0).map((_, index) => (
+        <View key={index} style={{ marginBottom: 20 }}>
+          <SkeletonLoader 
+            count={1} 
+            circleSize={40}
+            textWidth={'100%'}
+            textHeight={100}
+            containerStyle={{ paddingHorizontal: 0, alignItems: 'flex-start' }}
+            circleStyle={{ marginBottom: 10 }}
+            textStyle={{ borderRadius: 8, height: 150 }}
+          />
+        </View>
+      ))}
+    </View>
+  );
+
+  // Render functions
   const renderVideoShorts = () => (
     <View style={styles.videoShortsContainer}>
       <TextDefault textColor={colors.fontMainColor} H5 bold>
@@ -76,12 +333,12 @@ function MainLanding(props) {
       <FlatList
         horizontal
         showsHorizontalScrollIndicator={false}
-        data={videoShorts}
+        data={all_shorts}
         keyExtractor={item => item.id}
         renderItem={({ item }) => (
           <View style={styles.videoContainer}>
             <WebView
-              source={{ uri: item.url }}
+              source={{ uri: item.video }}
               style={styles.webviewVideo}
               allowsFullscreenVideo
             />
@@ -91,32 +348,267 @@ function MainLanding(props) {
     </View>
   );
 
+  // const renderScheduleContainer = () => (
+  //   <View style={styles.scheduleContainer}>
+  //     <View style={styles.scheduleheadContainer}>
+  //       <TextDefault textColor={colors.fontMainColor} H5 bold>
+  //         {'Schedule'}
+  //       </TextDefault>
+  //       <TouchableOpacity onPress={() => navigation.navigate('MySchedule')}>
+  //         <TextDefault textColor={colors.btncolor} H5>
+  //           {'View All'}
+  //         </TextDefault>
+  //       </TouchableOpacity>
+  //     </View>
 
+  //     {all_schedule && all_schedule.length > 0 ? (
+  //       <FlatList
+  //         horizontal
+  //         showsHorizontalScrollIndicator={false}
+  //         keyExtractor={(item, index) => index.toString()}
+  //         data={all_schedule?.slice(0, 8) || []}
+  //         renderItem={({ item }) => (
+  //           <Schedule
+  //             item={item}
+  //           />
+  //         )}
 
-
-  function renderHeader() {
+  //       />
+  //     ) : (
+  //       <TextDefault>No schedule available</TextDefault>
+  //     )}
+  //   </View>
+  // )
+  const renderScheduleContainer = () => {
+    if (!all_schedule || all_schedule.length === 0) {
+      return <TextDefault style={{ marginLeft: 20 }}>
+      No schedule available
+    </TextDefault>
+    }
+  
     return (
-      <>
-        <View style={styles.headerContainer}>
-          <View style={styles.locationWrapper}>
-            <View style={styles.locationContainer}>
-              <Image
-                source={require('../../assets/zipsii.png')}  // Your image file
-                style={styles.locationImage}  // Style the image appropriately
-              />
-              <TextDefault style={styles.locationText} H5 bold>Zypsii</TextDefault>
-            </View>
+      <View style={styles.scheduleContainer}>
+        <View style={styles.scheduleheadContainer}>
+          <TextDefault textColor={colors.fontMainColor} H5 bold>
+            {'Schedule'}
+          </TextDefault>
+          <TouchableOpacity onPress={() => navigation.navigate('MySchedule')}>
+            <TextDefault textColor={colors.btncolor} H5>
+              {'View All'}
+            </TextDefault>
+          </TouchableOpacity>
+        </View>
+  
+        <FlatList
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item, index) => index.toString()}
+          data={all_schedule.slice(0, 8) || []}
+          renderItem={({ item }) => (
+            <Schedule item={item} />
+          )}
+        />
+      </View>
+    );
+  };
+  
 
+  const renderDiscoverByInterest = () => (
+    <View style={styles.titleSpacer}>
+      <TextDefault textColor={colors.fontMainColor} H5 bold>
+        {'Discover by Interest'}
+      </TextDefault>
+      <View style={styles.seeAllTextContainer}>
+        <TouchableOpacity onPress={() => navigation.navigate('WhereToGo')}>
+          <TextDefault textColor={colors.greenColor} H5 style={styles.seeAllText}>View All</TextDefault>
+        </TouchableOpacity>
+      </View>
+
+      {isDiscoverByInterestLoading ? (
+        <HorizontalListLoader count={8} />
+      ) : (
+        <FlatList
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item, index) => index.toString()}
+          data={discover_by_intrest?.slice(0, 8) || []}
+          renderItem={({ item }) => (
+            <CategoryCard
+              id={item.id}
+              icon={item.image}
+              cardLabel={item.name}
+              style={styles.categoryWrapper}
+            />
+          )}
+        />
+      )}
+    </View>
+  );
+
+  const renderDiscoverByNearest = () => (
+    <View style={styles.titleSpacer}>
+      <TextDefault textColor={colors.fontMainColor} H5 bold>
+        {'Discover by Nearest'}
+      </TextDefault>
+      <View style={styles.seeAllTextContainer}>
+        <TouchableOpacity onPress={() => navigation.navigate('DiscoverPlace')}>
+          <TextDefault textColor={colors.greenColor} H5 style={styles.seeAllText}>View All</TextDefault>
+        </TouchableOpacity>
+      </View>
+
+      {isNearestLoading ? (
+        <HorizontalListLoader count={8} />
+      ) : (
+        <FlatList
+          horizontal={true}
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item, index) => item.id}
+          data={discoverbynearest}
+          renderItem={({ item, index }) => (
+            <DiscoverByNearest styles={styles.itemCardContainer} {...item} />
+          )}
+        />
+      )}
+    </View>
+  );
+
+  const renderBestDestination = () => (
+    <View style={styles.titleSpacerdesti}>
+      <TextDefault textColor={colors.fontMainColor} H5 bold>
+        {'Best Destination'}
+      </TextDefault>
+      <View style={styles.seeAllTextContainer}>
+        <TouchableOpacity onPress={() => navigation.navigate('WhereToGo')}>
+          <TextDefault textColor={colors.greenColor} H5 style={styles.seeAllText}>View All</TextDefault>
+        </TouchableOpacity>
+      </View>
+
+      {isBestDestinationLoading ? (
+        <HorizontalListLoader count={8} />
+      ) : (
+        <FlatList
+          horizontal={true}
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item, index) => item.id}
+          data={best_destination}
+          renderItem={({ item, index }) => (
+            <ProductCard styles={styles.itemCardContainer} {...item} />
+          )}
+        />
+      )}
+    </View>
+  );
+
+  const renderItem = ({ item }) => {
+    return (
+      <Post
+        postPersonImage={item.postPersonImage}
+        postTitle={item.postTitle}
+        postImage={item.postImage}
+        likes={item.likes}
+        isLiked={item.isLiked}
+      />
+    );
+  };
+
+  const renderPosts = () => (
+    <View style={styles.titleSpacer}>
+      <TextDefault textColor={colors.fontMainColor} H4>
+        {'Posts'}
+      </TextDefault>
+      {isPostsLoading ? (
+        <VerticalListLoader count={5} />
+      ) : (
+        <FlatList
+          data={all_posts}
+          renderItem={renderItem}
+          keyExtractor={(item, index) => index.toString()}
+          contentContainerStyle={{ paddingBottom: 20 }}
+        />
+      )}
+    </View>
+  );
+
+  const renderAllDestination = () => (
+    <View style={styles.titleSpacer}>
+      <TextDefault textColor={colors.fontMainColor} H4>
+        {'All Destination'}
+      </TextDefault>
+    </View>
+  );
+
+  const renderContent = () => {
+    switch (selectedButton) {
+      case 'Shorts':
+        return isShortsLoading ? (
+          <VerticalListLoader count={3} />
+        ) : (
+          renderVideoShorts()
+        );
+      case 'Schedule':
+        return isScheduleLoading ? (
+          <HorizontalListLoader count={5} />
+        ) : (
+          renderScheduleContainer()
+        );
+      case 'Posts':
+        return isPostsLoading ? (
+          <VerticalListLoader count={5} />
+        ) : (
+          renderPosts()
+        );
+      case 'All':
+      default:
+        return (
+          <>
+            {isScheduleLoading ? (
+              <HorizontalListLoader count={5} />
+            ) : (
+              renderScheduleContainer()
+            )}
+            {isDiscoverByInterestLoading ? (
+              <HorizontalListLoader count={8} />
+            ) : (
+              renderDiscoverByInterest()
+            )}
+            {isNearestLoading ? (
+              <HorizontalListLoader count={8} />
+            ) : (
+              renderDiscoverByNearest()
+            )}
+            {isBestDestinationLoading ? (
+              <HorizontalListLoader count={8} />
+            ) : (
+              renderBestDestination()
+            )}
+            {renderAllDestination()}
+          </>
+        );
+    }
+  };
+
+  const renderHeader = () => (
+    <>
+      <View style={styles.headerContainer}>
+        <View style={styles.locationWrapper}>
+          <View style={styles.locationContainer}>
+            <Image
+              source={require('../../assets/zipsii.png')}
+              style={styles.locationImage}
+            />
+            <TextDefault style={styles.locationText} H5 bold>Zypsii</TextDefault>
           </View>
+        </View>
+        <View style={styles.rightIconsContainer}>
           <TouchableOpacity
-            onPress={() => navigation.navigate('SearchPage')} // Navigate to Searchbar
+            onPress={() => navigation.navigate('SearchPage')}
             style={styles.notificationIconWrapper}
           >
             <MaterialIcons
               name="search"
               size={28}
               color="#000"
-              style={styles.notificationIcon}
+              style={styles.icon}
             />
           </TouchableOpacity>
 
@@ -131,243 +623,53 @@ function MainLanding(props) {
               style={styles.notificationIcon}
             />
           </TouchableOpacity>
-
-
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate("LocationPage")}
-            style={styles.notificationIconWrapper}
-          >
-            <MaterialIcons
-              name="my-location"
-              size={28}
-              color="#000"
-            />
-          </TouchableOpacity>
-
-          {/* Create Poll Icon */}
-          <TouchableOpacity
-            onPress={() => navigation.navigate('CreatePoll')}
-            style={styles.notificationIconWrapper}
-          >
-            <MaterialCommunityIcons name="poll" size={28} color="#000" />
-          </TouchableOpacity>
-
-
-
         </View>
+      </View>
+      <Stories />
 
-        {/* Search Bar */}
-        {/* <TouchableOpacity
-          style={styles.searchContainer}
-          onPress={() => navigation.navigate('SearchResult')} // Navigate to SearchResult
-          activeOpacity={0.7} // Optional: Add a slight opacity effect on press
-        >
-          <MaterialIcons name="search" size={24} color="#A0A0A0" />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search Food, Drinks, etc"
-            placeholderTextColor="#A0A0A0"
-            editable={false} // Disable editing as the entire container is clickable
-            pointerEvents="none" // Ensure TextInput doesn't intercept the touch event
-          />
-          <TouchableOpacity>
-            <MaterialIcons name="tune" size={24} color="#008000" />
-          </TouchableOpacity>
-        </TouchableOpacity> */}
-
-
-
-
-        {/* ButtonContainer */}
-
-        <Stories />
-
-        <View style={styles.buttonContainer}>
-          {buttons.map(button => (
-            <TouchableOpacity
-              key={button}
+      <View style={styles.buttonContainer}>
+        {buttons.map(button => (
+          <TouchableOpacity
+            key={button}
+            style={[
+              styles.button,
+              selectedButton === button && styles.selectedButton
+            ]}
+            onPress={() => setSelectedButton(button)}
+          >
+            <TextDefault
               style={[
-                styles.button,
-                selectedButton === button && styles.selectedButton
+                styles.buttonText,
+                selectedButton === button && styles.selectedButtonText
               ]}
-              onPress={() => setSelectedButton(button)}
             >
-              <TextDefault
-                style={[
-                  styles.buttonText,
-                  selectedButton === button && styles.selectedButtonText
-                ]}
-              >
-                {button}
-              </TextDefault>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-
-        {renderVideoShorts()}
-
-
-        {/* Schedule Section */}
-        <View style={styles.scheduleContainer}>
-          <View style={styles.scheduleheadContainer}>
-            <TextDefault textColor={colors.fontMainColor} H5 bold>
-              {'Schedule'}
-
+              {button}
             </TextDefault>
-            <TouchableOpacity onPress={() => navigation.navigate('MySchedule')}>
+          </TouchableOpacity>
+        ))}
+      </View>
 
-              <TextDefault textColor={colors.btncolor} H5>
-                {'View All'}
-              </TextDefault>
-            </TouchableOpacity>
-          </View>
-          {scheduleData && scheduleData.length > 0 ? (
-            <FlatList
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              data={scheduleData}
-              keyExtractor={(item) => item.id.toString()}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={styles.card}
-                  onPress={() => handleCardPress(item)} // Navigate to TripDetail
-                >
-                  {/* Left Side - Image */}
-                  <Image source={{ uri: item.imageUrl }} style={styles.image} />
-                  {/* Right Side - Content */}
-                  <View style={styles.cardContent}>
-                    <TextDefault style={styles.title} H4>
-                      {item.title}
-                    </TextDefault>
-                    <View style={styles.routeRow}>
-                      <View style={styles.routeItem} H5>
-                        <TextDefault style={styles.routeLabel}>From</TextDefault>
-                        <View style={styles.locationRow}>
-                          <Icon name="location-outline" size={16} color="#333" />
-                          <TextDefault style={styles.routeText}>{item.from}</TextDefault>
-                        </View>
-                      </View>
-                      <View style={styles.routeItem} H5>
-                        <TextDefault style={styles.routeLabel}>To</TextDefault>
-                        <View style={styles.locationRow}>
-                          <Icon name="location-outline" size={16} color="#333" />
-                          <TextDefault style={styles.routeText}>{item.to}</TextDefault>
-                        </View>
-                      </View>
-                    </View>
-                    <TextDefault style={styles.date}>📅 {item.date}</TextDefault>
-                    <TextDefault style={styles.riders}>🏍️ ({item.riders})</TextDefault>
-                  </View>
-                  <TouchableOpacity style={styles.joinedButton}>
-                    <TextDefault style={styles.joinedText}>
-                      {item.joined ? 'Joined' : 'Join'}
-                    </TextDefault>
-                  </TouchableOpacity>
-                </TouchableOpacity>
-              )}
-            />
-          ) : (
-            <TextDefault>No schedule available</TextDefault>
-          )}
-        </View>
-
-
-
-        {/* Scrollable Category Row */}
-        <View style={styles.titleSpacer}>
-          <TextDefault textColor={colors.fontMainColor} H5 bold >
-            {'Discover by Intrest'}
-          </TextDefault>
-          <View style={styles.seeAllTextContainer}>
-            <TouchableOpacity onPress={() => navigation.navigate('WhereToGo')}>
-              <TextDefault textColor={colors.greenColor} H5 style={styles.seeAllText}>View All</TextDefault>
-            </TouchableOpacity>
-          </View>
-
-          {/* Horizontal Scrollable FlatList for Icon Containers */}
-          <FlatList
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            keyExtractor={(item, index) => index.toString()}
-            data={dummyDatacategory?.slice(0, 8) || []} // Ensure you limit to 8 categories
-            renderItem={({ item }) => (
-              <CategoryCard
-                id={item._id}
-                icon={require('../../storage/images/profile4.jpg')} // Replace with dynamic icon if available
-                cardLabel={item.title} // Pass the category name as `cardLabel`
-                style={styles.categoryWrapper}
-              />
-            )}
-          />
-        </View>
-
-
-        {dummyData.length > 0 && (
-          <View style={styles.titleSpacer}>
-            <TextDefault textColor={colors.fontMainColor} H5 bold >
-              {'Best Destination'}
-            </TextDefault>
-            <View style={styles.seeAllTextContainer}>
-              <TouchableOpacity onPress={() => navigation.navigate('WhereToGo')}>
-                <TextDefault textColor={colors.greenColor} H5 style={styles.seeAllText}>View All</TextDefault>
-              </TouchableOpacity>
-            </View>
-            <FlatList
-              horizontal={true}
-              showsHorizontalScrollIndicator={false}
-              keyExtractor={(item, index) => item._id}
-              data={dummyData}
-              renderItem={({ item, index }) => {
-                return (
-                  <ProductCard styles={styles.itemCardContainer} {...item} />
-                );
-              }}
-            />
-          </View>
-        )}
-        <View style={styles.titleSpacer}>
-          <TextDefault textColor={colors.fontMainColor} H4>
-            {'Posts'}
-          </TextDefault>
-          <Post />
-        </View>
-
-        <View style={styles.titleSpacer}>
-          <TextDefault textColor={colors.fontMainColor} H4>
-            {'All Destination'}
-          </TextDefault>
-
-        </View>
-      </>
-    );
-  }
-
+      {renderContent()}
+    </>
+  );
 
   return (
     <SafeAreaView style={[styles.flex, styles.safeAreaStyle]}>
       <View style={[styles.grayBackground, styles.flex]}>
-        {/* {error ? (
-          <TextError text={error.message} />
-        ) : ( */}
         <FlatList
           keyExtractor={(item, index) => index.toString()}
           showsVerticalScrollIndicator={false}
           numColumns={2}
-          // Removed refreshing and onRefresh
-          // ListFooterComponent={loading && <Spinner />} // Optionally removed footer loading indicator
           ListHeaderComponent={renderHeader}
-          data={dummyData}
+          data={selectedButton === 'All' ? all_destination : []}
           renderItem={({ item }) => (
             <ProductCard styles={styles.productCard} {...item} />
           )}
         />
-
-        {/* )} */}
         <BottomTab screen="HOME" />
       </View>
     </SafeAreaView>
   );
 }
+
 export default MainLanding;

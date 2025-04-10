@@ -6,29 +6,97 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../../utils";
 import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage"; // Import AsyncStorage
+import * as ImagePicker from 'expo-image-picker'; // Import ImagePicker
+import styles from "./Styles";
 
 function ReelUpload() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [location, setLocation] = useState("");
+  const [image, setImage] = useState(null); // For storing the selected image
   const navigation = useNavigation();
+
+  // Function to handle image selection
+  const pickImage = async () => {
+     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+     if (permissionResult.granted) {
+       const result = await ImagePicker.launchImageLibraryAsync({
+         mediaTypes: ImagePicker.MediaTypeOptions.Images,
+         allowsEditing: true,
+         aspect: [4, 3],
+         quality: 1,
+       });
+ 
+       if (!result.canceled) {
+         setImage(result.assets[0]);
+         uploadStory(result.assets[0]);
+       }
+     } else {
+       Alert.alert("Permission required", "You need to allow access to your photos to upload an image.");
+     }
+   };
+  // Function to handle form submission
+  const handleSubmit = async () => {
+    if (!image) {
+      Alert.alert("Error", "Please select an image or video to upload.");
+      return;
+    }
+    const file = {
+      caption: title,
+      description: description,
+      file: image.uri.split('/').pop(),
+      mimetype: image.type || '', // Use the mimeType from the ImagePicker result
+    };
+
+    try {
+      const accessToken = await AsyncStorage.getItem('accessToken'); // Get the access token
+
+      if (!accessToken) {
+        Alert.alert("Error", "You need to be logged in to submit.");
+        return;
+      }
+
+      const response = await fetch('http://192.168.1.6:3030/post/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`, // Attach the JWT token to the request header
+        },
+        body: JSON.stringify(file), // Send the reel data as JSON
+      });
+
+      const responseData = await response.json();
+
+      if (response.ok) {
+        console.log("Reel uploaded:", responseData);
+        Alert.alert("Success", "Your reel was successfully uploaded!");
+        navigation.goBack();
+      } else {
+        console.error("Error uploading reel:", responseData);
+        Alert.alert("Error", responseData.message || "There was an error uploading your reel.");
+      }
+    } catch (error) {
+      console.error("Error in uploading reel:", error);
+      Alert.alert("Error", "There was an error uploading your reel.");
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      <TouchableOpacity
-        style={styles.imageContainer}
-        onPress={() => navigation.navigate("LocationPage")} // Navigate to LocationPage
-      >
-        <Image
-          source={require("../../assets/image4.jpg")}
-          style={styles.image}
-        />
+      <TouchableOpacity style={styles.imageContainer} onPress={pickImage}>
+        {image ? (
+          <Image source={{ uri: image.uri }} style={styles.image} />
+        ) : (
+          <Text>Select an Image or Video</Text>
+        )}
       </TouchableOpacity>
+
       <TextInput
         style={styles.input}
         placeholder="Title"
@@ -42,84 +110,12 @@ function ReelUpload() {
         onChangeText={setDescription}
         multiline
       />
-      <View style={styles.locationContainer}>
-        <TextInput
-          style={[styles.input, styles.locationInput]}
-          placeholder="Location"
-          value={location}
-          onChangeText={setLocation}
-        />
-        <Ionicons
-          name="send"
-          size={24}
-          color="#000"
-          style={styles.locationIcon}
-        />
-      </View>
-      <TouchableOpacity style={styles.submitButton}>
+
+      <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
         <Text style={styles.submitButtonText}>Submit</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    padding: 20,
-  },
-  imageContainer: {
-    alignItems: "center",
-    marginBottom: 30,
-  },
-  image: {
-    width: 200,
-    height: 200,
-    borderRadius: 25,
-  },
-  input: {
-    borderRadius: 25,
-    padding: 15,
-    marginBottom: 30,
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: colors.graycolor,
-  },
-  descriptionInput: {
-    height: 150,
-    textAlignVertical: "top",
-  },
-  locationContainer: {
-    position: "relative", // Ensures the icon can be placed inside
-    marginBottom: 20,
-  },
-  locationInput: {
-    borderRadius: 25,
-    padding: 15,
-    paddingRight: 50, // Leave space for the icon
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: colors.graycolor,
-  },
-  locationIcon: {
-    position: "absolute",
-    right: 20, // Adjust spacing from the right
-    top: "35%",
-    transform: [{ translateY: -12 }], // Center the icon vertically
-  },
-  submitButton: {
-    backgroundColor: colors.btncolor,
-    borderRadius: 15,
-    paddingVertical: 15,
-    alignItems: "center",
-    marginTop: 90,
-  },
-  submitButtonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-});
 
 export default ReelUpload;
