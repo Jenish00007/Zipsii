@@ -11,9 +11,8 @@ import {
 import Icon from "react-native-vector-icons/Ionicons";
 import { colors } from "../../utils";
 import { alignment } from "../../utils";
-import { base_url } from "../../utils/base_url";
 
-//const baseUrl = 'http://192.168.1.6:3030'; // Backend API base URL
+const baseUrl = 'http://172.20.10.5:8000'; // Backend API base URL
 
 function SearchPage() {
   const [searchText, setSearchText] = useState("");
@@ -29,8 +28,8 @@ function SearchPage() {
     }
 
     const url = activeTab === "People"
-      ? `${base_url}/search_people?query=${text}`
-      : `${base_url}/search_places?query=${text}`;
+      ? `${baseUrl}/search_people?query=${text}`
+      : `${baseUrl}/search_places?query=${text}`;
 
     try {
       const response = await fetch(url);

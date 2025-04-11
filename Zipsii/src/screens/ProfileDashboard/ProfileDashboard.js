@@ -8,9 +8,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useState, useEffect } from 'react';
 import { colors } from '../../utils';
-import { base_url } from '../../utils/base_url';
 
-//const baseUrl = 'http://192.168.1.6:3030';
+const baseUrl = 'http://172.20.10.5:8000';
 function ProfileDashboard(props) {
   const navigation = useNavigation();
   const [profileInfo, setProfileInfo] = useState({
@@ -24,7 +23,7 @@ function ProfileDashboard(props) {
   useEffect(() => {
     const fetchProfileInfo = async () => {
       try {
-        const response = await fetch(`${base_url}/userInfo`);
+        const response = await fetch(`${baseUrl}/userInfo`);
         // Check if response is ok before parsing
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);

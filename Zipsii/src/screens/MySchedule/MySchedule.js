@@ -4,9 +4,8 @@ import styles from "../../utils/styles";
 import { BackHeader, BottomTab, TextDefault } from '../../components';
 import { SafeAreaView } from "react-native-safe-area-context";
 import Schedule from './Schedule/AllSchedule';
-import { base_url } from '../../utils/base_url';
 
-//const baseUrl = 'http://192.168.1.6:3030'; // Update the base URL if necessary
+const baseUrl = 'http://172.20.10.5:8000'; // Update the base URL if necessary
 
 function MySchedule({ navigation }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -16,7 +15,7 @@ function MySchedule({ navigation }) {
   useEffect(() => {
     const fetch_all_schedule = async () => {
       try {
-        const response = await fetch(`${base_url}/get_all_schedule`);
+        const response = await fetch(baseUrl + '/get_all_schedule');
         const data = await response.json();
         const formattedData = data.slice(0, 100).map((item) => ({
           id: item.id,

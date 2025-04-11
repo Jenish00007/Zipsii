@@ -8,8 +8,7 @@ import { useNavigation } from "@react-navigation/native";
 import { TextDefault } from '../../components';
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import DiscoverByNearest from '../../components/DiscoverByNearest/DiscoverByNearest';
-import { base_url } from '../../utils/base_url';
-//const baseUrl = 'http://192.168.1.6:3030';
+const baseUrl = 'http://172.20.10.5:8000';
 const Map = ({ route }) => {
   const navigation = useNavigation();
   const backPressed = () => {
@@ -21,7 +20,7 @@ const Map = ({ route }) => {
     useEffect(() => {
       const fetchDiscoverbyNearest = async () => {
         try {
-          const response = await fetch(`${base_url}/discover_by_nearest`);
+          const response = await fetch(baseUrl + '/discover_by_nearest');
           const data = await response.json();
   
           // Log to verify the data structure

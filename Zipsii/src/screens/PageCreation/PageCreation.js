@@ -12,7 +12,6 @@ import { colors } from "../../utils";
 import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location'; // Importing Location module
-import { base_url } from "../../utils/base_url";
 
 const ProfilePage = ({ navigation }) => {
   const [name, setName] = useState("");
@@ -27,7 +26,7 @@ const ProfilePage = ({ navigation }) => {
     const fetchProfileData = async () => {
 
       try {
-        const response = await fetch(`${base_url}/user/getProfile`);
+        const response = await fetch("http://172.20.10.5:3030/user/getProfile");
         const data = await response.json();
         const userString = await AsyncStorage.getItem('user');
 
@@ -125,7 +124,7 @@ const ProfilePage = ({ navigation }) => {
     const accessToken = await AsyncStorage.getItem('accessToken');
 
     try {
-      const response = await fetch(`${base_url}/edit_profile`, {
+      const response = await fetch("http://172.20.10.5:3030/user/editProfile", {
         method: "POST",
         headers: {
           'Content-Type': 'application/json',

@@ -15,7 +15,6 @@ import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage"; // Import AsyncStorage
 import * as ImagePicker from 'expo-image-picker'; // Import ImagePicker
 import styles from "./Styles";
-import { base_url } from "../../utils/base_url";
 
 function ReelUpload() {
   const [title, setTitle] = useState("");
@@ -63,7 +62,7 @@ function ReelUpload() {
         return;
       }
 
-      const response = await fetch(`${base_url}/post/`, {
+      const response = await fetch('http://192.168.1.6:3030/post/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
