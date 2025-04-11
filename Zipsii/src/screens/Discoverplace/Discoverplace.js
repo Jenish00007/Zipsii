@@ -7,7 +7,8 @@ import { MaterialCommunityIcons, SimpleLineIcons, Ionicons } from '@expo/vector-
 import { colors } from '../../utils';
 import { TextDefault } from '../../components';
 import { textStyles } from '../../utils';
-const baseUrl = 'http://172.20.10.5:8000'; 
+import { base_url } from '../../utils/base_url';
+//const baseUrl = 'http://192.168.1.6:3030'; 
 function DiscoverPlace({ navigation }) {
   const backPressed = () => {
     navigation.goBack(); // Navigate to the previous screen when the back arrow is pressed
@@ -20,7 +21,7 @@ function DiscoverPlace({ navigation }) {
   useEffect(() => {
     const fetchCardData = async () => {
       try {
-        const response = await fetch(baseUrl + '/places');
+        const response = await fetch(`${base_url}/places`);
         const data = await response.json();
   
         // Log to verify the data structure
@@ -28,7 +29,7 @@ function DiscoverPlace({ navigation }) {
   
         const formattedData = data.slice(0, 100).map(item => ({
           id: item.id,
-          image: baseUrl + item.image, // Make sure the URL is correct
+          image: base_url + item.image, // Make sure the URL is correct
           title: item.name,
           subtitle: item.subtitle,
         }));

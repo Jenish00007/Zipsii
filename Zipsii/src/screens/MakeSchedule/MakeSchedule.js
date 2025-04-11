@@ -14,6 +14,7 @@ import Icon from "react-native-vector-icons/Ionicons"; // Import Icon library
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker'; // Image picker for cover image
 import styles from "./styles";
+import { base_url } from "../../utils/base_url";
 
 function MakeSchedule() {
   const navigation = useNavigation();
@@ -70,7 +71,8 @@ function MakeSchedule() {
     const accessToken = await AsyncStorage.getItem('accessToken');
 
     try {
-      const response = await fetch('http://172.20.10.5:3030/makeschedule', {
+      // Replace with your API URL
+      const response = await fetch(`${base_url}/schedule/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

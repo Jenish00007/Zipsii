@@ -14,6 +14,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SkeletonLoader from '../Loader/SkeletonLoader';
+import { base_url } from '../../utils/base_url';
 
 const Stories = () => {
   const navigation = useNavigation();
@@ -23,7 +24,6 @@ const Stories = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [viewedStoryId, setViewedStoryId] = useState(null);
   const [error, setError] = useState(null);
-  const baseUrl = 'http://192.168.1.6:3030'; // Ensure this is the correct base URL.
   const [userId, setUserId] = useState(); // assuming userId is fetched from authentication
   const [currentStoryIndex, setCurrentStoryIndex] = useState({}); // Store current index of stories for each user
 
@@ -98,7 +98,7 @@ const Stories = () => {
     const accessToken = await AsyncStorage.getItem('accessToken');
   
     try {
-      const response = await fetch(baseUrl + '/story/upload', {
+      const response = await fetch(`${base_url}/story/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
@@ -137,7 +137,7 @@ const Stories = () => {
       const accessToken = await AsyncStorage.getItem('accessToken');
   
       // Fetch stories from the API
-      const response = await fetch(baseUrl + '/story/all', {
+      const response = await fetch(`${base_url}/story/all`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
@@ -208,7 +208,7 @@ const Stories = () => {
   const deleteStory = async () => {
     try {
       const accessToken = await AsyncStorage.getItem('accessToken');
-      const response = await fetch(`${baseUrl}/story/${viewedStoryId}`, {
+      const response = await fetch(`${base_url}/story/${viewedStoryId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${accessToken}`,

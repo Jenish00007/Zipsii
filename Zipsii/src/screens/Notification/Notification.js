@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, SectionList, TouchableOpacity } from "react-native";
 import { colors } from "../../utils";
-const baseUrl = 'http://172.20.10.5:8000'; 
+import { base_url } from '../../utils/base_url';
+//const baseUrl = 'http://192.168.1.6:3030'; 
 const Notification = () => {
   const [activeTab, setActiveTab] = useState("All");
 
@@ -10,7 +11,7 @@ const Notification = () => {
    useEffect(() => {
       const fetchCardData = async () => {
         try {
-          const response = await fetch(baseUrl + '/get_all_Notification');
+          const response = await fetch(`${base_url}/get_all_Notification`);
           const data = await response.json();
           const formattedData = data.slice(0, 100).map(item => ({
             id: item.id,

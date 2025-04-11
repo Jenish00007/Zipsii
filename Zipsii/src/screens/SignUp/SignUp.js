@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'reac
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location'; // Use expo-location
+import { base_url } from '../../utils/base_url';
 
 const SignUpScreen = () => {
   const [fullName, FullName] = useState('');
@@ -46,7 +47,7 @@ const SignUpScreen = () => {
 
     setLoading(true);
     try {
-      const response = await fetch('http://172.20.10.5:3030/create-account/', {
+      const response = await fetch(`${base_url}/user/signUp`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
