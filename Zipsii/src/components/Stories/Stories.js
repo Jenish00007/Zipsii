@@ -132,54 +132,45 @@ const Stories = () => {
     try {
       setIsLoading(true);
       setError(null);
-  
-      // Retrieve the access token from AsyncStorage
+
       const accessToken = await AsyncStorage.getItem('accessToken');
-  
-      // Fetch stories from the API
+      if (!accessToken) {
+        setError('No access token found');
+        return;
+      }
+
       const response = await fetch(`${base_url}/story/all`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
         },
       });
-  
+
       if (!response.ok) {
-        const text = await response.text();
-        console.error('Error response from server:', text);
-        setError(text);
-        return;
+        throw new Error(`HTTP error! Status: ${response.status}`);
       }
-  
-      const contentType = response.headers.get('Content-Type');
-      if (contentType && contentType.includes('application/json')) {
-        const data = await response.json();
-  
-        if (!Array.isArray(data.stories) || data.stories.length === 0) {
-          console.log('No stories found or data.stories is not an array.');
-          return;
-        }
-  
-        const stories = data.stories[0]?.stories || [];
-  
-        const viewedStories = await loadViewedStories();
-  
-        const updatedData = stories.map(story => ({
-          id: story._id,
-          image: story.mediaUrl,
-          viewed: viewedStories.includes(story._id),
-          userId: story.userId._id,
-        }));
-  
-        setStoryInfo(updatedData);
-      } else {
-        const text = await response.text();
-        console.error('Received non-JSON response:', text);
-        setError(text);
+
+      const data = await response.json();
+      if (!data || !data.stories || !Array.isArray(data.stories)) {
+        throw new Error('Invalid data format received');
       }
+
+      const stories = data.stories[0]?.stories || [];
+      const viewedStories = await loadViewedStories();
+
+      const updatedData = stories.map(story => ({
+        id: story._id,
+        image: story.mediaUrl,
+        viewed: viewedStories.includes(story._id),
+        userId: story.userId._id,
+      }));
+
+      setStoryInfo(updatedData);
     } catch (err) {
       console.error('Error fetching stories:', err);
+      setError(err.message || 'Failed to load stories');
     } finally {
+      // Ensure loading state is always set to false
       setIsLoading(false);
     }
   };
@@ -268,6 +259,23 @@ const Stories = () => {
   );
 
   const renderContent = () => {
+    if (error) {
+      return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <Text style={{ color: 'red', marginBottom: 10 }}>{error}</Text>
+          <TouchableOpacity
+            onPress={() => {
+              setError(null);
+              fetchStoryData();
+            }}
+            style={{ padding: 10, backgroundColor: '#870E6B', borderRadius: 5 }}
+          >
+            <Text style={{ color: 'white' }}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
     if (isLoading) {
       return (
         <SkeletonLoader
@@ -277,20 +285,6 @@ const Stories = () => {
           textHeight={10}
           containerStyle={{ paddingHorizontal: 8 }}
         />
-      );
-    }
-
-    if (error) {
-      return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ color: 'red' }}>Error: {error}</Text>
-          <TouchableOpacity
-            onPress={fetchStoryData}
-            style={{ marginTop: 10, padding: 10, backgroundColor: '#ddd' }}
-          >
-            <Text>Retry</Text>
-          </TouchableOpacity>
-        </View>
       );
     }
 

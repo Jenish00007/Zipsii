@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react'
 import {
   View,
   Text,
@@ -6,147 +6,146 @@ import {
   TouchableOpacity,
   Image,
   TextInput,
-  StyleSheet,
-} from "react-native";
-import { colors } from "../../utils";
-import * as ImagePicker from "expo-image-picker";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Location from 'expo-location'; // Importing Location module
-import { base_url } from "../../utils/base_url";
+  StyleSheet
+} from 'react-native'
+import { colors } from '../../utils'
+import * as ImagePicker from 'expo-image-picker'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import * as Location from 'expo-location' // Importing Location module
+import { base_url } from '../../utils/base_url'
 
 const ProfilePage = ({ navigation }) => {
-  const [name, setName] = useState("");
-  const [username, setUsername] = useState("");
-  const [website, setWebsite] = useState("");
-  const [bio, setBio] = useState("");
-  const [location, setLocation] = useState({ latitude: 343, longitude: 343 }); // Default location
-  const [profileImage, setProfileImage] = useState(null);
+  const [name, setName] = useState('')
+  const [username, setUsername] = useState('')
+  const [website, setWebsite] = useState('')
+  const [bio, setBio] = useState('')
+  const [location, setLocation] = useState({ latitude: 343, longitude: 343 }) // Default location
+  const [profileImage, setProfileImage] = useState(null)
 
   // Fetch profile data on component mount
   useEffect(() => {
-    const fetchProfileData = async () => {
-
+    const fetchProfileData = async() => {
       try {
-        const response = await fetch(`${base_url}/user/getProfile`);
-        const data = await response.json();
-        const userString = await AsyncStorage.getItem('user');
+        const response = await fetch(`${base_url}/user/getProfile`)
+        const data = await response.json()
+        const userString = await AsyncStorage.getItem('user')
 
         // Check if the user exists and parse it
         if (userString) {
-          const user = JSON.parse(userString);
-          const fullName = user.fullName;
-          const user_name = user.userName;
-          
-          setName(fullName || "");
-          setUsername(user_name || "");
+          const user = JSON.parse(userString)
+          const fullName = user.fullName
+          const user_name = user.userName
 
+          setName(fullName || '')
+          setUsername(user_name || '')
         } else {
-          console.log('No user found in AsyncStorage');
+          console.log('No user found in AsyncStorage')
         }
 
         if (response.ok) {
-          setName(data.fullName || fullName || '');
-          setUsername(data.username || "");
-          setWebsite(data.website || "");
-          setBio(data.bio || "");
-          setLocation(data.location);
-          setProfileImage(data.profilePicture || null); 
+          setName(data.fullName || fullName || '')
+          setUsername(data.username || '')
+          setWebsite(data.website || '')
+          setBio(data.bio || '')
+          setLocation(data.location)
+          setProfileImage(data.profilePicture || null)
         } else {
-          console.log("profile data not found", data);
+          console.log('profile data not found', data)
         }
       } catch (error) {
-        console.error("Error:", error);
+        console.error('Error:', error)
       }
-    };
+    }
 
-    fetchProfileData();
-    getLocation(); // Get the user's location when the component mounts
-  }, []); // Empty dependency array ensures this runs only once on component mount
+    fetchProfileData()
+    getLocation() // Get the user's location when the component mounts
+  }, []) // Empty dependency array ensures this runs only once on component mount
 
   // Function to fetch the current location
-  const getLocation = async () => {
+  const getLocation = async() => {
     try {
       // Request permission for location access
-      const { status } = await Location.requestForegroundPermissionsAsync();
+      const { status } = await Location.requestForegroundPermissionsAsync()
 
       if (status === 'granted') {
-        const location = await Location.getCurrentPositionAsync({});
-        console.log(location);
+        const location = await Location.getCurrentPositionAsync({})
+        console.log(location)
 
         // Set the fetched latitude and longitude in the state
         setLocation({
           latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-        });
+          longitude: location.coords.longitude
+        })
       } else {
-        Alert.alert('Permission Denied', 'Location permission is required');
+        Alert.alert('Permission Denied', 'Location permission is required')
       }
     } catch (error) {
-      console.warn('Error fetching location:', error);
-      Alert.alert('Error', 'Unable to fetch location');
+      console.warn('Error fetching location:', error)
+      Alert.alert('Error', 'Unable to fetch location')
     }
-  };
+  }
 
   // Function to pick an image
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
+  const pickImage = async() => {
+    const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 1,
-    });
+      quality: 1
+    })
 
     if (!result.cancelled) {
-      setProfileImage(result.uri); // Set selected image URI
+      setProfileImage(result.uri) // Set selected image URI
     }
-  };
+  }
 
   // Save the profile data
-  const handleSave = async () => {
+  const handleSave = async() => {
     const profileData = {
       fullName: name,
       username,
       website,
       bio,
-      location: JSON.stringify(location),
-    };
+      location: JSON.stringify(location)
+    }
 
     if (profileImage) {
-      const uri = profileImage;
-      const fileName = uri.split("/").pop();
-      const type = `image/${fileName.split(".").pop()}`;
+      const uri = profileImage
+      const fileName = uri.split('/').pop()
+      const type = `image/${fileName.split('.').pop()}`
       profileData.profilePicture = {
         uri,
         name: fileName,
-        type,
-      };
+        type
+      }
     }
 
-    const accessToken = await AsyncStorage.getItem('accessToken');
+    const accessToken = await AsyncStorage.getItem('accessToken')
 
     try {
+      // eslint-disable-next-line camelcase
       const response = await fetch(`${base_url}/edit_profile`, {
-        method: "POST",
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`
         },
-        body: JSON.stringify(profileData),
-      });
+        body: JSON.stringify(profileData)
+      })
 
       if (response.ok) {
-        const data = await response.json();
-        console.log("Profile updated successfully", data);
-        Alert.alert('Success', 'Profile updated successfully!');
-        navigation.goBack();
+        const data = await response.json()
+        console.log('Profile updated successfully', data)
+        Alert.alert('Success', 'Profile updated successfully!')
+        navigation.goBack()
       } else {
-        throw new Error('Error updating profile');
+        throw new Error('Error updating profile')
       }
     } catch (error) {
-      console.error("Error:", error);
-      Alert.alert('Error', 'Failed to update profile. Please try again.');
+      console.error('Error:', error)
+      Alert.alert('Error', 'Failed to update profile. Please try again.')
     }
-  };
+  }
 
   return (
     <View style={styles.container}>
@@ -173,7 +172,7 @@ const ProfilePage = ({ navigation }) => {
             />
           ) : (
             <Image
-              source={require("../../assets/profileimage.jpg")}
+              source={require('../../assets/profileimage.jpg')}
               style={styles.profileImage}
             />
           )}
@@ -206,7 +205,7 @@ const ProfilePage = ({ navigation }) => {
               placeholder="Enter your username"
               value={username}
               onChangeText={setUsername}
-              editable={false} 
+              editable={false}
             />
             <View style={styles.divider} />
           </View>
@@ -241,92 +240,92 @@ const ProfilePage = ({ navigation }) => {
         </View>
       </View>
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.white,
-    padding: 20,
+    padding: 20
   },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 20
   },
   cancelButton: {
-    flex: 1,
+    flex: 1
   },
   doneButton: {
     flex: 1,
-    alignItems: "flex-end",
+    alignItems: 'flex-end'
   },
   cancelText: {
     fontSize: 18,
-    fontWeight: "bold",
-    color: colors.black,
+    fontWeight: 'bold',
+    color: colors.black
   },
   doneText: {
     fontSize: 18,
-    fontWeight: "bold",
-    color: colors.blueColor,
+    fontWeight: 'bold',
+    color: colors.blueColor
   },
   profileImageContainer: {
-    alignItems: "center",
-    marginBottom: 30,
+    alignItems: 'center',
+    marginBottom: 30
   },
   imageUploadButton: {
-    alignItems: "center",
+    alignItems: 'center'
   },
   profileImage: {
     width: 120,
     height: 120,
     borderRadius: 60,
     borderWidth: 2,
-    borderColor: colors.graycolor,
+    borderColor: colors.graycolor
   },
   imageUploadText: {
     marginTop: 10,
     fontSize: 16,
-    fontWeight: "500",
-    color: colors.blueColor,
+    fontWeight: '500',
+    color: colors.blueColor
   },
   inputWrapper: {
-    marginBottom: 30,
+    marginBottom: 30
   },
   inputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 15,
-    paddingVertical: 5,
+    paddingVertical: 5
   },
   inputLabel: {
     fontSize: 16,
-    fontWeight: "500",
+    fontWeight: '500',
     color: colors.fontMainColor,
-    flex: 1,
+    flex: 1
   },
   inputFieldContainer: {
     flex: 2,
-    alignItems: "flex-end",
+    alignItems: 'flex-end'
   },
   inputField: {
     fontSize: 16,
     color: colors.black,
-    width: "100%",
+    width: '100%'
   },
   bioInput: {
-    textAlignVertical: "top",
+    textAlignVertical: 'top'
   },
   divider: {
     height: 1,
     backgroundColor: colors.graycolor,
-    width: "100%",
-    marginTop: 5,
-  },
-});
+    width: '100%',
+    marginTop: 5
+  }
+})
 
-export default ProfilePage;
+export default ProfilePage

@@ -32,7 +32,7 @@ import { BackHandler } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { base_url } from '../../utils/base_url';
 
-//const baseUrl = 'http://192.168.1.6:3030';
+//const baseUrl = 'http://172.20.10.5:3030';
 
 function MainLanding(props) {
   const navigation = useNavigation();
@@ -149,21 +149,22 @@ function MainLanding(props) {
         const response = await fetch(`${base_url}/all_destinatio`);
         const data = await response.json();
 
-        // Check if data is an array
-        if (Array.isArray(data)) {
+        // Check if data is an array and has items
+        if (Array.isArray(data) && data.length > 0) {
           const formattedData = data.slice(0, 100).map(item => ({
             id: item.id,
             image: base_url + item.image,
             name: item.name
           }));
           setAllDestination(formattedData);
+          setIsAllDestinationLoading(false);
         } else {
-          console.error('Fetched data is not an array:', data);
+          console.error('No data received or empty array');
+          // Keep loading state true if no data
         }
       } catch (error) {
         console.error('Error fetching data:', error);
-      } finally {
-        setIsAllDestinationLoading(false);
+        // Keep loading state true on error
       }
     };
     fetchAllDestination();
@@ -177,8 +178,8 @@ function MainLanding(props) {
         const response = await fetch(`${base_url}/get_all_schedule`);
         const data = await response.json();
 
-        // Check if data is an array
-        if (Array.isArray(data)) {
+        // Check if data is an array and has items
+        if (Array.isArray(data) && data.length > 0) {
           const formattedData = data.slice(0, 100).map(item => ({
             id: item.id,
             title: item.title,
@@ -192,13 +193,14 @@ function MainLanding(props) {
             day2Locations: item.day2Locations
           }));
           setAllSchedule(formattedData);
+          setIsScheduleLoading(false);
         } else {
-          console.error('Fetched data is not an array:', data);
+          console.error('No data received or empty array');
+          // Keep loading state true if no data
         }
       } catch (error) {
         console.error('Error fetching data:', error);
-      } finally {
-        setIsScheduleLoading(false);
+        // Keep loading state true on error
       }
     };
     fetchAllSchedule();
@@ -212,8 +214,8 @@ function MainLanding(props) {
         const response = await fetch(`${base_url}/get_all_posts`);
         const data = await response.json();
 
-        // Check if data is an array
-        if (Array.isArray(data)) {
+        // Check if data is an array and has items
+        if (Array.isArray(data) && data.length > 0) {
           const formattedData = data.slice(0, 100).map(item => ({
             id: item.id,
             postPersonImage: item.postPersonImage,
@@ -223,13 +225,14 @@ function MainLanding(props) {
             isLiked: item.isLiked
           }));
           setAllPosts(formattedData);
+          setIsPostsLoading(false);
         } else {
-          console.error('Fetched data is not an array:', data);
+          console.error('No data received or empty array');
+          // Keep loading state true if no data
         }
       } catch (error) {
         console.error('Error fetching data:', error);
-      } finally {
-        setIsPostsLoading(false);
+        // Keep loading state true on error
       }
     };
     fetchAllPosts();
@@ -243,8 +246,8 @@ function MainLanding(props) {
         const response = await fetch(`${base_url}/get_all_shorts`);
         const data = await response.json();
 
-        // Check if data is an array
-        if (Array.isArray(data)) {
+        // Check if data is an array and has items
+        if (Array.isArray(data) && data.length > 0) {
           const formattedData = data.slice(0, 100).map(item => ({
             id: item.id,
             video: item.video.url,
@@ -254,13 +257,14 @@ function MainLanding(props) {
             isLiked: item.isLiked
           }));
           setAllShorts(formattedData);
+          setIsShortsLoading(false);
         } else {
-          console.error('Fetched data is not an array:', data);
+          console.error('No data received or empty array');
+          // Keep loading state true if no data
         }
       } catch (error) {
         console.error('Error fetching data:', error);
-      } finally {
-        setIsShortsLoading(false);
+        // Keep loading state true on error
       }
     };
     fetchAllShorts();
@@ -274,8 +278,8 @@ function MainLanding(props) {
         const response = await fetch(`${base_url}/discover_by_nearest`);
         const data = await response.json();
 
-        // Check if data is an array
-        if (Array.isArray(data)) {
+        // Check if data is an array and has items
+        if (Array.isArray(data) && data.length > 0) {
           const formattedData = data.slice(0, 100).map(item => ({
             id: item.id,
             image: item.image,
@@ -283,13 +287,14 @@ function MainLanding(props) {
             subtitle: item.subtitle
           }));
           setDiscoverByNearest(formattedData);
+          setIsNearestLoading(false);
         } else {
-          console.error('Fetched data is not an array:', data);
+          console.error('No data received or empty array');
+          // Keep loading state true if no data
         }
       } catch (error) {
         console.error('Error fetching data:', error);
-      } finally {
-        setIsNearestLoading(false);
+        // Keep loading state true on error
       }
     };
     fetchDiscoverByNearest();

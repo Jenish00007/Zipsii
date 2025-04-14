@@ -1,5 +1,3 @@
-
-
 import MainLanding from './MainLanding/MainLanding'
 
 import ProfileDashboard from './ProfileDashboard/ProfileDashboard'
@@ -29,6 +27,7 @@ import SignUp from './SignUp/SignUp'
 import FavoritesPage from './Favourite/Favourite'
 import LogoutButton from './Logout/Logout'
 import MapScreen from './mapscreen/MapScreen '
+import FollowersList from './FollowersList/FollowersList'
 
 
 export {
@@ -60,4 +59,5 @@ export {
   LocationPage,
   SignUp,
   LogoutButton,
+  FollowersList,
 }

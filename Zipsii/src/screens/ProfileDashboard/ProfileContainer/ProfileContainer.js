@@ -45,20 +45,26 @@ function ProfileContainer({profileInfo}) {
         </View>
 
         {/* Stats Section */}
-        {/* <View style={styles.statsContainer}>
+        <View style={styles.statsContainer}>
           <View style={styles.stat}>
             <TextDefault style={styles.statLabel}>Posts</TextDefault>
-            <TextDefault style={styles.statNumber}>100</TextDefault>
+            <TextDefault style={styles.statNumber}>{profileInfo?.Posts || '0'}</TextDefault>
           </View>
-          <View style={styles.stat}>
+          <TouchableOpacity 
+            style={styles.stat}
+            onPress={() => navigation.navigate('FollowersList', { initialTab: 'Followers' })}
+          >
             <TextDefault style={styles.statLabel}>Followers</TextDefault>
-            <TextDefault style={styles.statNumber}>120k</TextDefault>
-          </View>
-          <View style={styles.statLast}>
+            <TextDefault style={styles.statNumber}>{profileInfo?.Followers || '0'}</TextDefault>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.statLast}
+            onPress={() => navigation.navigate('FollowersList', { initialTab: 'Following' })}
+          >
             <TextDefault style={styles.statLabel}>Following</TextDefault>
-            <TextDefault style={styles.statNumber}>0</TextDefault>
-          </View>
-        </View> */}
+            <TextDefault style={styles.statNumber}>{profileInfo?.Following || '0'}</TextDefault>
+          </TouchableOpacity>
+        </View>
 
         {/* Settings Options */}
         <View style={styles.settingsSection} H5>
