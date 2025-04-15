@@ -52,14 +52,16 @@ const ProfilePage = ({ navigation }) => {
         } else {
           console.log('profile data not found', data)
         }
+  
       } catch (error) {
-        console.error('Error:', error)
+        console.error("Error fetching profile:", error);
       }
-    }
-
-    fetchProfileData()
-    getLocation() // Get the user's location when the component mounts
-  }, []) // Empty dependency array ensures this runs only once on component mount
+    };
+  
+    fetchProfileData();
+    getLocation();
+  }, []); // 🔁 Empty dependency array = only runs once when mounted
+   // Empty dependency array ensures this runs only once on component mount
 
   // Function to fetch the current location
   const getLocation = async() => {
@@ -100,39 +102,84 @@ const ProfilePage = ({ navigation }) => {
   }
 
   // Save the profile data
-  const handleSave = async() => {
-    const profileData = {
-      fullName: name,
-      username,
-      website,
-      bio,
-      location: JSON.stringify(location)
-    }
+  // const handleSave = async () => {
+  //   const profileData = {
+  //     fullName: name,
+  //     username,
+  //     website,
+  //     bio,
+  //     location: JSON.stringify(location),
+  //   };
 
+  //   if (profileImage) {
+  //     const uri = profileImage;
+  //     const fileName = uri.split("/").pop();
+  //     const type = `image/${fileName.split(".").pop()}`;
+  //     profileData.profilePicture = {
+  //       uri,
+  //       name: fileName,
+  //       type,
+  //     };
+  //   }
+
+  //   const accessToken = await AsyncStorage.getItem('accessToken');
+
+  //   try {
+  //     const response = await fetch(`${base_url}/edit_profile`, {
+  //       method: "POST",
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'Authorization': `Bearer ${accessToken}`,
+  //       },
+  //       body: JSON.stringify(profileData),
+  //     });
+
+  //     if (response.ok) {
+  //       const data = await response.json();
+  //       console.log("Profile updated successfully", data);
+  //       Alert.alert('Success', 'Profile updated successfully!');
+  //       navigation.goBack();
+  //     } else {
+  //       throw new Error('Error updating profile');
+  //     }
+  //   } catch (error) {
+  //     console.error("Error:", error);
+  //     Alert.alert('Error', 'Failed to update profile. Please try again.');
+  //   }
+  // };
+  const handleSave = async () => {
+    const formData = new FormData();
+  
+    formData.append('fullName', name);
+    formData.append('username', username);
+    formData.append('website', website);
+    formData.append('bio', bio);
+    formData.append('location', JSON.stringify(location)); // If it's an object, stringify it
+  
     if (profileImage) {
-      const uri = profileImage
-      const fileName = uri.split('/').pop()
-      const type = `image/${fileName.split('.').pop()}`
-      profileData.profilePicture = {
+      const uri = profileImage;
+      const fileName = uri.split('/').pop();
+      const fileType = fileName.split('.').pop();
+  
+      formData.append('profilePicture', {
         uri,
         name: fileName,
-        type
-      }
+        type: `image/${fileType}`,
+      });
     }
-
-    const accessToken = await AsyncStorage.getItem('accessToken')
-
+  
+    const accessToken = await AsyncStorage.getItem('accessToken');
+  
     try {
-      // eslint-disable-next-line camelcase
-      const response = await fetch(`${base_url}/edit_profile`, {
-        method: 'POST',
+      const response = await fetch(`${base_url}/editProfile`, {
+        method: 'put',
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`
+          'Authorization': `Bearer ${accessToken}`,
+          // Do NOT set Content-Type manually; fetch will do it for FormData
         },
-        body: JSON.stringify(profileData)
-      })
-
+        body: formData,
+      });
+  
       if (response.ok) {
         const data = await response.json()
         console.log('Profile updated successfully', data)
@@ -145,7 +192,8 @@ const ProfilePage = ({ navigation }) => {
       console.error('Error:', error)
       Alert.alert('Error', 'Failed to update profile. Please try again.')
     }
-  }
+  };
+  
 
   return (
     <View style={styles.container}>

@@ -16,7 +16,7 @@ function MySchedule({ navigation }) {
   useEffect(() => {
     const fetch_all_schedule = async () => {
       try {
-        const response = await fetch(`${base_url}/get_all_schedule`);
+        const response = await fetch(`${base_url}/schedule/listing/getUsers`);
         const data = await response.json();
         const formattedData = data.slice(0, 100).map((item) => ({
           id: item.id,

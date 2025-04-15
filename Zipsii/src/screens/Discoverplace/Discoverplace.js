@@ -8,6 +8,8 @@ import { colors } from '../../utils';
 import { TextDefault } from '../../components';
 import { textStyles } from '../../utils';
 import { base_url } from '../../utils/base_url';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 //const baseUrl = 'http://192.168.1.6:3030'; 
 function DiscoverPlace({ navigation }) {
   const backPressed = () => {
@@ -21,21 +23,23 @@ function DiscoverPlace({ navigation }) {
   useEffect(() => {
     const fetchCardData = async () => {
       try {
-        const response = await fetch(`${base_url}/places`);
-        const data = await response.json();
+        const accessToken = await AsyncStorage.getItem('accessToken');
+        const response = await fetch(`${base_url}/schedule/places/getNearest`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`
+          }
+        })
+        const responce = await response.json();
   
-        // Log to verify the data structure
-        console.log(data);
-  
-        const formattedData = data.slice(0, 100).map(item => ({
-          id: item.id,
-          image: base_url + item.image, // Make sure the URL is correct
+        // Log to verify the data structure  
+        const formattedData = responce.data.slice(0, 100).map(item => ({
+          id: item.id || item.image,
+          image: item.image, // Make sure the URL is correct
           title: item.name,
           subtitle: item.subtitle,
         }));
-  
-        console.log(formattedData); // Check the formatted data with image URLs
-  
+    
         setCardData(formattedData);
       } catch (error) {
         console.error('Error fetching data:', error);

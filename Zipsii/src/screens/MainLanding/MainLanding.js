@@ -31,6 +31,8 @@ import SkeletonLoader from '../../components/Loader/SkeletonLoader';
 import { BackHandler } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { base_url } from '../../utils/base_url';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 //const baseUrl = 'http://172.20.10.5:3030';
 
@@ -86,101 +88,119 @@ function MainLanding(props) {
       return () => backHandler.remove();
     }, [])
   );
+
+  // Combined API calls in a single useEffect
   useEffect(() => {
-    const fetchDiscoverByInterest = async () => {
+    const fetchAllData = async () => {
       try {
+        // Set all loading states to true
         setIsDiscoverByInterestLoading(true);
-        const response = await fetch(`${base_url}/discover_by_intrest`);
-        const data = await response.json();
-
-        // Check if data is an array
-        if (Array.isArray(data)) {
-          const formattedData = data.slice(0, 100).map(item => ({
-            id: item.id,
-            image: base_url + item.image,
-            name: item.name
-          }));
-          setDiscoverByInterest(formattedData);
-        } else {
-          console.error('Fetched data is not an array:', data);
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setIsDiscoverByInterestLoading(false);
-      }
-    };
-    fetchDiscoverByInterest();
-  }, []);
-
-  // Fetch Best Destination
-  useEffect(() => {
-    const fetchBestDestination = async () => {
-      try {
         setIsBestDestinationLoading(true);
-        const response = await fetch(`${base_url}/best_destination`);
-        const data = await response.json();
-
-        // Check if data is an array
-        if (Array.isArray(data)) {
-          const formattedData = data.slice(0, 100).map(item => ({
-            id: item.id,
-            image: base_url + item.image,
-            name: item.name
-          }));
-          setBestDestination(formattedData);
-        } else {
-          console.error('Fetched data is not an array:', data);
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setIsBestDestinationLoading(false);
-      }
-    };
-    fetchBestDestination();
-  }, []);
-
-  // Fetch All Destination
-  useEffect(() => {
-    const fetchAllDestination = async () => {
-      try {
         setIsAllDestinationLoading(true);
-        const response = await fetch(`${base_url}/all_destinatio`);
-        const data = await response.json();
-
-        // Check if data is an array and has items
-        if (Array.isArray(data) && data.length > 0) {
-          const formattedData = data.slice(0, 100).map(item => ({
-            id: item.id,
-            image: base_url + item.image,
-            name: item.name
-          }));
-          setAllDestination(formattedData);
-          setIsAllDestinationLoading(false);
-        } else {
-          console.error('No data received or empty array');
-          // Keep loading state true if no data
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        // Keep loading state true on error
-      }
-    };
-    fetchAllDestination();
-  }, []);
-
-  // Fetch All Schedule
-  useEffect(() => {
-    const fetchAllSchedule = async () => {
-      try {
         setIsScheduleLoading(true);
-        const response = await fetch(`${base_url}/get_all_schedule`);
-        const data = await response.json();
+        setIsPostsLoading(true);
+        setIsShortsLoading(true);
+        setIsNearestLoading(true);
 
-        // Check if data is an array and has items
-        if (Array.isArray(data) && data.length > 0) {
-          const formattedData = data.slice(0, 100).map(item => ({
+        // Get access token once for all authenticated requests
+        const accessToken = await AsyncStorage.getItem('accessToken');
+
+        // Make all API requests in parallel
+        const [
+          discoverByInterestResponse,
+          bestDestinationResponse,
+          allDestinationResponse,
+          allScheduleResponse,
+          allPostsResponse,
+          allShortsResponse,
+          discoverByNearestResponse
+        ] = await Promise.all([
+          fetch(`${base_url}/schedule/places/getNearest`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${accessToken}`
+            }
+          }),
+            fetch(`${base_url}/schedule/places/getNearest`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${accessToken}`
+            }
+          }),
+          fetch(`${base_url}/schedule/places/getNearest`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${accessToken}`
+            }
+          }),          
+          fetch(`${base_url}/get_all_schedule`),
+          fetch(`${base_url}/get_all_posts`),
+          fetch(`${base_url}/schedule/places/getNearest`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${accessToken}`
+            }
+          }),
+          fetch(`${base_url}/schedule/places/getNearest`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${accessToken}`
+            }
+          })
+        ]);
+
+        // Process all responses
+        const [
+          discoverByInterestData,
+          bestDestinationData,
+          allDestinationData,
+          allScheduleData,
+          allPostsData,
+          allShortsData,
+          discoverByNearestData
+        ] = await Promise.all([
+          discoverByInterestResponse.json(),
+          bestDestinationResponse.json(),
+          allDestinationResponse.json(),
+          allScheduleResponse.json(),
+          allPostsResponse.json(),
+          allShortsResponse.json(),
+          discoverByNearestResponse.json()
+        ]);
+
+        // Set data for each response with proper empty state handling
+        if (Array.isArray(discoverByInterestData?.data)) {
+          setDiscover_by_intrest(discoverByInterestData.data.slice(0, 100).map(item => ({
+            id: item.id || item.name,
+            image: item.image,
+            name: item.name
+          })));
+        } else {
+          setDiscover_by_intrest([]);
+        }
+
+        if (Array.isArray(bestDestinationData?.data)) {
+          setBest_destination(bestDestinationData.data.slice(0, 100).map(item => ({
+            id: item.id || item.name,
+            image: item.image,
+            name: item.name
+          })));
+        } else {
+          setBest_destination([]);
+        }
+
+        if (Array.isArray(allDestinationData?.data)) {
+          setAll_destination(allDestinationData.data.slice(0, 100).map(item => ({
+            id: item.id || item.name,
+            image: item.image,
+            name: item.name
+          })));
+        } else {
+          setAll_destination([]);
+        }
+
+        if (Array.isArray(allScheduleData)) {
+          setAll_schedule(allScheduleData.slice(0, 100).map(item => ({
             id: item.id,
             title: item.title,
             from: item.from,
@@ -191,114 +211,75 @@ function MainLanding(props) {
             imageUrl: item.imageUrl,
             day1Locations: item.day1Locations,
             day2Locations: item.day2Locations
-          }));
-          setAllSchedule(formattedData);
-          setIsScheduleLoading(false);
+          })));
         } else {
-          console.error('No data received or empty array');
-          // Keep loading state true if no data
+          setAll_schedule([]);
         }
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        // Keep loading state true on error
-      }
-    };
-    fetchAllSchedule();
-  }, []);
 
-  // Fetch All Posts
-  useEffect(() => {
-    const fetchAllPosts = async () => {
-      try {
-        setIsPostsLoading(true);
-        const response = await fetch(`${base_url}/get_all_posts`);
-        const data = await response.json();
-
-        // Check if data is an array and has items
-        if (Array.isArray(data) && data.length > 0) {
-          const formattedData = data.slice(0, 100).map(item => ({
+        if (Array.isArray(allPostsData)) {
+          setAllPosts(allPostsData.slice(0, 100).map(item => ({
             id: item.id,
             postPersonImage: item.postPersonImage,
             postTitle: item.postTitle,
             postImage: item.postImage,
             likes: item.likes,
             isLiked: item.isLiked
-          }));
-          setAllPosts(formattedData);
-          setIsPostsLoading(false);
+          })));
         } else {
-          console.error('No data received or empty array');
-          // Keep loading state true if no data
+          setAllPosts([]);
         }
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        // Keep loading state true on error
-      }
-    };
-    fetchAllPosts();
-  }, []);
 
-  // Fetch All Shorts
-  useEffect(() => {
-    const fetchAllShorts = async () => {
-      try {
-        setIsShortsLoading(true);
-        const response = await fetch(`${base_url}/get_all_shorts`);
-        const data = await response.json();
-
-        // Check if data is an array and has items
-        if (Array.isArray(data) && data.length > 0) {
-          const formattedData = data.slice(0, 100).map(item => ({
+        if (Array.isArray(allShortsData)) {
+          setAllShorts(allShortsData.slice(0, 100).map(item => ({
             id: item.id,
             video: item.video.url,
             videoTitle: item.videoTitle,
             videoImage: item.videoImage,
             likes: item.likes,
             isLiked: item.isLiked
-          }));
-          setAllShorts(formattedData);
-          setIsShortsLoading(false);
+          })));
         } else {
-          console.error('No data received or empty array');
-          // Keep loading state true if no data
+          setAllShorts([]);
         }
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        // Keep loading state true on error
-      }
-    };
-    fetchAllShorts();
-  }, []);
 
-  // Fetch Discover by Nearest
-  useEffect(() => {
-    const fetchDiscoverByNearest = async () => {
-      try {
-        setIsNearestLoading(true);
-        const response = await fetch(`${base_url}/discover_by_nearest`);
-        const data = await response.json();
-
-        // Check if data is an array and has items
-        if (Array.isArray(data) && data.length > 0) {
-          const formattedData = data.slice(0, 100).map(item => ({
-            id: item.id,
+        if (Array.isArray(discoverByNearestData?.data)) {
+          setDiscoverbyNearest(discoverByNearestData.data.slice(0, 100).map(item => ({
+            id: item.id || item.name,
             image: item.image,
             title: item.name,
-            subtitle: item.subtitle
-          }));
-          setDiscoverByNearest(formattedData);
-          setIsNearestLoading(false);
+            subtitle: item.address || item.rating || 'No subtitle'
+          })));
         } else {
-          console.error('No data received or empty array');
-          // Keep loading state true if no data
+          setDiscoverbyNearest([]);
         }
+
       } catch (error) {
         console.error('Error fetching data:', error);
-        // Keep loading state true on error
+        // Set empty arrays on error
+        setDiscover_by_intrest([]);
+        setBest_destination([]);
+        setAll_destination([]);
+        setAll_schedule([]);
+        setAllPosts([]);
+        setAllShorts([]);
+        setDiscoverbyNearest([]);
+      } finally {
+        // Set all loading states to false after all data is processed
+        setTimeout(() => {
+          setIsDiscoverByInterestLoading(false);
+          setIsBestDestinationLoading(false);
+          setIsAllDestinationLoading(false);
+          setIsScheduleLoading(false);
+          setIsPostsLoading(false);
+          setIsShortsLoading(false);
+          setIsNearestLoading(false);
+        }, 500); // Add a small delay to ensure smooth transition
       }
     };
-    fetchDiscoverByNearest();
+
+    fetchAllData();
   }, []);
+
   // Loader components
   const HorizontalListLoader = ({ count = 8 }) => (
     <View style={{ paddingVertical: 10 }}>
