@@ -1,49 +1,60 @@
 import { StyleSheet } from 'react-native';
 import { colors } from '../../utils';
 
-
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: "#fff",
-      padding: 20,
-    },
-    imageContainer: {
-      alignItems: "center",
-      marginBottom: 30,
-      borderWidth: 1,
-      borderRadius: 10,
-      padding: 20,
-      borderColor: colors.graycolor,
-    },
-    image: {
-      width: 200,
-      height: 200,
-      borderRadius: 25,
-    },
-    input: {
-      borderRadius: 25,
-      padding: 15,
-      marginBottom: 30,
-      fontSize: 16,
-      borderWidth: 1,
-      borderColor: colors.graycolor,
-    },
-    descriptionInput: {
-      height: 150,
-      textAlignVertical: "top",
-    },
-    submitButton: {
-      backgroundColor: colors.btncolor,
-      borderRadius: 15,
-      paddingVertical: 15,
-      alignItems: "center",
-      marginTop: 90,
-    },
-    submitButtonText: {
-      color: "#fff",
-      fontSize: 18,
-      fontWeight: "bold",
-    },
-  });
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  imageContainer: {
+    width: '100%',
+    aspectRatio: 1,
+    backgroundColor: '#f0f0f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  selectedImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  placeholderContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  placeholderText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: colors.btncolor,
+  },
+  inputContainer: {
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  titleInput: {
+    fontSize: 16,
+    color: '#000',
+    paddingVertical: 8,
+  },
+  descriptionInput: {
+    fontSize: 16,
+    color: '#000',
+    paddingVertical: 8,
+    textAlignVertical: 'top',
+  },
+  submitButton: {
+    backgroundColor: colors.btncolor,
+    margin: 15,
+    padding: 12,
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  submitButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+});
+
 export default styles;

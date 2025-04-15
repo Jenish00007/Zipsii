@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Image,
   Alert,
+  ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -24,29 +25,68 @@ function ReelUpload() {
   const [image, setImage] = useState(null); // For storing the selected image
   const navigation = useNavigation();
 
-  // Function to handle image selection
   const pickImage = async () => {
-     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-     if (permissionResult.granted) {
-       const result = await ImagePicker.launchImageLibraryAsync({
-         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-         allowsEditing: true,
-         aspect: [4, 3],
-         quality: 1,
-       });
- 
-       if (!result.canceled) {
-         setImage(result.assets[0]);
-         uploadStory(result.assets[0]);
-       }
-     } else {
-       Alert.alert("Permission required", "You need to allow access to your photos to upload an image.");
-     }
-   };
+    Alert.alert(
+      "Select Image",
+      "Choose an option",
+      [
+        {
+          text: "Camera",
+          onPress: () => openCamera(),
+        },
+        {
+          text: "Gallery",
+          onPress: () => openGallery(),
+        },
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  const openCamera = async () => {
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+    if (permissionResult.granted) {
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+
+      if (!result.canceled) {
+        setImage(result.assets[0]);
+      }
+    } else {
+      Alert.alert("Permission required", "You need to allow camera access to take photos.");
+    }
+  };
+
+  const openGallery = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (permissionResult.granted) {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+
+      if (!result.canceled) {
+        setImage(result.assets[0]);
+      }
+    } else {
+      Alert.alert("Permission required", "You need to allow access to your photos to upload an image.");
+    }
+  };
+
   // Function to handle form submission
   const handleSubmit = async () => {
     if (!image) {
-      Alert.alert("Error", "Please select an image or video to upload.");
+      Alert.alert("Error", "Please select an image to upload.");
       return;
     }
     const file = {
@@ -133,39 +173,65 @@ function ReelUpload() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <TouchableOpacity style={styles.imageContainer} onPress={pickImage}>
-        {image ? (
-          <Image source={{ uri: image.uri }} style={styles.image} />
-        ) : (
-          <Text>Select an Image or Video</Text>
-        )}
-      </TouchableOpacity>
+      <ScrollView>
+        {/* Image Selection Section */}
+        <TouchableOpacity 
+          style={styles.imageContainer} 
+          onPress={pickImage}
+        >
+          {image ? (
+            <Image 
+              source={{ uri: image.uri }} 
+              style={styles.selectedImage} 
+            />
+          ) : (
+            <View style={styles.placeholderContainer}>
+              <Ionicons name="camera" size={50} color={colors.btncolor} />
+              <Text style={styles.placeholderText}>Tap to add photo</Text>
+            </View>
+          )}
+        </TouchableOpacity>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Title"
-        value={title}
-        onChangeText={setTitle}
-      />
-      <TextInput
-        style={[styles.input, styles.descriptionInput]}
-        placeholder="Description & Hashtags"
-        value={description}
-        onChangeText={setDescription}
-        multiline
-      />
+        {/* Title Input */}
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.titleInput}
+            placeholder="Add a title..."
+            placeholderTextColor="#999"
+            value={title}
+            onChangeText={setTitle}
+          />
+        </View>
 
-      <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-        <Text style={styles.submitButtonText}>Submit</Text>
-      </TouchableOpacity>
+        {/* Description Input */}
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.descriptionInput}
+            placeholder="Add a description..."
+            placeholderTextColor="#999"
+            value={description}
+            onChangeText={setDescription}
+            multiline
+            numberOfLines={4}
+          />
+        </View>
 
-      {/* Test Notification Button */}
-      {/* <TouchableOpacity 
-        style={[styles.submitButton, { marginTop: 10, backgroundColor: colors.btncolor }]} 
-        onPress={testNotification}
-      >
-        <Text style={styles.submitButtonText}>Test Notification</Text>
-      </TouchableOpacity> */}
+        {/* Submit Button */}
+        <TouchableOpacity 
+          style={styles.submitButton} 
+          onPress={handleSubmit}
+        >
+          <Text style={styles.submitButtonText}>Share</Text>
+        </TouchableOpacity>
+
+        {/* Test Notification Button */}
+        {/* <TouchableOpacity 
+          style={[styles.submitButton, { backgroundColor: colors.btncolor }]} 
+          onPress={testNotification}
+        >
+          <Text style={styles.submitButtonText}>Test Notification</Text>
+        </TouchableOpacity> */}
+      </ScrollView>
     </SafeAreaView>
   );
 }
