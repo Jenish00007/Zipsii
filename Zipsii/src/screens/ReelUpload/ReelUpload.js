@@ -66,22 +66,22 @@ function ReelUpload() {
   };
 
   const openGallery = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (permissionResult.granted) {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
-      });
-
-      if (!result.canceled) {
-        setImage(result.assets[0]);
-      }
-    } else {
-      Alert.alert("Permission required", "You need to allow access to your photos to upload an image.");
-    }
-  };
+     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+     if (permissionResult.granted) {
+       const result = await ImagePicker.launchImageLibraryAsync({
+         mediaTypes: ImagePicker.MediaTypeOptions.Images,
+         allowsEditing: true,
+         aspect: [4, 3],
+         quality: 1,
+       });
+ 
+       if (!result.canceled) {
+         setImage(result.assets[0]);
+       }
+     } else {
+       Alert.alert("Permission required", "You need to allow access to your photos to upload an image.");
+     }
+   };
 
   // Function to handle form submission
   const handleSubmit = async () => {
@@ -101,12 +101,12 @@ function ReelUpload() {
   
     try {
       const accessToken = await AsyncStorage.getItem('accessToken');
-  
+
       if (!accessToken) {
         Alert.alert("Error", "You need to be logged in to submit.");
         return;
       }
-  
+
       const response = await fetch(`${base_url}/post/`, {
         method: 'POST',
         headers: {
@@ -114,9 +114,9 @@ function ReelUpload() {
         },
         body: formData,
       });
-  
+
       const responseData = await response.json();
-  
+
       if (response.ok) {
         console.log("Reel uploaded:", responseData);
         
@@ -180,39 +180,39 @@ function ReelUpload() {
           style={styles.imageContainer} 
           onPress={pickImage}
         >
-          {image ? (
+        {image ? (
             <Image 
               source={{ uri: image.uri }} 
               style={styles.selectedImage} 
             />
-          ) : (
+        ) : (
             <View style={styles.placeholderContainer}>
               <Ionicons name="camera" size={50} color={colors.btncolor} />
               <Text style={styles.placeholderText}>Tap to add photo</Text>
             </View>
-          )}
-        </TouchableOpacity>
+        )}
+      </TouchableOpacity>
 
         {/* Title Input */}
         <View style={styles.inputContainer}>
-          <TextInput
+      <TextInput
             style={styles.titleInput}
             placeholder="Add a title..."
             placeholderTextColor="#999"
-            value={title}
-            onChangeText={setTitle}
-          />
+        value={title}
+        onChangeText={setTitle}
+      />
         </View>
 
         {/* Description Input */}
         <View style={styles.inputContainer}>
-          <TextInput
+      <TextInput
             style={styles.descriptionInput}
             placeholder="Add a description..."
             placeholderTextColor="#999"
-            value={description}
-            onChangeText={setDescription}
-            multiline
+        value={description}
+        onChangeText={setDescription}
+        multiline
             numberOfLines={4}
           />
         </View>
@@ -223,15 +223,15 @@ function ReelUpload() {
           onPress={handleSubmit}
         >
           <Text style={styles.submitButtonText}>Share</Text>
-        </TouchableOpacity>
+      </TouchableOpacity>
 
-        {/* Test Notification Button */}
-        {/* <TouchableOpacity 
+      {/* Test Notification Button */}
+      {/* <TouchableOpacity 
           style={[styles.submitButton, { backgroundColor: colors.btncolor }]} 
-          onPress={testNotification}
-        >
-          <Text style={styles.submitButtonText}>Test Notification</Text>
-        </TouchableOpacity> */}
+        onPress={testNotification}
+      >
+        <Text style={styles.submitButtonText}>Test Notification</Text>
+      </TouchableOpacity> */}
       </ScrollView>
     </SafeAreaView>
   );

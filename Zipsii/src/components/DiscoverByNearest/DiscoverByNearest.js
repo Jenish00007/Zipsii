@@ -10,8 +10,8 @@ const DiscoverByNearest = (props) => {
    
           <View key={props.id} style={styles.card}>
             <Image source={{ uri: props.image }} style={styles.cardImage} />
-            <TextDefault style={styles.cardTitle}>{props.title}</TextDefault>
-            <TextDefault style={styles.cardSubtitle}>{props.subtitle}</TextDefault>
+            <TextDefault numberOfLines={1} style={styles.cardTitle}>{props.title}</TextDefault>
+            <TextDefault numberOfLines={2} style={styles.cardSubtitle}>{props.subtitle}</TextDefault>
           </View>
       
   
@@ -27,6 +27,7 @@ const styles = StyleSheet.create({
  
   card: {
      width: 150,
+     height: 180,
      marginRight: 10,
      backgroundColor: colors.white,
      borderRadius: 10,
@@ -46,10 +47,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "bold",
     color: colors.fontMainColor,
+    numberOfLines: 1,
+    ellipsizeMode: 'tail',
   },
   cardSubtitle: {
     fontSize: 12,
     color: colors.fontThirdColor,
+    numberOfLines: 2,
+    ellipsizeMode: 'tail',
   },
 });
 
