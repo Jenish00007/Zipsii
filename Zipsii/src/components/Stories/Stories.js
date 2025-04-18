@@ -2,40 +2,103 @@ import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
-  FlatList, 
-  TouchableOpacity, 
+  TouchableOpacity,
   Image, 
   Alert, 
-  Modal 
+  StyleSheet,
+  Button
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Entypo from 'react-native-vector-icons/Entypo';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SkeletonLoader from '../Loader/SkeletonLoader';
 import { base_url } from '../../utils/base_url';
+import InstaStory from 'react-native-insta-story';
+
+const defaultStories = [
+  {
+    user_id: 4,
+    user_image: 'https://pbs.twimg.com/profile_images/1222140802475773952/61OmyINj.jpg',
+    user_name: 'Ahmet Çağlar Durmuş',
+    stories: [
+      {
+        story_id: 4,
+        story_image: 'https://image.freepik.com/free-vector/universe-mobile-wallpaper-with-planets_79603-600.jpg',
+        swipeText: 'Custom swipe text for this story',
+        onPress: () => console.log('story 1 swiped'),
+      },
+      {
+        story_id: 4,
+        story_image: 'https://image.freepik.com/free-vector/mobile-wallpaper-with-fluid-shapes_79603-601.jpg',
+        swipeText: 'Custom swipe text for this story',
+        onPress: () => console.log('story 2 swiped'),
+      },
+      {
+        story_id: 4,
+        story_image: 'https://image.freepik.com/free-vector/abstract-colorful-flow-shapes-background_23-2148256082.jpg',
+        swipeText: 'Custom swipe text for this story',
+        onPress: () => console.log('story 3 swiped'),
+      },
+    ],
+  },
+  {
+    user_id: 2,
+    user_image: 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8cHJvZmlsZXxlbnwwfHwwfHw%3D&ixlib=rb-1.2.1&w=1000&q=80',
+    user_name: 'Test User',
+    stories: [
+      {
+        story_id: 1,
+        story_image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjORKvjcbMRGYPR3QIs3MofoWkD4wHzRd_eg&usqp=CAU',
+        swipeText: 'Custom swipe text for this story',
+        onPress: () => console.log('story 1 swiped'),
+      },
+      {
+        story_id: 2,
+        story_image: 'https://files.oyebesmartest.com/uploads/preview/vivo-u20-mobile-wallpaper-full-hd-(1)qm6qyz9v60.jpg',
+        swipeText: 'Custom swipe text for this story',
+        onPress: () => console.log('story 2 swiped'),
+      },
+      {
+        story_id: 3,
+        story_image: 'https://image.freepik.com/free-vector/abstract-colorful-flow-shapes-background_23-2148256082.jpg',
+        swipeText: 'Custom swipe text for this story',
+        onPress: () => console.log('story 3 swiped'),
+      },
+    ],
+  },
+  {
+    user_id: 3,
+    user_image: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8dXNlcnxlbnwwfHwwfHw%3D&ixlib=rb-1.2.1&w=1000&q=80',
+    user_name: 'John Doe',
+    stories: [
+      {
+        story_id: 1,
+        story_image: 'https://image.freepik.com/free-vector/abstract-colorful-flow-shapes-background_23-2148256082.jpg',
+        swipeText: 'Custom swipe text for this story',
+        onPress: () => console.log('story 1 swiped'),
+      },
+      {
+        story_id: 2,
+        story_image: 'https://image.freepik.com/free-vector/universe-mobile-wallpaper-with-planets_79603-600.jpg',
+        swipeText: 'Custom swipe text for this story',
+        onPress: () => console.log('story 2 swiped'),
+      },
+    ],
+  },
+];
 
 const Stories = () => {
   const navigation = useNavigation();
   const [image, setImage] = useState(null);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [storyInfo, setStoryInfo] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [viewedStoryId, setViewedStoryId] = useState(null);
+  const [storyInfo, setStoryInfo] = useState(defaultStories);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [userId, setUserId] = useState(); // assuming userId is fetched from authentication
-  const [currentStoryIndex, setCurrentStoryIndex] = useState({}); // Store current index of stories for each user
-
-  const loadViewedStories = async () => {
-    try {
-      const viewedStories = await AsyncStorage.getItem('viewedStories');
-      return viewedStories ? JSON.parse(viewedStories) : [];
-    } catch (error) {
-      console.error('Error loading viewed stories: ', error);
-      return [];
-    }
-  };
+  const [userId, setUserId] = useState();
+  const [seenStories, setSeenStories] = useState(new Set());
+  const [showStories, setShowStories] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [currentUserStories, setCurrentUserStories] = useState([]);
 
   const loadUserId = async () => {
     try {
@@ -55,18 +118,6 @@ const Stories = () => {
   useEffect(() => {
     loadUserId();
   }, []);
-
-  const saveViewedStory = async (storyId) => {
-    try {
-      const viewedStories = await loadViewedStories();
-      if (!viewedStories.includes(storyId)) {
-        viewedStories.push(storyId);
-        await AsyncStorage.setItem('viewedStories', JSON.stringify(viewedStories));
-      }
-    } catch (error) {
-      console.error('Error saving viewed story: ', error);
-    }
-  };
 
   const pickImage = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -94,9 +145,9 @@ const Stories = () => {
       name: imageAsset.uri.split('/').pop(),
       type: 'image/jpeg',
     });
-    formData.append('userId', userId); // Add other necessary data here
+    formData.append('userId', userId);
     const accessToken = await AsyncStorage.getItem('accessToken');
-  
+
     try {
       const response = await fetch(`${base_url}/story/upload`, {
         method: 'POST',
@@ -105,21 +156,38 @@ const Stories = () => {
         },
         body: formData,
       });
-  
-      const data = await response.json();
-      const stories = data.stories?.stories || [];
 
+      const data = await response.json();
       if (response.ok) {
         console.log('Story uploaded successfully:', data.story);
-        setStoryInfo(prevState => {
-          const updatedStory = {
-            ...data.story,
-            userId: data.story._id,  // Set the userId for the new story
-          };
-        
-          // Add the new story at the start of the list, or you can use push to add it at the end
-          return [updatedStory, ...prevState];
-        });
+        const newStory = {
+          user_id: userId,
+          user_image: data.story.userId.profilePicture || 'https://via.placeholder.com/150',
+          user_name: data.story.userId.name || 'User',
+          stories: [{
+            story_id: data.story._id,
+            story_image: data.story.mediaUrl,
+            swipeText: 'Swipe to view more',
+            onPress: () => console.log('story swiped'),
+          }]
+        };
+
+        // Check if user already exists in stories
+        const existingUserIndex = storyInfo.findIndex(story => story.user_id === userId);
+        if (existingUserIndex !== -1) {
+          // Update existing user's stories
+          setStoryInfo(prev => {
+            const updated = [...prev];
+            updated[existingUserIndex].stories = [
+              ...updated[existingUserIndex].stories,
+              newStory.stories[0]
+            ];
+            return updated;
+          });
+        } else {
+          // Add new user with story
+          setStoryInfo(prev => [...prev, newStory]);
+        }
       } else {
         console.error('Failed to upload story:', data.message);
       }
@@ -128,149 +196,87 @@ const Stories = () => {
     }
   };
 
-  const fetchStoryData = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
+  const updateSeenStories = ({ story: { story_id } }) => {
+    setSeenStories((prevSet) => {
+      prevSet.add(story_id);
+      return prevSet;
+    });
+  };
 
-      const accessToken = await AsyncStorage.getItem('accessToken');
-      if (!accessToken) {
-        setError('No access token found');
-        return;
+  const handleSeenStories = async (item) => {
+    console.log(item);
+    const storyIds = [];
+    seenStories.forEach((storyId) => {
+      if (storyId) storyIds.push(storyId);
+    });
+    if (storyIds.length > 0) {
+      try {
+        const accessToken = await AsyncStorage.getItem('accessToken');
+        await fetch(`${base_url}/story/mark-seen`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ storyIds }),
+        });
+        seenStories.clear();
+      } catch (error) {
+        console.error('Error marking stories as seen:', error);
       }
-
-      const response = await fetch(`${base_url}/story/all`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      if (!data || !data.stories || !Array.isArray(data.stories)) {
-        throw new Error('Invalid data format received');
-      }
-
-      const stories = data.stories[0]?.stories || [];
-      const viewedStories = await loadViewedStories();
-
-      const updatedData = stories.map(story => ({
-        id: story._id,
-        image: story.mediaUrl,
-        viewed: viewedStories.includes(story._id),
-        userId: story.userId._id,
-      }));
-
-      setStoryInfo(updatedData);
-    } catch (err) {
-      console.error('Error fetching stories:', err);
-      setError(err.message || 'Failed to load stories');
-    } finally {
-      // Ensure loading state is always set to false
-      setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchStoryData();
-  }, []);
+  const handleStoryPress = (user) => {
+    // Create a new array with only the selected user's stories
+    const userStories = [{
+      ...user,
+      stories: [...user.stories] // Create a new array of stories to avoid reference issues
+    }];
+    
+    setSelectedUser(user);
+    setCurrentUserStories(userStories);
+    setShowStories(true);
+  };
 
-  const handleStoryPress = async (data) => {
-    if (!data || !data.id) {
-      console.log('Data is empty!');
-      return;
-    }
-
-    setImage(data.image);
-    setModalVisible(true);
-    setViewedStoryId(data.id);
-    await saveViewedStory(data.id);
-    setStoryInfo(prevStoryInfo =>
-      prevStoryInfo.map(item =>
-        item.id === data.id ? { ...item, viewed: true } : item
-      )
+  const renderStoryItem = ({ item }) => {
+    // Check if the user has any stories
+    const hasStories = item.stories && item.stories.length > 0;
+    
+    return (
+      <TouchableOpacity 
+        onPress={() => hasStories && handleStoryPress(item)}
+        disabled={!hasStories}
+      >
+        <View style={styles.storyItemContainer}>
+          <View style={[
+            styles.storyCircle,
+            !hasStories && styles.disabledStoryCircle
+          ]}>
+            <Image
+              source={{ uri: item.user_image }}
+              style={styles.storyImage}
+            />
+          </View>
+          <Text style={styles.storyName}>{item.user_name}</Text>
+        </View>
+      </TouchableOpacity>
     );
   };
-
-  const deleteStory = async () => {
-    try {
-      const accessToken = await AsyncStorage.getItem('accessToken');
-      const response = await fetch(`${base_url}/story/${viewedStoryId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-        },
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        console.log('Story deleted successfully:', data);
-        setStoryInfo(prevStoryInfo =>
-          prevStoryInfo.filter(item => item.id !== viewedStoryId)
-        );
-        setModalVisible(false); // Close modal after deletion
-      } else {
-        console.error('Failed to delete story:', data.message);
-      }
-    } catch (error) {
-      console.error('Error deleting story:', error);
-    }
-  };
-
-  const renderStoryItem = ({ item }) => (
-    <TouchableOpacity onPress={() => handleStoryPress(item)}>
-      <View style={{ flexDirection: 'column', paddingHorizontal: 8, position: 'relative' }}>
-        <View
-          style={{
-            width: 68,
-            height: 68,
-            backgroundColor: 'white',
-            borderWidth: 1.8,
-            borderRadius: 100,
-            borderColor: item.viewed ? 'transparent' : '#c13584',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
-          {item.image ? (
-            <Image
-              source={{ uri: item.image }}
-              style={{
-                resizeMode: 'cover',
-                width: '92%',
-                height: '92%',
-                borderRadius: 100,
-                backgroundColor: 'orange',
-              }}
-            />
-          ) : (
-            <Text>No Image</Text>
-          )}
-        </View>
-        <Text style={{ textAlign: 'center', fontSize: 10, opacity: item.id === 0 ? 1 : 0.5 }}>
-          {item.name}
-        </Text>
-      </View>
-    </TouchableOpacity>
-  );
 
   const renderContent = () => {
     if (error) {
       return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-          <Text style={{ color: 'red', marginBottom: 10 }}>{error}</Text>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity
             onPress={() => {
               setError(null);
-              fetchStoryData();
+              setStoryInfo(defaultStories);
             }}
-            style={{ padding: 10, backgroundColor: '#870E6B', borderRadius: 5 }}
+            style={styles.retryButton}
           >
-            <Text style={{ color: 'white' }}>Retry</Text>
+            <Text style={styles.retryText}>Retry</Text>
           </TouchableOpacity>
         </View>
       );
@@ -283,130 +289,163 @@ const Stories = () => {
           circleSize={68}
           textWidth={40}
           textHeight={10}
-          containerStyle={{ paddingHorizontal: 8 }}
+          containerStyle={styles.skeletonContainer}
         />
       );
     }
 
-    const groupedStories = storyInfo.reduce((acc, story) => {
-      if (!acc[story.userId]) {
-        acc[story.userId] = [];
-      }
-      acc[story.userId].push(story);
-      return acc;
-    }, {});
-
     return (
-      <FlatList
-        data={Object.keys(groupedStories)}
-        renderItem={({ item: userId }) => {
-          const userStories = groupedStories[userId];
-          const currentStoryIndex = 0;
-          const currentStory = userStories[currentStoryIndex];
-  
-          return (
-            <View style={{ flexDirection: 'column', paddingVertical: 5, alignItems: 'center', justifyContent: 'center' }}>
-              <FlatList
-                data={[currentStory]}
-                renderItem={renderStoryItem}
-                keyExtractor={(story) => story.id ? story.id.toString() : ''}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-              />
-              <TouchableOpacity
-                style={{
-                  width: 20,
-                  height: 20,
-                  borderRadius: 20,
-                  backgroundColor: '#870E6B',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  marginHorizontal: 0,
-                  marginTop: -40,
-                  marginLeft: 40
-                }}
-                onPress={pickImage}
-              >
-                <Icon name="add" size={20} color="white" />
-              </TouchableOpacity>
-              <Text style={{ marginTop: 10, textAlign: 'center', fontSize: 16, fontWeight: 'bold' }}>Your Story</Text>
+      <View style={styles.container}>
+        <InstaStory
+          data={storyInfo}
+          duration={10}
+          onStart={(item) => {
+            console.log('Story started:', item);
+            if (item.user_id === userId) {
+              setShowStories(true);
+              setSelectedUser(item);
+            }
+          }}
+          onClose={() => {
+            handleSeenStories();
+            setShowStories(false);
+            setSelectedUser(null);
+          }}
+          onStorySeen={updateSeenStories}
+          renderCloseComponent={({ onPress }) => (
+            <View style={styles.closeContainer}>
+              <Button title="Share" onPress={() => console.log('Share story')} />
+              <Button title="X" onPress={onPress} />
             </View>
-          );
-        }}
-        keyExtractor={(item) => item}
-      />
+          )}
+          renderTextComponent={({ item, profileName }) => (
+            <View style={styles.textContainer}>
+              <Text style={styles.profileName}>{profileName}</Text>
+              {item.user_id === userId && (
+                <TouchableOpacity
+                  onPress={pickImage}
+                  style={styles.addStoryButton}
+                >
+                  <Entypo name="circle-with-plus" style={styles.addIcon} />
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+          style={styles.instaStory}
+        />
+      </View>
     );
   };
 
   return (
-    <View style={{ flex: 1 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8 }}>
-        {storyInfo.filter(story => story.userId === userId).length === 0 ? (
-          <TouchableOpacity
-            onPress={pickImage}
-            style={{
-              width: 68,
-              height: 68,
-              backgroundColor: 'white',
-              borderWidth: 1.8,
-              borderRadius: 100,
-              borderColor: '#c13584',
-              justifyContent: 'center',
-              alignItems: 'center',
-              marginLeft: 12,
-            }}>
-            <Entypo name="circle-with-plus" style={{ fontSize: 30, color: '#c13584' }} />
-          </TouchableOpacity>
-        ) : null}  
-        {renderContent()}
-      </View>
-
-      <Modal transparent={false} visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
-        <View
-          style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          }}>
-          <View
-            style={{
-              width: '100%',
-              height: '100%',
-              justifyContent: 'center',
-              alignItems: 'center',
-              position: 'relative',
-            }}>
-            <Image source={{ uri: image }} style={{ width: '100%', height: '100%', resizeMode: 'contain' }} />
-            <TouchableOpacity
-              onPress={() => setModalVisible(false)}
-              style={{
-                position: 'absolute',
-                top: 20,
-                right: 20,
-                backgroundColor: 'rgba(255, 255, 255, 0.6)',
-                borderRadius: 50,
-                padding: 10,
-              }}>
-              <Text style={{ fontSize: 20, color: '#333' }}>X</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={deleteStory}
-              style={{
-                position: 'absolute',
-                bottom: 20,
-                backgroundColor: '#e74c3c',
-                padding: 10,
-                borderRadius: 50,
-              }}>
-              <Text style={{ color: 'white', fontSize: 16 }}>Delete</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+    <View style={styles.container}>
+      {renderContent()}
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  storiesHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 10,
+  },
+  storyItemContainer: {
+    flexDirection: 'column',
+    paddingHorizontal: 8,
+    position: 'relative',
+    alignItems: 'center',
+  },
+  storyCircle: {
+    width: 68,
+    height: 68,
+    backgroundColor: 'white',
+    borderWidth: 1.8,
+    borderRadius: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  storyImage: {
+    resizeMode: 'cover',
+    width: '92%',
+    height: '92%',
+    borderRadius: 100,
+  },
+  storyName: {
+    textAlign: 'center',
+    fontSize: 10,
+    opacity: 0.5,
+    marginTop: 4,
+  },
+  addStoryButton: {
+    width: 40,
+    height: 40,
+    backgroundColor: 'white',
+    borderWidth: 1.8,
+    borderRadius: 100,
+    borderColor: '#c13584',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    right: 10,
+    top: 10,
+    zIndex: 1,
+  },
+  addIcon: {
+    fontSize: 20,
+    color: '#c13584',
+  },
+  closeContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 10,
+  },
+  textContainer: {
+    padding: 10,
+    position: 'relative',
+    width: '100%',
+    height: '100%',
+  },
+  profileName: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  instaStory: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    color: 'red',
+    marginBottom: 10,
+  },
+  retryButton: {
+    padding: 10,
+    backgroundColor: '#870E6B',
+    borderRadius: 5,
+  },
+  retryText: {
+    color: 'white',
+  },
+  skeletonContainer: {
+    paddingHorizontal: 8,
+  },
+  disabledStoryCircle: {
+    opacity: 0.5,
+    borderColor: '#ccc',
+  },
+});
 
 export default Stories;

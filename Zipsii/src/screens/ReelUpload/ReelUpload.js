@@ -89,34 +89,34 @@ function ReelUpload() {
       Alert.alert("Error", "Please select an image to upload.");
       return;
     }
-    const file = {
-      caption: title,
-      description: description,
-      file: image.uri.split('/').pop(),
-      mimetype: image.type || '', // Use the mimeType from the ImagePicker result
-    };
-
+  
+    const formData = new FormData();
+    formData.append('caption', title);
+    formData.append('description', description);
+    formData.append('media', {
+      uri: image.uri,
+      name: image.uri.split('/').pop(),
+      type: image.type || 'image/jpeg', // default if type not available
+    });
+  
     try {
-      const accessToken = await AsyncStorage.getItem('accessToken'); // Get the access token
-      const userData = await AsyncStorage.getItem('user');
-      const user = JSON.parse(userData);
-
+      const accessToken = await AsyncStorage.getItem('accessToken');
+  
       if (!accessToken) {
         Alert.alert("Error", "You need to be logged in to submit.");
         return;
       }
-
+  
       const response = await fetch(`${base_url}/post/`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`, // Attach the JWT token to the request header
+          'Authorization': `Bearer ${accessToken}`,
         },
-        body: JSON.stringify(file), // Send the reel data as JSON
+        body: formData,
       });
-
+  
       const responseData = await response.json();
-
+  
       if (response.ok) {
         console.log("Reel uploaded:", responseData);
         
@@ -147,6 +147,7 @@ function ReelUpload() {
       Alert.alert("Error", "There was an error uploading your reel.");
     }
   };
+  
 
   // Function to test notifications
   const testNotification = async () => {

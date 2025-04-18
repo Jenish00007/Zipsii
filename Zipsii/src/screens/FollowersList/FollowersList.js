@@ -25,17 +25,22 @@ const FollowersList = ({ navigation, route }) => {
 
   const fetchFollowData = async () => {
     try {
+      const storedUserString = await AsyncStorage.getItem('user');
+      const storedUser = JSON.parse(storedUserString);
+      console.log(storedUser)
+
+
       const accessToken = await AsyncStorage.getItem('accessToken');
       
       // Fetch followers
-      const followersResponse = await fetch(`${base_url}/user/followers`, {
+      const followersResponse = await fetch(`${base_url}/follow/getFollowers/${storedUser._id}`, {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
         },
       });
       
       // Fetch following
-      const followingResponse = await fetch(`${base_url}/user/following`, {
+      const followingResponse = await fetch(`${base_url}/follow/getFollowing/${storedUser._id}`, {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
         },

@@ -121,7 +121,7 @@ function MainLanding(props) {
               'Authorization': `Bearer ${accessToken}`
             }
           }),
-            fetch(`${base_url}/schedule/places/getNearest`, {
+            fetch(`${base_url}/schedule/places/getNearest?bestDestination=true`, {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${accessToken}`
