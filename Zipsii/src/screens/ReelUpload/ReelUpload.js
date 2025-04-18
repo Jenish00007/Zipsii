@@ -174,6 +174,17 @@ function ReelUpload() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Add Header with Back Button */}
+      <View style={styles.header}>
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-back" size={24} color={colors.fontMainColor} />
+        </TouchableOpacity>
+        {/* <Text style={styles.headerTitle}>Create Reel</Text> */}
+      </View>
+
       <ScrollView>
         {/* Image Selection Section */}
         <TouchableOpacity 
