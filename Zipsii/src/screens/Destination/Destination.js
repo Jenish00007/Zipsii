@@ -10,6 +10,9 @@ import { ActivityIndicator } from 'react-native'
 import { cardData } from '../CardData/CardData'
 import DiscoverByNearest from '../../components/DiscoverByNearest/DiscoverByNearest'
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { base_url } from '../../utils/base_url'
+import { TextDefault } from '../../components';
+
 
 const baseUrl = 'http://192.168.1.6:3030'
 function Destination({ route, navigation }) {
@@ -23,6 +26,8 @@ function Destination({ route, navigation }) {
   const [loading, setLoading] = useState(true); // Loading state
   const item_id= route.params.product.id;
   const image1 = route.params.product.image;
+  const [nextPageToken, setNextPageToken] = useState(null);
+  console.log( route.params.product)
   // Fetch data from an open-source API (JSONPlaceholder API for demonstration)
   // useEffect(() => {
   //   const fetchDiscoverbyNearest = async() => {
@@ -51,26 +56,53 @@ function Destination({ route, navigation }) {
   //   fetchDiscoverbyNearest()
   // }, [])
 
-  useEffect(() => {
-    const fetchDiscoverbyNearest = async () => {
-      try {
-        setLoading(true); // Start loading
-        const response = await fetch(baseUrl + '/discover_by_nearest');
-        const data = await response.json();
-        const formattedData = data.map(item => ({
-          id: item.id,
-          image: item.image,
-          title: item.name,
-          subtitle: item.subtitle
-        }));
-        setDiscoverbyNearest(formattedData);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false); // Stop loading
+  const fetchDiscoverbyNearest = async (token = "") => {
+    try {
+      setLoading(true);
+      const accessToken = await AsyncStorage.getItem('accessToken');
+      
+      const url = token
+        ? `${base_url}/schedule/places/getNearest?nextPageToken=${token}`
+        : `${base_url}/schedule/places/getNearest`;
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-    };
-  
+
+      const result = await response.json();
+      
+      if (!result.data || !Array.isArray(result.data)) {
+        throw new Error('Invalid data format received');
+      }
+
+      const formattedData = result.data.map(item => ({
+        id: item._id,
+        image: item.image,
+        title: item.name,
+        subtitle: item.subtitle
+      }));
+
+      // Append new data to existing
+      setDiscoverbyNearest(prevData => [...prevData, ...formattedData]);
+      // Save the nextPageToken for future calls
+      setNextPageToken(result.nextPageToken || null);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      Alert.alert('Error', 'Failed to load nearby places. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Initial fetch when component mounts
+  useEffect(() => {
     fetchDiscoverbyNearest();
   }, []);
 
@@ -113,11 +145,16 @@ function Destination({ route, navigation }) {
   useEffect(() => {
     const fetchDescriptionexplore = async() => {
       try {
-        const response = await fetch('http://192.168.1.6:3030/descriptionexplore') // Replace with your backend URL
+        const response = await fetch('http://192.168.1.6:3030/descriptionexplore')
         const data = await response.json()
-        setDescriptionexplore(data.dataexplore) // Access the 'videos' array from the response
+        if (data && data.dataexplore) {
+          setDescriptionexplore(data.dataexplore)
+        } else {
+          setDescriptionexplore([])
+        }
       } catch (error) {
-        console.error('Error fetching :', error)
+        console.error('Error fetching description explore:', error)
+        setDescriptionexplore([])
       }
     }
 
@@ -319,312 +356,225 @@ function Destination({ route, navigation }) {
 
   return (
     <View style={styles.container}>
-    {loading ? (
-      <ActivityIndicator size="large" color={colors.Zipsii_color} />
-    ) : (
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {/* Image Container */}
-        <View style={styles.imageContainer}>
-          <Image source={{ uri: image1 }} style={styles.detailImage} />
-          <BackHeader
-            title="Details"
-            backPressed={backPressed}
-            style={{ position: 'absolute', top: 50, left: 20, right: 20 }}
-          />
-
-          {/* Save icon on the image */}
-          <TouchableOpacity
-            style={titleStyles.saveButton}
-            onPress={handleSave}
+      <View style={styles.mainContent}>
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={colors.Zipsii_color} />
+          </View>
+        ) : (
+          <ScrollView 
+            contentContainerStyle={styles.scrollContainer}
+            showsVerticalScrollIndicator={false}
           >
-            {isSaved
-              ? <FontAwesome name="bookmark" size={24} color="#FFFFFF" />
-              : <FontAwesome name="bookmark-o" size={24} color="#FFFFFF" />
-            }
-          </TouchableOpacity>
-        </View>
-
-        {/* Detail Container */}
-        <View style={styles.detailContainer}>
-          {/* Title row with Follow button */}
-          <View style={titleStyles.titleRow}>
-            <Text style={styles.detailTitle}>{cardTitle}</Text>
-            <TouchableOpacity
-              style={[
-                titleStyles.followButton,
-                isFollowing ? titleStyles.followingButton : {}
-              ]}
-              onPress={handleFollow}
-            >
-              <Text style={[
-                titleStyles.followButtonText,
-                isFollowing ? titleStyles.followingButtonText : {}
-              ]}>
-                {isFollowing ? 'Following' : 'Follow'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Subtitle with map button */}
-          <View style={styles.subtitleContainer}>
-            <SimpleLineIcons name="location-pin" size={18} color={colors.fontThirdColor} />
-            <Text style={styles.detailSubtitle}>{subtitle}</Text>
-
-            {/* Ratings */}
-            <TouchableOpacity onPress={() => navigation.navigate('Review')} style={[styles.ratingsContainer, { marginLeft: 10 }]}>
-              <AntDesign name="star" size={18} color="#FFD700" />
-              <Text style={styles.ratingsText}>4.7</Text>
-              <Text style={styles.ratingsCount}>(2498)</Text>
-            </TouchableOpacity>
-
-            {/* Map button */}
-            <TouchableOpacity style={titleStyles.mapButton} onPress={handleOpenMap}>
-              <MaterialIcons name="map" size={18} color={colors.Zipsii_color || '#3498db'} />
-              <Text style={titleStyles.mapButtonText}>Map</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Quick Action Icons */}
-          <View style={actionStyles.actionContainer}>
-            <TouchableOpacity style={actionStyles.actionItem} onPress={handleCall}>
-              <View style={actionStyles.actionIconContainer}>
-                <Feather name="phone-call" size={20} color="#FFFFFF" />
-              </View>
-              <Text style={actionStyles.actionText}>Call</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={actionStyles.actionItem} onPress={handleOpenWebsite}>
-              <View style={actionStyles.actionIconContainer}>
-                <FontAwesome5 name="blog" size={20} color="#FFFFFF" />
-              </View>
-              <Text style={actionStyles.actionText}>Blog</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={actionStyles.actionItem} onPress={() => navigation.navigate('MakeSchedule')}>
-              <View style={actionStyles.actionIconContainer}>
-                <AntDesign name="calendar" size={20} color="#FFFFFF" />
-              </View>
-              <Text style={actionStyles.actionText}>Schedule</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={actionStyles.actionItem} onPress={handleSave}>
-              <View style={actionStyles.actionIconContainer}>
-                <FontAwesome name={isSaved ? 'bookmark' : 'bookmark-o'} size={20} color="#FFFFFF" />
-              </View>
-              <Text style={actionStyles.actionText}>Save</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* About Destination */}
-          <View style={styles.aboutContainer}>
-            <Text style={styles.aboutTitle}>{destinationData?.title}</Text>
-            <Text style={styles.aboutText}>
-              {destinationData?.shortDescription}{' '}
-              <TouchableOpacity onPress={() => setIsExpanded(!isExpanded)}>
-                <Text style={styles.readMore}>{isExpanded ? 'Read Less' : 'Read More'}</Text>
-              </TouchableOpacity>
-            </Text>
-            {isExpanded && <Text style={styles.expandedText}>{destinationData?.fullDescription}</Text>}
-          </View>
-
-          {/* Horizontal Tab Menu */}
-          {/* <View style={tabStyles.tabSection}>
-            <Text style={styles.aboutTitle}>Explore</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={tabStyles.tabScrollContainer}
-            >
-              {tabs.map(tab => (
-                <TouchableOpacity
-                  key={tab.id}
-                  style={[
-                    tabStyles.tab,
-                    activeTab === tab.name && tabStyles.activeTab
-                  ]}
-                  onPress={() => setActiveTab(tab.name)}
-                >
-                  <Text
-                    style={[
-                      tabStyles.tabText,
-                      activeTab === tab.name && tabStyles.activeTabText
-                    ]}
-                  >
-                    {tab.name}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView> */}
-
-          {/* Tab Content Description */}
-          {/* <View style={tabStyles.tabContent}>
-              <Text style={tabStyles.tabDescription}>{getActiveTabDescription()}</Text>
-            </View>
-          </View> */}
-
-          <View style={tabStyles.tabSection}>
-            <Text style={styles.aboutTitle}>Explore</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={tabStyles.tabScrollContainer}
-            >
-              {tabs.map((tab) => (
-                <TouchableOpacity
-                  key={tab.id}
-                  style={[
-                    tabStyles.tab,
-                    activeTab === tab.name && tabStyles.activeTab
-                  ]}
-                  onPress={() => setActiveTab(tab.name)}
-                >
-                  <Text
-                    style={[
-                      tabStyles.tabText,
-                      activeTab === tab.name && tabStyles.activeTabText
-                    ]}
-                  >
-                    {tab.name}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-
-            {/* Tab Content Description */}
-            <View style={tabStyles.tabContent}>
-              <Text style={tabStyles.tabDescription}>
-                {getActiveTabDescription()}
-              </Text>
-            </View>
-          </View>
-
-          {/* Discover Row */}
-          <View style={styles.discoverRow}>
-            <Text style={styles.discoverText}>Discover by Nearest</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('DiscoverPlace')}>
-              <Text style={styles.viewAllText}>View All</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Horizontal Scroll for Cards */}
-          {/* <View style={styles.discoverRow}>
-          <TextDefault style={styles.discoverText}>Discover by Nearest</TextDefault>
-          <TouchableOpacity onPress={() => navigation.navigate('DiscoverPlace')}>
-            <TextDefault style={styles.viewAllText}>View All</TextDefault>
-          </TouchableOpacity>
-        </View> */}
-          <FlatList
-            horizontal={true}
-            showsHorizontalScrollIndicator={false}
-            keyExtractor={(item, index) => item.id}
-            data={discoverbynearest}
-            renderItem={({ item, index }) => (
-              <DiscoverByNearest styles={styles.itemCardContainer} {...item} />
-            )}
-          />
-
-          {/* YouTube Tutorial Videos Section */}
-          {/* <View style={videoStyles.videoSection}>
-            <Text style={styles.aboutTitle}>Tutorial Videos</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={videoStyles.videoScrollContainer}
-            >
-              {Array.isArray(tutorialVideos) && tutorialVideos.map((video) => (
-                <TouchableOpacity
-                  key={video.id}
-                  style={videoStyles.videoCard}
-                  onPress={() => handleOpenVideo(video.url)}
-                >
-                  <View style={videoStyles.thumbnailContainer}> */}
-          {/* Using a placeholder for the image in this example */}
-          {/* <View style={videoStyles.thumbnailPlaceholder}>
-                      <FontAwesome name="youtube-play" size={30} color="#FF0000" />
-                    </View> */}
-          {/* <Image source={{ uri: video.thumbnail }} style={videoStyles.thumbnail} /> */}
-          {/* <View style={videoStyles.playButton}>
-                      <Ionicons name="play" size={16} color="#FFFFFF" />
-                    </View>
-                  </View>
-                  <Text style={videoStyles.videoTitle} numberOfLines={2}>{video.title}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View> */}
-
-          {/* youtube preview */}
-          <View style={videoStyles.videoSection}>
-            <Text style={styles.aboutTitle}>Tutorial Videos</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={videoStyles.videoScrollContainer}
-            >
-              {Array.isArray(tutorialVideos) && tutorialVideos.map((video) => (
-                <TouchableOpacity
-                  key={video._id} // Use video._id instead of video.id
-                  style={videoStyles.videoCard}
-                  onPress={() => handleOpenVideo(video.url)}
-                >
-                  <View style={videoStyles.thumbnailContainer}>
-                    {/* Placeholder icon */}
-                    <View style={videoStyles.thumbnailPlaceholder}>
-                      <FontAwesome name="youtube-play" size={30} color="#FF0000" />
-                    </View>
-                    <View style={videoStyles.playButton}>
-                      <Ionicons name="play" size={16} color="#FFFFFF" />
-                    </View>
-                  </View>
-                  <Text style={videoStyles.videoTitle} numberOfLines={2}>{video.title}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-
-          {/* Comments */}
-          <View style={styles.commentContainer}>
-            <Text style={styles.commentTitle}>Leave a comment</Text>
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={styles.commentInput}
-                placeholder="Say something..."
-                placeholderTextColor={colors.fontThirdColor}
-                value={comment}
-                onChangeText={setComment}
+            {/* Image Container */}
+            <View style={styles.imageContainer}>
+              <Image source={{ uri: image1 }} style={styles.detailImage} />
+              <BackHeader
+                title="Details"
+                backPressed={backPressed}
+                style={{ position: 'absolute', top: 50, left: 20, right: 20 }}
               />
-              <TouchableOpacity style={styles.sendButton} onPress={handleSendComment}>
-                <Text style={styles.sendButtonText}>Send</Text>
+
+              {/* Save icon on the image */}
+              <TouchableOpacity
+                style={titleStyles.saveButton}
+                onPress={handleSave}
+              >
+                {isSaved
+                  ? <FontAwesome name="bookmark" size={24} color="#FFFFFF" />
+                  : <FontAwesome name="bookmark-o" size={24} color="#FFFFFF" />
+                }
               </TouchableOpacity>
             </View>
-          </View>
-          {/* <View>
-            {comments.map(comment => (
-              <View key={comment._id}>
-                <Text>{comment.text}</Text>
+
+            {/* Detail Container */}
+            <View style={styles.detailContainer}>
+              {/* Title row with Follow button */}
+              <View style={titleStyles.titleRow}>
+                <Text style={styles.detailTitle}>{cardTitle}</Text>
+                <TouchableOpacity
+                  style={[
+                    titleStyles.followButton,
+                    isFollowing ? titleStyles.followingButton : {}
+                  ]}
+                  onPress={handleFollow}
+                >
+                  <Text style={[
+                    titleStyles.followButtonText,
+                    isFollowing ? titleStyles.followingButtonText : {}
+                  ]}>
+                    {isFollowing ? 'Following' : 'Follow'}
+                  </Text>
+                </TouchableOpacity>
               </View>
-            ))}
-          </View> */}
-          <View style={stylescomment.commentSection}>
-  {comments.map((comment) => (
-    <View key={comment._id} style={stylescomment.commentCard}>
-      <View style={stylescomment.commentHeader}>
-        <FontAwesome name="user-circle" size={20} color="#555" />
-        <Text style={stylescomment.commentUser}>{comment.username || "User"}</Text>
+
+              {/* Subtitle with map button */}
+              <View style={styles.subtitleContainer}>
+                <SimpleLineIcons name="location-pin" size={18} color={colors.fontThirdColor} />
+                <Text style={styles.detailSubtitle}>{subtitle}</Text>
+
+                {/* Ratings */}
+                <TouchableOpacity onPress={() => navigation.navigate('Review')} style={[styles.ratingsContainer, { marginLeft: 10 }]}>
+                  <AntDesign name="star" size={18} color="#FFD700" />
+                  <Text style={styles.ratingsText}>4.7</Text>
+                  <Text style={styles.ratingsCount}>(2498)</Text>
+                </TouchableOpacity>
+
+                {/* Map button */}
+                <TouchableOpacity style={titleStyles.mapButton} onPress={handleOpenMap}>
+                  <MaterialIcons name="map" size={18} color={colors.Zipsii_color || '#3498db'} />
+                  <Text style={titleStyles.mapButtonText}>Map</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Quick Action Icons */}
+              <View style={actionStyles.actionContainer}>
+                <TouchableOpacity style={actionStyles.actionItem} onPress={handleCall}>
+                  <View style={actionStyles.actionIconContainer}>
+                    <Feather name="phone-call" size={20} color="#FFFFFF" />
+                  </View>
+                  <Text style={actionStyles.actionText}>Call</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={actionStyles.actionItem} onPress={handleOpenWebsite}>
+                  <View style={actionStyles.actionIconContainer}>
+                    <FontAwesome5 name="blog" size={20} color="#FFFFFF" />
+                  </View>
+                  <Text style={actionStyles.actionText}>Blog</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={actionStyles.actionItem} onPress={() => navigation.navigate('MakeSchedule')}>
+                  <View style={actionStyles.actionIconContainer}>
+                    <AntDesign name="calendar" size={20} color="#FFFFFF" />
+                  </View>
+                  <Text style={actionStyles.actionText}>Schedule</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={actionStyles.actionItem} onPress={handleSave}>
+                  <View style={actionStyles.actionIconContainer}>
+                    <FontAwesome name={isSaved ? 'bookmark' : 'bookmark-o'} size={20} color="#FFFFFF" />
+                  </View>
+                  <Text style={actionStyles.actionText}>Save</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* About Destination */}
+              <View style={styles.aboutContainer}>
+                <Text style={styles.aboutTitle}>{destinationData?.title}</Text>
+                <Text style={styles.aboutText}>
+                  {destinationData?.shortDescription}{' '}
+                  <TouchableOpacity onPress={() => setIsExpanded(!isExpanded)}>
+                    <Text style={styles.readMore}>{isExpanded ? 'Read Less' : 'Read More'}</Text>
+                  </TouchableOpacity>
+                </Text>
+                {isExpanded && <Text style={styles.expandedText}>{destinationData?.fullDescription}</Text>}
+              </View>
+
+              {/* Horizontal Tab Menu */}
+              <View style={tabStyles.tabSection}>
+                <Text style={styles.aboutTitle}>Explore</Text>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={tabStyles.tabScrollContainer}
+                >
+                  {tabs && tabs.length > 0 ? (
+                    tabs.map((tab) => (
+                      <TouchableOpacity
+                        key={tab.id}
+                        style={[
+                          tabStyles.tab,
+                          activeTab === tab.name && tabStyles.activeTab
+                        ]}
+                        onPress={() => setActiveTab(tab.name)}
+                      >
+                        <Text
+                          style={[
+                            tabStyles.tabText,
+                            activeTab === tab.name && tabStyles.activeTabText
+                          ]}
+                        >
+                          {tab.name}
+                        </Text>
+                      </TouchableOpacity>
+                    ))
+                  ) : (
+                    <Text style={tabStyles.noTabsText}>No explore options available</Text>
+                  )}
+                </ScrollView>
+
+                {/* Tab Content Description */}
+                <View style={tabStyles.tabContent}>
+                  <Text style={tabStyles.tabDescription}>
+                    {getActiveTabDescription()}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Discover Row */}
+              <View style={styles.discoverRow}>
+                <TextDefault style={styles.discoverText}>Discover by Nearest</TextDefault>
+                <TouchableOpacity onPress={() => navigation.navigate('DiscoverPlace')}>
+                  <TextDefault style={styles.viewAllText}>View All</TextDefault>
+                </TouchableOpacity>
+              </View>
+
+              {/* Horizontal Scroll for Cards */}
+              {discoverbynearest.length > 0 ? (
+                <FlatList
+                  horizontal={true}
+                  showsHorizontalScrollIndicator={false}
+                  keyExtractor={(item) => item.id}
+                  data={discoverbynearest}
+                  renderItem={({ item }) => (
+                    <DiscoverByNearest 
+                      styles={styles.itemCardContainer} 
+                      {...item} 
+                    />
+                  )}
+                />
+              ) : (
+                <View style={styles.noDataContainer}>
+                  <TextDefault style={styles.noDataText}>No nearby places found</TextDefault>
+                </View>
+              )}
+
+              {/* Comments Section */}
+              <View style={styles.commentContainer}>
+                <TextDefault style={styles.commentTitle}>Leave a comment</TextDefault>
+                <View style={styles.inputContainer}>
+                  <TextInput
+                    style={styles.commentInput}
+                    placeholder="Say something..."
+                    placeholderTextColor={colors.fontThirdColor}
+                    value={comment}
+                    onChangeText={setComment}
+                  />
+                  <TouchableOpacity style={styles.sendButton} onPress={handleSendComment}>
+                    <TextDefault style={styles.sendButtonText}>Send</TextDefault>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              <View style={stylescomment.commentSection}>
+                {comments.map((comment) => (
+                  <View key={comment._id} style={stylescomment.commentCard}>
+                    <View style={stylescomment.commentHeader}>
+                      <FontAwesome name="user-circle" size={20} color="#555" />
+                      <TextDefault style={stylescomment.commentUser}>{comment.username || "User"}</TextDefault>
+                    </View>
+                    <TextDefault style={stylescomment.commentText}>{comment.text}</TextDefault>
+                  </View>
+                ))}
+              </View>
+
+              <MainBtn text="Make a schedule" onPress={() => navigation.navigate('MakeSchedule')} style={{ marginTop: 20 }} />
+            </View>
+          </ScrollView>
+        )}
       </View>
-      <Text style={stylescomment.commentText}>{comment.text}</Text>
-    </View>
-  ))}
-</View>
-
-
-          <MainBtn text="Make a schedule" onPress={() => navigation.navigate('MakeSchedule')} style={{ marginTop: 20 }} />
-        </View>
-      </ScrollView>
-    )}
       {/* Bottom Navigation */}
       <BottomTab screen="WhereToGo" style={styles.bottomTab} />
-   
     </View>
   )
 }
@@ -699,6 +649,12 @@ const tabStyles = {
     fontSize: 14,
     lineHeight: 22,
     color: '#555'
+  },
+  noTabsText: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    padding: 10
   }
 }
 

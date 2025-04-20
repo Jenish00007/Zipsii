@@ -10,6 +10,8 @@ import { colors } from './src/utils/colors';
 import { Spinner } from './src/components';
 import { ScheduleProvider } from './src/context/ScheduleContext';
 import { AuthProvider } from './src/components/Auth/AuthContext';
+import { Provider } from 'react-redux';
+import { store } from './src/redux/store';
 
 // Configure how notifications are handled when app is in foreground
 Notifications.setNotificationHandler({
@@ -114,7 +116,7 @@ export default function App() {
   }
 
   return (
-    <>
+    <Provider store={store}>
       <StatusBar
         barStyle="dark-content"
         backgroundColor={colors.headerbackground}
@@ -127,6 +129,6 @@ export default function App() {
       </AuthProvider>
 
       <FlashMessage position="top" />
-    </>
+    </Provider>
   );
 }

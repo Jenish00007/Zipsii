@@ -5,6 +5,8 @@ import { BackHeader, BottomTab, TextDefault } from '../../components';
 import { SafeAreaView } from "react-native-safe-area-context";
 import Schedule from './Schedule/AllSchedule';
 import { base_url } from '../../utils/base_url';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 //const baseUrl = 'http://192.168.1.6:3030'; // Update the base URL if necessary
 
@@ -15,22 +17,49 @@ function MySchedule({ navigation }) {
   // Fetch all schedule data
   useEffect(() => {
     const fetch_all_schedule = async () => {
+      const accessToken = await AsyncStorage.getItem('accessToken');
       try {
-        const response = await fetch(`${base_url}/schedule/listing/getUsers`);
+        const response = await fetch(`${base_url}/schedule/listing/filter`, {
+          method: 'get',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+          },
+        }); 
         const data = await response.json();
-        const formattedData = data.slice(0, 100).map((item) => ({
-          id: item.id,
-          title: item.title,
-          from: item.from,
-          to: item.to,
-          date: item.date,
-          riders: item.riders,
-          joined: item.joined,
-          imageUrl: item.imageUrl,
-          day1Locations: item.day1Locations,
-          day2Locations: item.day2Locations,
-        }));
-        setAll_schedule(formattedData); // Set the fetched schedule data
+        if (data.success && data.data) {
+          const formattedData = data.data.map((item) => {
+            const fromDate = new Date(item.Dates.from);
+            const endDate = new Date(item.Dates.end);
+            const createdAt = new Date(item.createdAt);
+            
+            return {
+              id: item._id,
+              title: item.tripName,
+              from: item.locationDetails?.[0]?.address || 'Unknown location',
+              to: item.locationDetails?.[1]?.address || 'Unknown location',
+              date: fromDate.toLocaleDateString(),
+              endDate: endDate.toLocaleDateString(),
+              travelMode: item.travelMode,
+              visible: item.visible,
+              numberOfDays: item.numberOfDays.toString(),
+              imageUrl: item.bannerImage,
+              locationDetails: item.locationDetails,
+              createdAt: createdAt.toLocaleDateString(),
+              // Keep raw location data for map if needed
+              rawLocation: {
+                from: {
+                  latitude: item.location.from.latitude,
+                  longitude: item.location.from.longitude
+                },
+                to: {
+                  latitude: item.location.to.latitude,
+                  longitude: item.location.to.longitude
+                }
+              }
+            };
+          });
+          setAll_schedule(formattedData);
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -57,6 +86,16 @@ function MySchedule({ navigation }) {
   const year = selectedDate.getFullYear();
   const month = selectedDate.getMonth();
   const dates = getDatesForMonth(year, month);
+
+  // Filter schedules for the selected date
+  const filteredSchedules = all_schedule.filter(schedule => {
+    const scheduleDate = new Date(schedule.date);
+    return (
+      scheduleDate.getDate() === selectedDate.getDate() &&
+      scheduleDate.getMonth() === selectedDate.getMonth() &&
+      scheduleDate.getFullYear() === selectedDate.getFullYear()
+    );
+  });
 
   // Handle navigation between months
   const handlePrevMonth = () => {
@@ -137,7 +176,7 @@ function MySchedule({ navigation }) {
           vertical
           showsVerticalScrollIndicator={false}
           keyExtractor={(item) => item.id.toString()} 
-          data={all_schedule.slice(0, 8)}
+          data={filteredSchedules}
           renderItem={({ item }) => <Schedule item={item} />}
         />
       </View>

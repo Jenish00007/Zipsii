@@ -321,7 +321,7 @@ const Stories = () => {
           renderTextComponent={({ item, profileName }) => (
             <View style={styles.textContainer}>
               <Text style={styles.profileName}>{profileName}</Text>
-              {item.user_id === userId && (
+              {item.user_id === userId && !item.stories?.length && (
                 <TouchableOpacity
                   onPress={pickImage}
                   style={styles.addStoryButton}
@@ -332,6 +332,14 @@ const Stories = () => {
             </View>
           )}
           style={styles.instaStory}
+          onAddStoryPress={() => {
+            if (userId) {
+              pickImage();
+            }
+          }}
+          showAddStoryButton={true}
+          addStoryButtonStyle={styles.addStoryButton}
+          addStoryButtonIcon={<Entypo name="circle-with-plus" style={styles.addIcon} />}
         />
       </View>
     );

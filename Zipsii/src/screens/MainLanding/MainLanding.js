@@ -171,7 +171,7 @@ function MainLanding(props) {
         // Set data for each response with proper empty state handling
         if (Array.isArray(discoverByInterestData?.data)) {
           setDiscover_by_intrest(discoverByInterestData.data.slice(0, 100).map(item => ({
-            id: item.id || item.name,
+            id: item._id || item.name,
             image: item.image,
             name: item.name
           })));
@@ -181,7 +181,7 @@ function MainLanding(props) {
 
         if (Array.isArray(bestDestinationData?.data)) {
           setBest_destination(bestDestinationData.data.slice(0, 100).map(item => ({
-            id: item.id || item.name,
+            id: item._id || item.name,
             image: item.image,
             name: item.name
           })));
@@ -191,7 +191,7 @@ function MainLanding(props) {
 
         if (Array.isArray(allDestinationData?.data)) {
           setAll_destination(allDestinationData.data.slice(0, 100).map(item => ({
-            id: item.id || item.name,
+            id: item._id || item.name,
             image: item.image,
             name: item.name
           })));
@@ -244,7 +244,7 @@ function MainLanding(props) {
 
         if (Array.isArray(discoverByNearestData?.data)) {
           setDiscoverbyNearest(discoverByNearestData.data.slice(0, 100).map(item => ({
-            id: item.id || item.name,
+            id: item._id || item.name,
             image: item.image,
             title: item.name,
             subtitle: item.address || item.rating || 'No subtitle'
@@ -335,42 +335,11 @@ function MainLanding(props) {
     </View>
   );
 
-  // const renderScheduleContainer = () => (
-  //   <View style={styles.scheduleContainer}>
-  //     <View style={styles.scheduleheadContainer}>
-  //       <TextDefault textColor={colors.fontMainColor} H5 bold>
-  //         {'Schedule'}
-  //       </TextDefault>
-  //       <TouchableOpacity onPress={() => navigation.navigate('MySchedule')}>
-  //         <TextDefault textColor={colors.btncolor} H5>
-  //           {'View All'}
-  //         </TextDefault>
-  //       </TouchableOpacity>
-  //     </View>
-
-  //     {all_schedule && all_schedule.length > 0 ? (
-  //       <FlatList
-  //         horizontal
-  //         showsHorizontalScrollIndicator={false}
-  //         keyExtractor={(item, index) => index.toString()}
-  //         data={all_schedule?.slice(0, 8) || []}
-  //         renderItem={({ item }) => (
-  //           <Schedule
-  //             item={item}
-  //           />
-  //         )}
-
-  //       />
-  //     ) : (
-  //       <TextDefault>No schedule available</TextDefault>
-  //     )}
-  //   </View>
-  // )
   const renderScheduleContainer = () => {
     if (!all_schedule || all_schedule.length === 0) {
       return <TextDefault style={{ marginLeft: 20 }}>
-      No schedule available
-    </TextDefault>
+        No schedule available
+      </TextDefault>
     }
   
     return (

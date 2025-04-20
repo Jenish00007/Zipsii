@@ -1,243 +1,259 @@
-import { StyleSheet } from "react-native";
-import { colors } from "../../utils";
-import { alignment } from "../../utils";
+import { StyleSheet, Dimensions } from 'react-native';
+import { colors } from '../../utils/colors';
 
-const styles = StyleSheet.create({
+const { width } = Dimensions.get('window');
+
+export default StyleSheet.create({
   mainContainer: {
     flex: 1,
-    backgroundColor: colors.white,
-    position: "relative"
+    backgroundColor: '#F8F9FA',
+  },
+  headerGradient: {
+    paddingTop: 20,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    // borderBottomLeftRadius: 30,
+    // borderBottomRightRadius: 30,
+    // borderTopLeftRadius:30,
+    // borderTopRightRadius:30,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
   container: {
     flex: 1,
-    ...alignment.Pmedium,
-    position: 'relative',
-    width: '100%',
-    zIndex: 2
   },
-  backgroundCurvedContainer: {
-    backgroundColor: colors.btncolor, // Adjust to match the gradient or color
-    height: 200, // Height for curved container
-    width: "100%", // Full screen width
-    position: "absolute",
-    top: 0, // Start from the top
-    zIndex: 0, // Set a lower zIndex than the protractorShape
-},
-protractorShape: {
-    backgroundColor: colors.white, // Match the desired protractor color
-    height: 500, // Half of the new width for a proportional semi-circle
-    width: 1000, // Increased width for the protractor shape
-    borderTopLeftRadius: 500, // Half of the width for a semi-circle
-    borderTopRightRadius: 500, // Half of the width for a semi-circle
-    position: "absolute",
-    top: 80, // Adjust to position the shape properly
-    alignSelf: "center", // Center horizontally
-    zIndex: 1, // Position it above the backgroundCurvedContainer
-    overflow: "hidden", // Ensure content stays inside the shape
-},
+  scrollContent: {
+    paddingBottom: 30,
+  },
   tripContainer: {
-    backgroundColor: colors.white,
+    padding: 20,
+    marginTop: -20,
+  },
+  bannerContainer: {
+    height: 180,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: colors.grayLinesColor,
-    shadowColor: colors.black, // Shadow color (iOS)
-    shadowOffset: { width: 0, height: 6 }, // Shadow offset (iOS)
-    shadowOpacity: 6, // Shadow opacity (iOS)
-    shadowRadius: 6, // Shadow radius (iOS)
-    elevation: 6, // Shadow for Android
-    ...alignment.Pmedium,
-    top: 5,
-    
+    overflow: 'hidden',
+    marginBottom: 25,
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  bannerImage: {
+    width: '100%',
+    height: '100%',
+  },
+  bannerPlaceholder: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F0F0F0',
+  },
+  bannerPlaceholderText: {
+    marginTop: 10,
+    color: '#666',
+    fontSize: 16,
+    fontWeight: '500',
   },
   formGroupRow: {
-    flexDirection: "row",
-    justifyContent: "space-between", // Adjusts spacing between inputs
-    alignItems: "center", // Aligns inputs vertically
-    marginBottom: 16, // Space below the row
+    marginBottom: 25,
   },
   labelRow: {
     fontSize: 16,
-    fontWeight: "600",
-    color: colors.fontMainColor,
-    marginRight: 8,
+    fontWeight: '600',
+    color: '#2C3E50',
+    marginBottom: 10,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  inputIcon: {
+    marginRight: 12,
+    color: '#A60F93',
   },
   underlineInput: {
     flex: 1,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.grayLinesColor,
-    fontSize: 14,
-    paddingVertical: 4,
-    color: colors.fontMainColor,
+    fontSize: 16,
+    color: '#2C3E50',
   },
-  input: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: colors.grayLinesColor,
-    borderRadius: 8,
-    padding: 7,
-    fontSize: 14,
-    marginHorizontal: 8,
-    color: colors.fontMainColor,
-    backgroundColor: colors.themeBackground
+  sectionContainer: {
+    marginBottom: 25,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#2C3E50',
+    marginBottom: 15,
   },
   row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    padding: 10
-  },
-  dropdownContainer: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: colors.grayLinesColor,
-    borderRadius: 8,
-    padding: 10,
-    marginHorizontal: 8,
-    backgroundColor: colors.themeBackground
-  },
-  dropdownText: {
-    fontSize: 14,
-    color: colors.fontSecondColor,
-    flex: 1,
-  },
-  icon: {
-    marginLeft: 8,
-  },
-  dropdown: {
-    marginTop: 8,
-    position: "absolute",
-    backgroundColor: colors.lightpink,
-    borderRadius: 8,
-    elevation: 3,
-    padding: 8,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-  },
-  dropdownOption: {
-    padding: 5,
-  },
-  optionText: {
-    fontSize: 14,
-    color: colors.textBlueColor,
-  },
-  planDescriptionContainer: {
-    marginTop: 16,
-    padding: 16,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.grayLinesColor,
-    shadowColor: colors.grayLinesColor,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.6,
-    shadowRadius: 6,
-    elevation: 4,
-  },
-  dayContainer: {
-    backgroundColor: colors.white,
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.grayLinesColor,
-    marginBottom: 12,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-    position: "relative",
-  },
-  dayTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: colors.fontMainColor,
-    marginBottom: 8,
-  },
-  dayInput: {
-    borderWidth: 1,
-    borderColor: colors.grayLinesColor,
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 14,
-    backgroundColor: colors.themeBackground,
-    color: colors.fontMainColor,
-    height: 80,
-    textAlignVertical: "top", // Multiline input starts at the top
-  },
-  removeDayButton: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-  },
-  addDayButton: {
-    marginTop: 16,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 10,
-    backgroundColor: colors.lightpink,
-    borderRadius: 50,
-  },
-  image: {
-    width: "100%",
-    height: 150,
-    borderRadius: 8,
-    marginTop: 8,
-  },
-  doneButton: {
-    padding: 20,
-    backgroundColor: colors.btncolor,
-    borderRadius: 8,
-    alignItems: "center",
-    ...alignment.MBlarge,
-  },
-  doneButtonText: {
-    color: colors.white,
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  maintitle: {
-    flex: 1,
-    textAlign: "center",
-    fontSize: 18,
-    fontWeight: "bold",
-    color: colors.fontMainColor,
-    marginVertical: 12,
-    ...alignment.Psmall
-  },
-  title: {
-    flex: 1,
-    textAlign: 'left',
-    fontSize: 18,
-    color: colors.fontMainColor,
-    ...alignment.Psmall,
-    marginBottom: 2,
-    marginTop: 40
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 15,
   },
   formGroup: {
     flex: 1,
-    marginBottom: 16,
-    justifyContent: "space-between",
   },
-  label: {
-    fontSize: 14,
-    color: colors.fontSecondColor,
-    marginBottom: 8,
-    
+  input: {
+    flex: 1,
+    fontSize: 16,
+    color: '#2C3E50',
   },
-  datescontainer: {
+  datePickerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  dateText: {
+    fontSize: 16,
+    color: '#2C3E50',
+  },
+  datePlaceholder: {
+    color: '#95A5A6',
+  },
+  dayCard: {
+    backgroundColor: '#fff',
     borderRadius: 15,
-    borderWidth: 1, // Adjust this value to increase the border thickness
-    borderColor: colors.grayLinesColor, // Choose the border color (e.g., Dark Gray)
-    // Shadow for both Android and iOS
-    shadowColor: colors.grayLinesColor,  // Dark gray shadow color
-    shadowOffset: { width: 0, height: 4 },  // Shadow offset
-    shadowOpacity: 0.3,  // Shadow opacity (higher value = more visible shadow)
-    shadowRadius: 6,  // Radius of the shadow blur
-    elevation: 5, 
+    padding: 20,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
   },
-  
+  dayHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  dayTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#2C3E50',
+  },
+  removeDayButton: {
+    padding: 8,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 8,
+  },
+  dayInput: {
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: 12,
+    padding: 15,
+    fontSize: 16,
+    color: '#2C3E50',
+    marginBottom: 15,
+    minHeight: 120,
+    textAlignVertical: 'top',
+    backgroundColor: '#F8F9FA',
+  },
+  mapButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#A60F93',
+    padding: 15,
+    borderRadius: 12,
+    marginBottom: 15,
+    shadowColor: '#A60F93',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  mapButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  map: {
+    height: 200,
+    borderRadius: 12,
+    marginBottom: 15,
+  },
+  addDayButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 15,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+    marginTop: 10,
+    borderWidth: 2,
+    borderColor: '#A60F93',
+  },
+  addDayButtonText: {
+    color: '#A60F93',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  submitButton: {
+    marginTop: 30,
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: '#A60F93',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  submitButtonGradient: {
+    padding: 18,
+    alignItems: 'center',
+  },
+  submitButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
 });
-
-export default styles;
