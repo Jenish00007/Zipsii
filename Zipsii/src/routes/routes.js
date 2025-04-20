@@ -27,6 +27,7 @@ function Drawer() {
     <NavigationStack.Navigator screenOptions={{ headerShown: false }}>
       <NavigationStack.Screen name='Login' component={Screen.Login}/>
       <NavigationStack.Screen name="MainLanding" component={Screen.MainLanding} />
+      <NavigationStack.Screen name="ExpenseCalculator" component={Screen.ExpenseCalculator} />
       <NavigationStack.Screen name="DeleteButton" component={Screen.DeleteButton} />
       <NavigationStack.Screen name="Logout" component={Screen.LogoutButton} />
       <NavigationStack.Screen name="ProfileDashboard" component={Screen.ProfileDashboard} />

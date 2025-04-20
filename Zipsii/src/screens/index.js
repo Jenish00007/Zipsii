@@ -1,5 +1,5 @@
 import MainLanding from './MainLanding/MainLanding'
-
+import ExpenseCalculator from './ExpenseCalculator/ExpenseCalculator'
 import ProfileDashboard from './ProfileDashboard/ProfileDashboard'
 import Review from './Review/Review'
 
@@ -34,6 +34,7 @@ export {
 
   data,
   MainLanding,
+  ExpenseCalculator,
   ProfileDashboard,
   MapScreen,
   Review,

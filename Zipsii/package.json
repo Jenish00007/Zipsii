@@ -46,6 +46,7 @@
     "react-native-gesture-handler": "~2.8.0",
     "react-native-image-picker": "^8.2.0",
     "react-native-image-zoom-viewer": "^3.0.1",
+    "react-native-insta-story": "^1.1.9",
     "react-native-location": "^2.5.0",
     "react-native-maps": "^1.20.1",
     "react-native-modal": "^11.5.6",
