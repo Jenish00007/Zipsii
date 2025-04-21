@@ -11,13 +11,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 //const baseUrl = 'http://192.168.1.6:3030'; // Update the base URL if necessary
 
 function MySchedule({ navigation }) {
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const today = new Date();
+  const [selectedDate, setSelectedDate] = useState(today);
   const [all_schedule, setAll_schedule] = useState([]);
 
   // Fetch all schedule data
   useEffect(() => {
     const fetch_all_schedule = async () => {
       const accessToken = await AsyncStorage.getItem('accessToken');
+      console.log(accessToken);
       try {
         const response = await fetch(`${base_url}/schedule/listing/filter`, {
           method: 'get',
@@ -37,15 +39,14 @@ function MySchedule({ navigation }) {
               title: item.tripName,
               from: item.locationDetails?.[0]?.address || 'Unknown location',
               to: item.locationDetails?.[1]?.address || 'Unknown location',
-              date: fromDate.toLocaleDateString(),
-              endDate: endDate.toLocaleDateString(),
+              date: fromDate.toISOString().split('T')[0],
+              endDate: endDate.toISOString().split('T')[0],
               travelMode: item.travelMode,
               visible: item.visible,
               numberOfDays: item.numberOfDays.toString(),
               imageUrl: item.bannerImage,
               locationDetails: item.locationDetails,
-              createdAt: createdAt.toLocaleDateString(),
-              // Keep raw location data for map if needed
+              createdAt: createdAt.toISOString().split('T')[0],
               rawLocation: {
                 from: {
                   latitude: item.location.from.latitude,
@@ -78,6 +79,7 @@ function MySchedule({ navigation }) {
         day: day,
         week: date.toLocaleString("en-US", { weekday: "short" }).charAt(0),
         fullDate: date,
+        dateString: date.toISOString().split('T')[0]
       });
     }
     return dates;
@@ -90,20 +92,20 @@ function MySchedule({ navigation }) {
   // Filter schedules for the selected date
   const filteredSchedules = all_schedule.filter(schedule => {
     const scheduleDate = new Date(schedule.date);
-    return (
-      scheduleDate.getDate() === selectedDate.getDate() &&
-      scheduleDate.getMonth() === selectedDate.getMonth() &&
-      scheduleDate.getFullYear() === selectedDate.getFullYear()
-    );
+    const selectedDateString = selectedDate.toISOString().split('T')[0];
+    const scheduleDateString = scheduleDate.toISOString().split('T')[0];
+    return scheduleDateString === selectedDateString;
   });
 
   // Handle navigation between months
   const handlePrevMonth = () => {
-    setSelectedDate(new Date(year, month - 1, 1));
+    const newDate = new Date(year, month - 1, 1);
+    setSelectedDate(newDate);
   };
 
   const handleNextMonth = () => {
-    setSelectedDate(new Date(year, month + 1, 1));
+    const newDate = new Date(year, month + 1, 1);
+    setSelectedDate(newDate);
   };
 
   const formatMonthYear = (date) => {
@@ -116,13 +118,13 @@ function MySchedule({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { flex: 1 }]}>
       <View style={styles.protractorShape} />
       <View style={styles.backgroundCurvedContainer} />
       <BackHeader backPressed={backPressed} title="Schedule" />
 
-      <View style={styles.datecontainer}>
-        <View style={styles.dateScheduleContainer}>
+      <View style={[styles.datecontainer, { flex: 1, width: '100%' }]}>
+        <View style={[styles.dateScheduleContainer, { width: '100%' }]}>
           <View style={styles.monthNavigation}>
             <Text style={styles.monthText}>{formatMonthYear(selectedDate)}</Text>
             <TouchableOpacity onPress={handlePrevMonth}>
@@ -136,22 +138,21 @@ function MySchedule({ navigation }) {
           <FlatList
             data={dates}
             horizontal
-            keyExtractor={(item) => item.fullDate.toISOString()}
+            keyExtractor={(item) => item.dateString}
+            contentContainerStyle={{ paddingHorizontal: 10 }}
             renderItem={({ item }) => (
               <TouchableOpacity
                 onPress={() => setSelectedDate(item.fullDate)}
                 style={[
                   styles.dayContainer,
-                  selectedDate.getDate() === item.day &&
-                  selectedDate.getMonth() === item.fullDate.getMonth() &&
+                  item.dateString === selectedDate.toISOString().split('T')[0] &&
                   styles.selectedDayContainer,
                 ]}
               >
                 <Text
                   style={[
                     styles.weekText,
-                    selectedDate.getDate() === item.day &&
-                    selectedDate.getMonth() === item.fullDate.getMonth() &&
+                    item.dateString === selectedDate.toISOString().split('T')[0] &&
                     styles.selectedWeekText,
                   ]}
                 >
@@ -160,8 +161,7 @@ function MySchedule({ navigation }) {
                 <Text
                   style={[
                     styles.dayText,
-                    selectedDate.getDate() === item.day &&
-                    selectedDate.getMonth() === item.fullDate.getMonth() &&
+                    item.dateString === selectedDate.toISOString().split('T')[0] &&
                     styles.selectedDayText,
                   ]}
                 >
@@ -172,17 +172,42 @@ function MySchedule({ navigation }) {
             showsHorizontalScrollIndicator={false}
           />
         </View>
-        <FlatList
-          vertical
-          showsVerticalScrollIndicator={false}
-          keyExtractor={(item) => item.id.toString()} 
-          data={filteredSchedules}
-          renderItem={({ item }) => <Schedule item={item} />}
-        />
+        <View style={{ flex: 1, width: '100%' }}>
+          <FlatList
+            style={{ flex: 1, width: '100%' }}
+            contentContainerStyle={{ 
+              paddingBottom: 80,
+              paddingHorizontal: 10,
+              width: '100%'
+            }}
+            vertical
+            showsVerticalScrollIndicator={false}
+            keyExtractor={(item) => item.id.toString()} 
+            data={filteredSchedules}
+            renderItem={({ item }) => <Schedule item={item} />}
+            ListEmptyComponent={
+              <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 20 }}>
+                <Text style={{ color: '#666', fontSize: 16 }}>
+                  No schedules for this date
+                </Text>
+              </View>
+            }
+          />
+        </View>
       </View>
      
-     
-      <BottomTab screen={"WhereToGo"} style={styles.BottomTab} />
+      <View style={{
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: '#fff',
+        zIndex: 100,
+        elevation: 5
+      }}>
+        <BottomTab screen="WhereToGo" />
+      </View>
+
     </SafeAreaView>
   );
 }

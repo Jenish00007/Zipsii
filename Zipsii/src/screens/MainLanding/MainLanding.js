@@ -133,7 +133,12 @@ function MainLanding(props) {
               'Authorization': `Bearer ${accessToken}`
             }
           }),          
-          fetch(`${base_url}/get_all_schedule`),
+          fetch(`${base_url}/schedule/listing/filter`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${accessToken}`
+            }
+          }),          
           fetch(`${base_url}/get_all_posts`),
           fetch(`${base_url}/schedule/places/getNearest`, {
             method: 'GET',
@@ -199,18 +204,32 @@ function MainLanding(props) {
           setAll_destination([]);
         }
 
-        if (Array.isArray(allScheduleData)) {
-          setAll_schedule(allScheduleData.slice(0, 100).map(item => ({
-            id: item.id,
-            title: item.title,
-            from: item.from,
-            to: item.to,
-            date: item.date,
-            riders: item.riders,
-            joined: item.joined,
-            imageUrl: item.imageUrl,
-            day1Locations: item.day1Locations,
-            day2Locations: item.day2Locations
+        if (Array.isArray(allScheduleData?.data)) {
+          setAll_schedule(allScheduleData.data.map(item => ({
+            id: item._id,
+            title: item.tripName,
+            from: item.locationDetails?.[0]?.address || 'Unknown location',
+            to: item.locationDetails?.[1]?.address || 'Unknown location',
+            date: new Date(item.Dates.from).toLocaleDateString(),
+            endDate: new Date(item.Dates.end).toLocaleDateString(),
+            travelMode: item.travelMode,
+            visible: item.visible,
+            numberOfDays: item.numberOfDays.toString(),
+            imageUrl: item.bannerImage,
+            locationDetails: item.locationDetails,
+            createdAt: new Date(item.createdAt).toLocaleDateString(),
+            riders: '0 riders',
+            joined: false,
+            rawLocation: {
+              from: {
+                latitude: item.location.from.latitude,
+                longitude: item.location.from.longitude
+              },
+              to: {
+                latitude: item.location.to.latitude,
+                longitude: item.location.to.longitude
+              }
+            }
           })));
         } else {
           setAll_schedule([]);
@@ -337,9 +356,23 @@ function MainLanding(props) {
 
   const renderScheduleContainer = () => {
     if (!all_schedule || all_schedule.length === 0) {
-      return <TextDefault style={{ marginLeft: 20 }}>
-        No schedule available
-      </TextDefault>
+      return (
+        <View style={styles.scheduleContainer}>
+          <View style={styles.scheduleheadContainer}>
+            <TextDefault textColor={colors.fontMainColor} H5 bold>
+              {'Schedule'}
+            </TextDefault>
+            <TouchableOpacity onPress={() => navigation.navigate('MySchedule')}>
+              <TextDefault textColor={colors.btncolor} H5>
+                {'View All'}
+              </TextDefault>
+            </TouchableOpacity>
+          </View>
+          <TextDefault style={{ marginLeft: 20, color: colors.fontSecondColor }}>
+            No schedule available
+          </TextDefault>
+        </View>
+      );
     }
   
     return (
@@ -358,10 +391,16 @@ function MainLanding(props) {
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
-          keyExtractor={(item, index) => index.toString()}
-          data={all_schedule.slice(0, 8) || []}
+          keyExtractor={(item) => item.id}
+          data={all_schedule}
+          contentContainerStyle={{
+            paddingHorizontal: 10,
+            gap: 10
+          }}
           renderItem={({ item }) => (
-            <Schedule item={item} />
+            <View style={{ marginRight: 10 }}>
+              <Schedule item={item} />
+            </View>
           )}
         />
       </View>
