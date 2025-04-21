@@ -208,8 +208,13 @@ function MainLanding(props) {
           setAll_schedule(allScheduleData.data.map(item => ({
             id: item._id,
             title: item.tripName,
-            from: item.locationDetails?.[0]?.address || 'Unknown location',
-            to: item.locationDetails?.[1]?.address || 'Unknown location',
+            from: (item.locationDetails?.[0]?.address 
+              ? item.locationDetails[0].address.slice(0, 5) + '...'
+              : 'Unknown'),
+       
+            to: (item.locationDetails?.[1]?.address 
+            ? item.locationDetails[1].address.slice(0, 5) + '...'
+            : 'Unknown'),
             date: new Date(item.Dates.from).toLocaleDateString(),
             endDate: new Date(item.Dates.end).toLocaleDateString(),
             travelMode: item.travelMode,
