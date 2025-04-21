@@ -26,13 +26,13 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
-  inputSection: {
+  stepContainer: {
     marginBottom: 24,
   },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 8,
+  stepTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 16,
     color: colors.fontMainColor,
   },
   input: {
@@ -40,20 +40,70 @@ const styles = StyleSheet.create({
     borderColor: colors.grayLinesColor,
     borderRadius: 8,
     padding: 12,
-    marginBottom: 16,
     fontSize: 16,
+    marginBottom: 16,
   },
-  calculateButton: {
+  descriptionInput: {
+    height: 100,
+    textAlignVertical: 'top',
+  },
+  categoryContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  categoryButton: {
+    padding: 12,
+    margin: 2,
+    borderRadius: 8,
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.grayLinesColor,
+  },
+  selectedCategory: {
+    backgroundColor: colors.btncolor,
+    borderColor: colors.btncolor,
+  },
+  categoryText: {
+    fontSize: 14,
+    color: colors.fontMainColor,
+  },
+  selectedCategoryText: {
+    color: colors.white,
+  },
+  nextButton: {
     backgroundColor: colors.btncolor,
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 8,
   },
-  calculateButtonText: {
+  nextButtonText: {
     color: colors.white,
     fontSize: 16,
     fontWeight: '600',
+  },
+  summaryTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 16,
+    color: colors.fontMainColor,
+  },
+  summaryItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.grayLinesColor,
+  },
+  summaryLabel: {
+    fontSize: 16,
+    color: colors.fontSecondColor,
+  },
+  summaryValue: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: colors.fontMainColor,
   },
   resultsSection: {
     marginTop: 24,

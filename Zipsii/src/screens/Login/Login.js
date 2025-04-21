@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image, ActivityIndicator, KeyboardAvoidingView, ScrollView, Platform, Dimensions } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image, ActivityIndicator, KeyboardAvoidingView, ScrollView, Platform, Dimensions, Modal } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../components/Auth/AuthContext';
@@ -13,6 +13,9 @@ const SignInScreen = () => {
   const [userNameOrEmail, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
+  const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
   const navigation = useNavigation();
   const { user, login } = useAuth();
 
@@ -96,8 +99,8 @@ const SignInScreen = () => {
           const { token, userDetails } = data;
           // Store the accessToken and user info
           await AsyncStorage.setItem('accessToken', token);
+          console.log('Access Token:', token);
           await AsyncStorage.setItem('user', JSON.stringify(userDetails));
-
           // Use the login function from AuthContext to set the user
           login(userDetails);
           
@@ -165,10 +168,51 @@ const SignInScreen = () => {
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!forgotPasswordEmail) {
+      Alert.alert('Error', 'Please enter your email address');
+      return;
+    }
+
+    setForgotPasswordLoading(true);
+    try {
+      console.log('Sending forgot password request to:', `${base_url}/auth/forgetPassword`);
+      console.log('Request body:', JSON.stringify({ email: forgotPasswordEmail }));
+      
+      const response = await fetch(`${base_url}/auth/forgetPassword`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: forgotPasswordEmail }),
+      });
+
+      console.log('Response status:', response.status);
+      const data = await response.json();
+      console.log('Response data:', data);
+
+      if (response.ok) {
+        Alert.alert('Success', 'Password reset link has been sent to your email');
+        setForgotPasswordModal(false);
+        setForgotPasswordEmail('');
+      } else {
+        Alert.alert('Error', data.message || 'Failed to send reset link. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error in forgot password:', error);
+      Alert.alert(
+        'Error', 
+        'Failed to process your request. Please check your internet connection and try again.'
+      );
+    } finally {
+      setForgotPasswordLoading(false);
+    }
+  };
+
   if (user) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6c27a3" />
+        <ActivityIndicator size="large" color="#a60f93" />
       </View>
     );
   }
@@ -212,7 +256,10 @@ const SignInScreen = () => {
             />
           </View>
 
-          <TouchableOpacity style={styles.forgotPassword}>
+          <TouchableOpacity 
+            style={styles.forgotPassword}
+            onPress={() => setForgotPasswordModal(true)}
+          >
             <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
           </TouchableOpacity>
         </View>
@@ -247,6 +294,52 @@ const SignInScreen = () => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Forgot Password Modal */}
+      <Modal
+        visible={forgotPasswordModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setForgotPasswordModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Reset Password</Text>
+            <Text style={styles.modalSubtitle}>
+              Enter your email address and we'll send you a link to reset your password.
+            </Text>
+            
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Enter your email"
+              placeholderTextColor="#999"
+              value={forgotPasswordEmail}
+              onChangeText={setForgotPasswordEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+
+            <TouchableOpacity 
+              style={styles.modalButton}
+              onPress={handleForgotPassword}
+              disabled={forgotPasswordLoading}
+            >
+              {forgotPasswordLoading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text style={styles.modalButtonText}>Send Reset Link</Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.modalCloseButton}
+              onPress={() => setForgotPasswordModal(false)}
+            >
+              <Text style={styles.modalCloseButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 };
@@ -254,7 +347,7 @@ const SignInScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#6c27a3',
+    backgroundColor: '#a60f93',
   },
   scrollContent: {
     flexGrow: 1,
@@ -262,7 +355,7 @@ const styles = StyleSheet.create({
   },
   topSection: {
     flex: 1,
-    backgroundColor: '#6c27a3',
+    backgroundColor: '#a60f93',
     paddingHorizontal: 30,
     paddingTop: 60,
     paddingBottom: 30,
@@ -314,17 +407,17 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     marginRight: 10,
     borderWidth: 1,
-    borderColor: '#6c27a3',
+    borderColor: '#a60f93',
   },
   loginButton: {
     flex: 1,
-    backgroundColor: '#6c27a3',
+    backgroundColor: '#a60f93',
     paddingVertical: 15,
     borderRadius: 25,
     marginLeft: 10,
   },
   signupButtonText: {
-    color: '#6c27a3',
+    color: '#a60f93',
     textAlign: 'center',
     fontSize: 16,
     fontWeight: 'bold',
@@ -356,7 +449,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   signupLink: {
-    color: '#6c27a3',
+    color: '#a60f93',
     fontWeight: 'bold',
   },
   loadingContainer: {
@@ -364,6 +457,69 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 20,
+    width: '80%',
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: colors.btncolor,
+    marginBottom: 10,
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  modalInput: {
+    width: '100%',
+    height: 50,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    marginBottom: 20,
+    fontSize: 16,
+  },
+  modalButton: {
+    backgroundColor: colors.btncolor,
+    width: '100%',
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  modalButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  modalCloseButton: {
+    width: '100%',
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.btncolor,
+  },
+  modalCloseButtonText: {
+    color: colors.btncolor,
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

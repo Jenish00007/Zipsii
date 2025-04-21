@@ -14,7 +14,7 @@ import { base_url } from '../../utils/base_url'
 import { TextDefault } from '../../components';
 
 
-const baseUrl = 'http://192.168.1.6:3030'
+const baseUrl = 'http://172.20.10.5:3030'
 function Destination({ route, navigation }) {
   const { image, cardTitle, subtitle } = route.params
   // const [comment, setComment] = useState('')
@@ -111,7 +111,7 @@ function Destination({ route, navigation }) {
   useEffect(() => {
     const fetchDestinationData = async() => {
       try {
-        const response = await fetch('http://192.168.1.6:3030/destination')
+        const response = await fetch('http://172.20.10.5:3030/destination')
         const data = await response.json()
         setDestinationData(data) // ✅ Store fetched data in state
       } catch (error) {
@@ -128,7 +128,7 @@ function Destination({ route, navigation }) {
   useEffect(() => {
     const fetchTutorialVideos = async() => {
       try {
-        const response = await fetch('http://192.168.1.6:3030/tutorialVideos') // Replace with your backend URL
+        const response = await fetch('http://172.20.10.5:3030/tutorialVideos') // Replace with your backend URL
         const data = await response.json()
         setTutorialVideos(data.videos) // Access the 'videos' array from the response
       } catch (error) {
@@ -145,7 +145,7 @@ function Destination({ route, navigation }) {
   useEffect(() => {
     const fetchDescriptionexplore = async() => {
       try {
-        const response = await fetch('http://192.168.1.6:3030/descriptionexplore')
+        const response = await fetch('http://172.20.10.5:3030/descriptionexplore') // Replace with your backend URL
         const data = await response.json()
         if (data && data.dataexplore) {
           setDescriptionexplore(data.dataexplore)
@@ -190,7 +190,7 @@ function Destination({ route, navigation }) {
 
     try {
       const accessToken = await AsyncStorage.getItem('accessToken'); // Get the access token
-      const response = await fetch(`http://192.168.1.6:3030/update-like-status?id=${item_id}`, {
+      const response = await fetch(`http://172.20.10.5:3030/update-like-status?id=${item_id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -258,7 +258,7 @@ function Destination({ route, navigation }) {
   // ✅ Fetch Comments from Backend
   // const fetchComments = async() => {
   //   try {
-  //     const response = await fetch('http://192.168.1.6:3030/comments')
+  //     const response = await fetch('http://172.20.10.5:3030/comments')
   //     const data = await response.json()
   //     setComments(data) // Update state
   //   } catch (error) {
@@ -273,7 +273,7 @@ function Destination({ route, navigation }) {
   //   try {
   //     console.log('Sending comment:', comment); // Log the comment before sending
 
-  //     const response = await fetch('http://192.168.1.6:3030/comments', {
+  //     const response = await fetch('http://172.20.10.5:3030/comments', {
   //       method: 'POST',
   //       headers: { 'Content-Type': 'application/json' },
   //       body: JSON.stringify({ text: comment }) // Sending the comment as JSON
@@ -298,7 +298,7 @@ function Destination({ route, navigation }) {
     if (!comment.trim()) return // Prevent empty comments
 
     try {
-      const response = await fetch('http://192.168.1.6:3030/comments', {
+      const response = await fetch('http://172.20.10.5:3030/comments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -322,7 +322,7 @@ function Destination({ route, navigation }) {
 
   // const fetchComments = async() => {
   //   try {
-  //     const response = await fetch('http://192.168.1.6:3030comments')
+  //     const response = await fetch('http://172.20.10.5:3030comments')
   //     if (!response.ok) {
   //       console.error('Failed to fetch comments:', response.status, response.statusText)
   //       return
@@ -337,7 +337,7 @@ function Destination({ route, navigation }) {
   // Example function to fetch comments
   async function fetchComments() {
     try {
-      const response = await fetch('http://192.168.1.6:3030/comments')
+      const response = await fetch('http://172.20.10.5:3030/comments')
       if (!response.ok) {
         throw new Error('Failed to fetch comments')
       }

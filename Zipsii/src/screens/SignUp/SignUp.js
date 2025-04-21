@@ -164,7 +164,7 @@ const SignUpScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#6c27a3',
+    backgroundColor: '#a60f93',
   },
   scrollContent: {
     flexGrow: 1,
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
   },
   topSection: {
     flex: 1,
-    backgroundColor: '#6c27a3',
+    backgroundColor: '#a60f93',
     paddingHorizontal: 30,
     paddingTop: 60,
     paddingBottom: 30,
@@ -217,17 +217,17 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     marginRight: 10,
     borderWidth: 1,
-    borderColor: '#6c27a3',
+    borderColor: '#a60f93',
   },
   signupButton: {
     flex: 1,
-    backgroundColor: '#6c27a3',
+    backgroundColor: '#a60f93',
     paddingVertical: 15,
     borderRadius: 25,
     marginLeft: 10,
   },
   loginButtonText: {
-    color: '#6c27a3',
+    color: '#a60f93',
     textAlign: 'center',
     fontSize: 16,
     fontWeight: 'bold',

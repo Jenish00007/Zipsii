@@ -6,31 +6,64 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import styles from './styles';
 import { colors } from '../../utils';
 
+const categories = [
+  'Food & Dining',
+  'Transportation',
+  'Accommodation',
+  'Entertainment',
+  'Shopping',
+  'Other'
+];
+
 const ExpenseCalculator = ({ navigation }) => {
+  const [step, setStep] = useState(1);
+  const [expenseAmount, setExpenseAmount] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [description, setDescription] = useState('');
   const [numberOfMembers, setNumberOfMembers] = useState('');
-  const [totalAmount, setTotalAmount] = useState('');
   const [members, setMembers] = useState([]);
   const [showResults, setShowResults] = useState(false);
 
+  const handleNext = () => {
+    switch (step) {
+      case 1:
+        if (!expenseAmount || isNaN(expenseAmount) || parseFloat(expenseAmount) <= 0) {
+          Alert.alert('Error', 'Please enter a valid expense amount');
+          return;
+        }
+        break;
+      case 2:
+        if (!selectedCategory) {
+          Alert.alert('Error', 'Please select a category');
+          return;
+        }
+        break;
+      case 3:
+        if (!description.trim()) {
+          Alert.alert('Error', 'Please enter a description');
+          return;
+        }
+        break;
+      case 4:
+        if (!numberOfMembers || isNaN(numberOfMembers) || parseInt(numberOfMembers) <= 0) {
+          Alert.alert('Error', 'Please enter a valid number of members');
+          return;
+        }
+        break;
+    }
+    setStep(step + 1);
+  };
+
   const handleCalculate = () => {
-    if (!numberOfMembers || !totalAmount) {
-      Alert.alert('Error', 'Please enter both number of members and total amount');
-      return;
-    }
-
     const num = parseInt(numberOfMembers);
-    const amount = parseFloat(totalAmount);
-
-    if (num <= 0 || isNaN(amount)) {
-      Alert.alert('Error', 'Please enter valid numbers');
-      return;
-    }
+    const amount = parseFloat(expenseAmount);
 
     const splitAmount = (amount / num).toFixed(2);
     const newMembers = Array(num).fill(null).map((_, index) => ({
@@ -52,13 +85,106 @@ const ExpenseCalculator = ({ navigation }) => {
     ));
   };
 
+  const renderStep = () => {
+    switch (step) {
+      case 1:
+        return (
+          <View style={styles.stepContainer}>
+            <Text style={styles.stepTitle}>Enter Expense Amount</Text>
+            <TextInput
+              style={styles.input}
+              keyboardType="numeric"
+              value={expenseAmount}
+              onChangeText={setExpenseAmount}
+              placeholder="Enter amount"
+            />
+          </View>
+        );
+      case 2:
+        return (
+          <View style={styles.stepContainer}>
+            <Text style={styles.stepTitle}>Select Category</Text>
+            <View style={styles.categoryContainer}>
+              {categories.map((category) => (
+                <TouchableOpacity
+                  key={category}
+                  style={[
+                    styles.categoryButton,
+                    selectedCategory === category && styles.selectedCategory
+                  ]}
+                  onPress={() => setSelectedCategory(category)}
+                >
+                  <Text style={[
+                    styles.categoryText,
+                    selectedCategory === category && styles.selectedCategoryText
+                  ]}>
+                    {category}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        );
+      case 3:
+        return (
+          <View style={styles.stepContainer}>
+            <Text style={styles.stepTitle}>Add Description</Text>
+            <TextInput
+              style={[styles.input, styles.descriptionInput]}
+              value={description}
+              onChangeText={setDescription}
+              placeholder="Enter description"
+              multiline
+              numberOfLines={4}
+            />
+          </View>
+        );
+      case 4:
+        return (
+          <View style={styles.stepContainer}>
+            <Text style={styles.stepTitle}>Number of Members</Text>
+            <TextInput
+              style={styles.input}
+              keyboardType="numeric"
+              value={numberOfMembers}
+              onChangeText={setNumberOfMembers}
+              placeholder="Enter number of members"
+            />
+          </View>
+        );
+      case 5:
+        return (
+          <View style={styles.stepContainer}>
+            <Text style={styles.summaryTitle}>Expense Summary</Text>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryLabel}>Amount:</Text>
+              <Text style={styles.summaryValue}>₹{expenseAmount}</Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryLabel}>Category:</Text>
+              <Text style={styles.summaryValue}>{selectedCategory}</Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryLabel}>Description:</Text>
+              <Text style={styles.summaryValue}>{description}</Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryLabel}>Members:</Text>
+              <Text style={styles.summaryValue}>{numberOfMembers}</Text>
+            </View>
+          </View>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity 
           style={styles.backButton}
-          onPress={() => navigation.goBack()}
+          onPress={() => step > 1 ? setStep(step - 1) : navigation.goBack()}
         >
           <Ionicons name="arrow-back" size={24} color={colors.fontMainColor} />
         </TouchableOpacity>
@@ -66,35 +192,19 @@ const ExpenseCalculator = ({ navigation }) => {
       </View>
 
       <ScrollView style={styles.content}>
-        {/* Input Section */}
-        <View style={styles.inputSection}>
-          <Text style={styles.label}>Number of Members</Text>
-          <TextInput
-            style={styles.input}
-            keyboardType="numeric"
-            value={numberOfMembers}
-            onChangeText={setNumberOfMembers}
-            placeholder="Enter number of members"
-          />
+        {renderStep()}
 
-          <Text style={styles.label}>Total Amount</Text>
-          <TextInput
-            style={styles.input}
-            keyboardType="numeric"
-            value={totalAmount}
-            onChangeText={setTotalAmount}
-            placeholder="Enter total amount"
-          />
-
+        {!showResults && (
           <TouchableOpacity 
-            style={styles.calculateButton}
-            onPress={handleCalculate}
+            style={styles.nextButton}
+            onPress={step === 5 ? handleCalculate : handleNext}
           >
-            <Text style={styles.calculateButtonText}>Calculate Split</Text>
+            <Text style={styles.nextButtonText}>
+              {step === 5 ? 'Calculate Split' : 'Next'}
+            </Text>
           </TouchableOpacity>
-        </View>
+        )}
 
-        {/* Results Section */}
         {showResults && (
           <View style={styles.resultsSection}>
             <Text style={styles.resultsTitle}>Split Details</Text>
