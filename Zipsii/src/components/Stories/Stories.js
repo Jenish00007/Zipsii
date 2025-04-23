@@ -129,13 +129,14 @@ const Stories = () => {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
-        aspect: [16, 9],
+        aspect: [9, 16],
         quality: 1,
       });
 
       if (!result.canceled) {
         setImage(result.assets[0]);
         uploadStory(result.assets[0]);
+        setShowImagePickerModal(false);
       }
     } else {
       Alert.alert("Permission required", "You need to allow access to your photos to upload an image.");
@@ -148,7 +149,7 @@ const Stories = () => {
       const result = await ImagePicker.launchCameraAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
-        aspect: [16, 9],
+        aspect: [9, 16],
         quality: 1,
       });
 
@@ -457,17 +458,17 @@ const styles = StyleSheet.create({
   storyCircle: {
     width: 68,
     height: 68,
-    backgroundColor: 'white',
-    borderWidth: 1.8,
-    borderRadius: 100,
+    borderRadius: 34,
+    borderWidth: 2,
+    borderColor: '#ccc',
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 5,
   },
   storyImage: {
-    resizeMode: 'cover',
-    width: '92%',
-    height: '92%',
-    borderRadius: 100,
+    width: 62,
+    height: 62,
+    borderRadius: 31,
   },
   storyName: {
     textAlign: 'center',
@@ -543,16 +544,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 15,
   },
-  storyCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 2,
-    borderColor: '#ccc',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 5,
-  },
   storyCircleActive: {
     borderColor: '#3897f0',
   },
@@ -564,9 +555,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     right: 0,
-    backgroundColor: '#3897f0',
-    borderRadius: 12,
-    padding: 2,
+    backgroundColor: '#a60f93',
+    borderRadius: 100,
+    padding: 0.1,
   },
   modalContainer: {
     flex: 1,
