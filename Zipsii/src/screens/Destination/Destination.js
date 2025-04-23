@@ -24,8 +24,9 @@ function Destination({ route, navigation }) {
   const [isSaved, setIsSaved] = useState(false) // State to track saved status
   const [discoverbynearest, setDiscoverbyNearest] = useState([])
   const [loading, setLoading] = useState(true); // Loading state
-  const item_id= route.params.product.id;
-  const image1 = route.params.product.image;
+  const item_id = route.params.product?.id ?? route.params.id;
+  const image1 = route.params.product?.image ?? route.params.image;
+  
   const [nextPageToken, setNextPageToken] = useState(null);
   console.log( route.params.product)
   // Fetch data from an open-source API (JSONPlaceholder API for demonstration)
