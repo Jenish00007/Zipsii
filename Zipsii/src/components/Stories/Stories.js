@@ -6,10 +6,12 @@ import {
   Image, 
   Alert, 
   StyleSheet,
-  Button
+  Button,
+  Modal
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Entypo from 'react-native-vector-icons/Entypo';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SkeletonLoader from '../Loader/SkeletonLoader';
@@ -99,6 +101,8 @@ const Stories = () => {
   const [showStories, setShowStories] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [currentUserStories, setCurrentUserStories] = useState([]);
+  const [showImagePickerModal, setShowImagePickerModal] = useState(false);
+  const [myStories, setMyStories] = useState([]);
 
   const loadUserId = async () => {
     try {
@@ -125,7 +129,7 @@ const Stories = () => {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
-        aspect: [4, 3],
+        aspect: [16, 9],
         quality: 1,
       });
 
@@ -135,6 +139,26 @@ const Stories = () => {
       }
     } else {
       Alert.alert("Permission required", "You need to allow access to your photos to upload an image.");
+    }
+  };
+
+  const openCamera = async () => {
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+    if (permissionResult.granted) {
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [16, 9],
+        quality: 1,
+      });
+
+      if (!result.canceled) {
+        setImage(result.assets[0]);
+        uploadStory(result.assets[0]);
+        setShowImagePickerModal(false);
+      }
+    } else {
+      Alert.alert("Permission required", "You need to allow access to your camera to take a photo.");
     }
   };
 
@@ -264,6 +288,63 @@ const Stories = () => {
     );
   };
 
+  const renderYourStory = () => {
+    const hasStories = myStories.length > 0;
+    return (
+      <TouchableOpacity 
+        style={styles.yourStoryContainer}
+        onPress={() => setShowImagePickerModal(true)}
+      >
+        <View style={[styles.storyCircle, hasStories && styles.storyCircleActive]}>
+          <Image
+            source={{ uri: 'https://via.placeholder.com/150' }} // Replace with user's profile picture
+            style={styles.storyImage}
+          />
+          {!hasStories && (
+            <View style={styles.addIconContainer}>
+              <Ionicons name="add-circle" size={24} color="#fff" />
+            </View>
+          )}
+        </View>
+        <Text style={styles.storyUsername}>Your Story</Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderImagePickerModal = () => (
+    <Modal
+      visible={showImagePickerModal}
+      transparent={true}
+      animationType="slide"
+      onRequestClose={() => setShowImagePickerModal(false)}
+    >
+      <View style={styles.modalContainer}>
+        <View style={styles.modalContent}>
+          <TouchableOpacity 
+            style={styles.modalButton}
+            onPress={openCamera}
+          >
+            <Ionicons name="camera" size={24} color="#000" />
+            <Text style={styles.modalButtonText}>Take Photo</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.modalButton}
+            onPress={pickImage}
+          >
+            <Ionicons name="images" size={24} color="#000" />
+            <Text style={styles.modalButtonText}>Choose from Library</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.modalButton, styles.cancelButton]}
+            onPress={() => setShowImagePickerModal(false)}
+          >
+            <Text style={[styles.modalButtonText, styles.cancelButtonText]}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+
   const renderContent = () => {
     if (error) {
       return (
@@ -296,51 +377,55 @@ const Stories = () => {
 
     return (
       <View style={styles.container}>
-        <InstaStory
-          data={storyInfo}
-          duration={10}
-          onStart={(item) => {
-            console.log('Story started:', item);
-            if (item.user_id === userId) {
-              setShowStories(true);
-              setSelectedUser(item);
-            }
-          }}
-          onClose={() => {
-            handleSeenStories();
-            setShowStories(false);
-            setSelectedUser(null);
-          }}
-          onStorySeen={updateSeenStories}
-          renderCloseComponent={({ onPress }) => (
-            <View style={styles.closeContainer}>
-              <Button title="Share" onPress={() => console.log('Share story')} />
-              <Button title="X" onPress={onPress} />
-            </View>
-          )}
-          renderTextComponent={({ item, profileName }) => (
-            <View style={styles.textContainer}>
-              <Text style={styles.profileName}>{profileName}</Text>
-              {item.user_id === userId && !item.stories?.length && (
-                <TouchableOpacity
-                  onPress={pickImage}
-                  style={styles.addStoryButton}
-                >
-                  <Entypo name="circle-with-plus" style={styles.addIcon} />
-                </TouchableOpacity>
-              )}
-            </View>
-          )}
-          style={styles.instaStory}
-          onAddStoryPress={() => {
-            if (userId) {
-              pickImage();
-            }
-          }}
-          showAddStoryButton={true}
-          addStoryButtonStyle={styles.addStoryButton}
-          addStoryButtonIcon={<Entypo name="circle-with-plus" style={styles.addIcon} />}
-        />
+        {renderImagePickerModal()}
+        <View style={styles.storiesContainer}>
+          {renderYourStory()}
+          <InstaStory
+            data={storyInfo}
+            duration={10}
+            onStart={(item) => {
+              console.log('Story started:', item);
+              if (item.user_id === userId) {
+                setShowStories(true);
+                setSelectedUser(item);
+              }
+            }}
+            onClose={() => {
+              handleSeenStories();
+              setShowStories(false);
+              setSelectedUser(null);
+            }}
+            onStorySeen={updateSeenStories}
+            renderCloseComponent={({ onPress }) => (
+              <View style={styles.closeContainer}>
+                <Button title="Share" onPress={() => console.log('Share story')} />
+                <Button title="X" onPress={onPress} />
+              </View>
+            )}
+            renderTextComponent={({ item, profileName }) => (
+              <View style={styles.textContainer}>
+                <Text style={styles.profileName}>{profileName}</Text>
+                {item.user_id === userId && !item.stories?.length && (
+                  <TouchableOpacity
+                    onPress={pickImage}
+                    style={styles.addStoryButton}
+                  >
+                    <Entypo name="circle-with-plus" style={styles.addIcon} />
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+            style={styles.instaStory}
+            onAddStoryPress={() => {
+              if (userId) {
+                pickImage();
+              }
+            }}
+            showAddStoryButton={true}
+            addStoryButtonStyle={styles.addStoryButton}
+            addStoryButtonIcon={<Entypo name="circle-with-plus" style={styles.addIcon} />}
+          />
+        </View>
       </View>
     );
   };
@@ -453,6 +538,68 @@ const styles = StyleSheet.create({
   disabledStoryCircle: {
     opacity: 0.5,
     borderColor: '#ccc',
+  },
+  yourStoryContainer: {
+    alignItems: 'center',
+    marginRight: 15,
+  },
+  storyCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 2,
+    borderColor: '#ccc',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
+  storyCircleActive: {
+    borderColor: '#3897f0',
+  },
+  storyUsername: {
+    fontSize: 12,
+    color: '#000',
+  },
+  addIconContainer: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#3897f0',
+    borderRadius: 12,
+    padding: 2,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+  },
+  modalButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  modalButtonText: {
+    marginLeft: 10,
+    fontSize: 16,
+  },
+  cancelButton: {
+    borderBottomWidth: 0,
+    justifyContent: 'center',
+  },
+  cancelButtonText: {
+    color: '#ff0000',
+  },
+  storiesContainer: {
+    flexDirection: 'row',
+    padding: 10,
   },
 });
 
