@@ -4,7 +4,7 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
-import React, { useRef } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import Animated, {
   useSharedValue,
   useAnimatedScrollHandler,
@@ -17,12 +17,32 @@ import data from '../../data/data';
 import styles from './styles';
 import { Pagination, CustomButton } from '../../components';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { getTutorialSeen, setTutorialSeen } from '../../utils/storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const OnboardingScreen = ({navigation}) => {
   const { width: SCREEN_WIDTH } = useWindowDimensions();
   const flatListRef = useAnimatedRef(null);
   const x = useSharedValue(0);
   const flatListIndex = useSharedValue(0);
+  const [hasSeenTutorial, setHasSeenTutorial] = useState(false);
+
+  useEffect(() => {
+    const checkTutorialStatus = async () => {
+      const seen = await getTutorialSeen();
+      const user = await AsyncStorage.getItem('user');
+      
+      if (seen && user) {
+        // If user has seen tutorial and is logged in, go to main app
+        navigation.replace('Drawer');
+      } else if (seen && !user) {
+        // If user has seen tutorial but not logged in, go to login
+        navigation.replace('Login');
+      }
+    };
+    
+    checkTutorialStatus();
+  }, []);
 
   // Stabilize onViewableItemsChanged using useRef
   const onViewableItemsChanged = useRef(({ viewableItems }) => {
@@ -34,6 +54,16 @@ const OnboardingScreen = ({navigation}) => {
       x.value = event.contentOffset.x;
     },
   });
+
+  const handleTutorialComplete = async () => {
+    await setTutorialSeen();
+    const user = await AsyncStorage.getItem('user');
+    if (user) {
+      navigation.replace('Drawer');
+    } else {
+      navigation.replace('Login');
+    }
+  };
 
   const RenderItem = ({ item, index }) => {
     const imageAnimationStyle = useAnimatedStyle(() => {
@@ -135,12 +165,12 @@ const OnboardingScreen = ({navigation}) => {
 
       {/* Custom Button */}
       <View style={styles.bottomContainer}>
-      <Pagination data={data} x={x} screenWidth={SCREEN_WIDTH} />
+        <Pagination data={data} x={x} screenWidth={SCREEN_WIDTH} />
         <CustomButton
           flatListRef={flatListRef}
           flatListIndex={flatListIndex}
           dataLength={data.length}
-          navigation={navigation} 
+          onComplete={handleTutorialComplete}
         />
       </View>
     </SafeAreaView>

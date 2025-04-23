@@ -7,7 +7,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-const CustomButton = ({ flatListRef, flatListIndex, dataLength, navigation }) => {
+const CustomButton = ({ flatListRef, flatListIndex, dataLength, onComplete }) => {
   const buttonAnimationStyle = useAnimatedStyle(() => {
     return {
       width:
@@ -60,10 +60,8 @@ const CustomButton = ({ flatListRef, flatListIndex, dataLength, navigation }) =>
             index: flatListIndex.value + 1,
           });
         } else {
-          // Navigate to MainLanding page
-          navigation.navigate('Drawer', { screen: 'noDrawer', params: { screen: 'Login' } });
-
-
+          // Call the onComplete callback when tutorial is finished
+          onComplete();
         }
       }}
     >
@@ -100,6 +98,7 @@ const styles = StyleSheet.create({
   textbutton: {
     color: colors.white,
     fontSize: 16,
+    fontWeight: 'bold',
     position: "absolute",
   },
 });
