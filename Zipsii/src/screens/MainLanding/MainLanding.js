@@ -414,8 +414,8 @@ function MainLanding(props) {
   
 
   const renderDiscoverByInterest = () => (
-    <View style={styles.titleSpacer}>
-      <TextDefault textColor={colors.fontMainColor} H5 bold>
+    <View style={styles.titleSpaceredge}>
+      <TextDefault textColor={colors.fontMainColor} H5 bold style={styles.titleSpacer}>
         {'Discover by Interest'}
       </TextDefault>
       <View style={styles.seeAllTextContainer}>
@@ -446,8 +446,8 @@ function MainLanding(props) {
   );
 
   const renderDiscoverByNearest = () => (
-    <View style={styles.titleSpacer}>
-      <TextDefault textColor={colors.fontMainColor} H5 bold>
+    <View style={styles.titleSpaceredge}>
+      <TextDefault textColor={colors.fontMainColor} H5 bold style={styles.titleSpacer}>
         {'Discover by Nearest'}
       </TextDefault>
       <View style={styles.seeAllTextContainer}>
@@ -474,7 +474,7 @@ function MainLanding(props) {
 
   const renderBestDestination = () => (
     <View style={styles.titleSpacerdesti}>
-      <TextDefault textColor={colors.fontMainColor} H5 bold>
+      <TextDefault textColor={colors.fontMainColor} H5 bold style={styles.titleSpacer}>
         {'Best Destination'}
       </TextDefault>
       <View style={styles.seeAllTextContainer}>

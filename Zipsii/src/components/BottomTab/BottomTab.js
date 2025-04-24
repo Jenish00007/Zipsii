@@ -44,13 +44,6 @@ function BottomTab({ screen }) {
             size={scale(20)}
             color={getIconColor('WhereToGo')}
           />
-
-          
-          {/* {cartCount > 0 && (
-            <View style={styles.badgeContainer}>
-              <Text style={styles.badgeText}>{cartCount}</Text>
-            </View>
-          )} */}
         </View>
         <Text style={getTextStyle('WhereToGo')}>Where to Go</Text>
       </TouchableOpacity>
@@ -83,13 +76,7 @@ function BottomTab({ screen }) {
 
       {/* Profile Icon */}
       <TouchableOpacity
-        onPress={() => {
-          // if (isLoggedIn) {
-            navigation.navigate('ProfileDashboard');
-          // } else {
-          //   navigation.navigate('SignIn');
-          // }
-        }}
+        onPress={() => navigation.navigate('ProfileDashboard')}
         style={styles.footerBtnContainer}
       >
         <View style={styles.profileContainer}>
@@ -98,11 +85,6 @@ function BottomTab({ screen }) {
             size={scale(20)}
             color={getIconColor('PROFILE')}
           />
-          {/* {isLoggedIn &&
-            orders &&
-            orders.filter((o) =>
-              ['PENDING', 'DISPATCHED', 'ACCEPTED'].includes(o.orderStatus)
-            ).length > 0 && <View style={styles.profileBadge} />} */}
         </View>
         <Text style={getTextStyle('PROFILE')}>Menu</Text>
       </TouchableOpacity>

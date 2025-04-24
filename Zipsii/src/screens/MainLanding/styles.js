@@ -164,9 +164,13 @@ const styles = StyleSheet.create({
     marginLeft: '5%',
     marginTop: scale(15)
   },
+  titleSpaceredge: {
+    marginLeft: '1%',
+    marginTop: scale(15)
+  },
   titleSpacerdesti: {
-    marginLeft: '5%',
-    marginTop: scale(25)
+    marginLeft: '1%',
+    marginTop: scale(15)
   },
   productCard: {
     marginLeft: '5%',
