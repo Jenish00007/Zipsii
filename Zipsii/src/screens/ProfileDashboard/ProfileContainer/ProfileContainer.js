@@ -75,8 +75,8 @@ function ProfileContainer({profileInfo}) {
             { label: 'Logout', icon: 'logout', route: 'Logout' },
             { label: 'Favourites', icon: 'star-outline', route: 'Favourite' },
             { label: 'My Schedule', icon: 'list', route: 'MySchedule' },
-            { label: 'Help Center', icon: 'help', route: 'HelpCenter' },
-            { label: 'Privacy Policy', icon: 'lock', route: 'PrivacyPolicy' },
+            // { label: 'Help Center', icon: 'help', route: 'HelpCenter' },
+            // { label: 'Privacy Policy', icon: 'lock', route: 'PrivacyPolicy' },
           ].map((item, index) => (
             <TouchableOpacity
               key={index}

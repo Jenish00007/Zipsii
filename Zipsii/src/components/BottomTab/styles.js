@@ -11,14 +11,16 @@ const styles = StyleSheet.create({
     height: height * 0.08,
     flexDirection: 'row',
     backgroundColor: colors.white,
-    
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: colors.grayLinesColor,
   },
   footerBtnContainer: {
-    width: '20%',
+    width: '25%',
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-  
   },
   imgContainer: {
     justifyContent: 'center',
@@ -74,8 +76,7 @@ const styles = StyleSheet.create({
     height: 50,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 25, // Rounded container for the icons.
-   
+    borderRadius: 25,
   },
 });
 

@@ -6,6 +6,7 @@ import styles from './styles';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { scale, colors } from '../../utils';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
+
 function BottomTab({ screen }) {
   const navigation = useNavigation();
  
@@ -25,21 +26,21 @@ function BottomTab({ screen }) {
         style={styles.footerBtnContainer}
       >
         <MaterialCommunityIcons
-          name="home" // Solid green icon
+          name="home"
           size={scale(20)}
           color={getIconColor('HOME')}
         />
         <Text style={getTextStyle('HOME')}>Home</Text>
       </TouchableOpacity>
 
-      {/* Cart Icon */}
+      {/* Location Icon */}
       <TouchableOpacity
         onPress={() => navigation.navigate('WhereToGo')}
         style={styles.footerBtnContainer}
       >
         <View style={styles.imgContainer}>
           <SimpleLineIcons
-            name="location-pin" // Solid green icon
+            name="location-pin"
             size={scale(20)}
             color={getIconColor('WhereToGo')}
           />
@@ -54,7 +55,7 @@ function BottomTab({ screen }) {
         <Text style={getTextStyle('WhereToGo')}>Where to Go</Text>
       </TouchableOpacity>
 
-      {/* Favourites Icon */}
+      {/* Upload Icon */}
       <TouchableOpacity
         onPress={() => navigation.navigate('ReelUpload')}
         style={styles.footerBtnContainer}
@@ -66,9 +67,9 @@ function BottomTab({ screen }) {
         />
         <Text style={getTextStyle('FAVOURITES')}>Upload</Text>
       </TouchableOpacity>
-      
-      {/* My Orders Icon */}
-      <TouchableOpacity
+
+       {/* My Orders Icon */}
+       {/* <TouchableOpacity
         onPress={() => navigation.navigate('MessageList')}
         style={styles.footerBtnContainer}
       >
@@ -78,7 +79,7 @@ function BottomTab({ screen }) {
           color={getIconColor('ORDERS')}
         />
         <Text style={getTextStyle('ORDERS')}>Chat</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       {/* Profile Icon */}
       <TouchableOpacity
