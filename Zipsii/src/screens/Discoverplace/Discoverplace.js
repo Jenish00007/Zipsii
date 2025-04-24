@@ -34,12 +34,11 @@ function DiscoverPlace({ navigation }) {
   
         // Log to verify the data structure  
         const formattedData = responce.data.slice(0, 100).map(item => ({
-          id: item.id || item.image,
+          id: item._id || item.image,
           image: item.image, // Make sure the URL is correct
           title: item.name,
           subtitle: item.subtitle,
         }));
-    
         setCardData(formattedData);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -83,6 +82,7 @@ function DiscoverPlace({ navigation }) {
               style={styles.card}
               onPress={() =>
                 navigation.navigate('Destination', {
+                  id: card.id,
                   image: card.image,
                   cardTitle: card.title,
                   subtitle: card.subtitle,

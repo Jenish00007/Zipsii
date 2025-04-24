@@ -398,12 +398,12 @@ function MainLanding(props) {
           showsHorizontalScrollIndicator={false}
           keyExtractor={(item) => item.id}
           data={all_schedule}
-          contentContainerStyle={{
-            paddingHorizontal: 10,
-            gap: 10
-          }}
+          // contentContainerStyle={{
+          //   paddingHorizontal: 10,
+          //   gap: 10
+          // }}
           renderItem={({ item }) => (
-            <View style={{ marginRight: 10 }}>
+            <View style={{ marginRight: 0 }}>
               <Schedule item={item} />
             </View>
           )}

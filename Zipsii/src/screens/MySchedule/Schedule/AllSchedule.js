@@ -7,7 +7,6 @@ import Icon from 'react-native-vector-icons/Ionicons'; // Import vector icons
 const Schedule = ({item}) => {
   const navigation = useNavigation(); // Access navigation object
 
-console.log(item)
   const handleCardPress = (item) => {
     navigation.navigate('TripDetail', { tripData: item }); // Navigate and pass data
   };
@@ -28,14 +27,18 @@ console.log(item)
                   <Text style={styles.routeLabel}>From</Text>
                   <View style={styles.locationRow}>
                     <Icon name="location-outline" size={16} color="#333" />
-                    <Text style={styles.routeText}>{item.from}</Text>
+                    <Text style={styles.routeText}>
+                    {item.from.length > 7 ? item.from.slice(0, 7) + '...' : item.from}
+                  </Text>
                   </View>
                 </View>
                 <View style={styles.routeItem}>
                   <Text style={styles.routeLabel}>To</Text>
                   <View style={styles.locationRow}>
                     <Icon name="location-outline" size={16} color="#333" />
-                    <Text style={styles.routeText}>{item.to}</Text>
+                    <Text style={styles.routeText}>
+                      {item.to.length > 7 ? item.to.slice(0, 7) + '...' : item.to}
+                    </Text>
                   </View>
                 </View>
               </View>

@@ -21,7 +21,7 @@ const Map = ({ route }) => {
     useEffect(() => {
       const fetchDiscoverbyNearest = async () => {
         try {
-          const response = await fetch(`${base_url}/discover_by_nearest`);
+          const response = await fetch(`${base_url}/schedule/places/getNearest`);
           const data = await response.json();
   
           // Log to verify the data structure
@@ -65,18 +65,24 @@ const Map = ({ route }) => {
       {/* Scrollable Content */}
       <ScrollView style={styles.scrollContainer}>
         {/* Title */}
-        <Text style={styles.title}>Trip Start at / 24:35 Mins</Text>
+        <Text style={styles.title}>Trip Starts</Text>
 
         {/* From-To Section */}
         <View style={styles.fromToContainer}>
           <View style={styles.locationInfo}>
             <Icon name="map-marker-outline" size={20} color={colors.darkGray} />
-            <Text style={styles.locationText}>{fromLocation}</Text>
+            <Text style={styles.locationText}>
+            {fromLocation.length > 7 ? fromLocation.slice(0, 15) + '...' : fromLocation}
+          </Text>
           </View>
           <Icon name="arrow-right" size={20} color={colors.darkGray} style={styles.arrowIcon} />
           <View style={styles.locationInfo}>
             <Icon name="map-marker-outline" size={20} color={colors.darkGray} />
-            <Text style={styles.locationText}>{toLocation}</Text>
+            <Text style={styles.locationText}>
+        {toLocation && toLocation.length > 7
+          ? toLocation.slice(0, 15) + '...'
+          : toLocation}
+      </Text>
           </View>
         </View>
 

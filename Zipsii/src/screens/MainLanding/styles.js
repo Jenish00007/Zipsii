@@ -131,12 +131,12 @@ const styles = StyleSheet.create({
   },
   itemCardContainer: {
     width: scale(180),
-    height: scale(200),
+    height: scale(300),
     borderRadius: scale(6),
     borderColor: colors.whiteColor,
     borderWidth: scale(3),
     ...alignment.MTsmall,
-    ...alignment.MRlarge
+    ...alignment.MRlarge,
   },
   iconContainer: {
     width: scale(60),  // Adjust width as needed
@@ -161,12 +161,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: scale(10), // Adjust for proper spacing
   },
   titleSpacer: {
-    marginLeft: '5%',
+    marginLeft: '4%',
     marginTop: scale(15)
   },
   titleSpaceredge: {
-    marginLeft: '1%',
-    marginTop: scale(15)
+    marginLeft: '5%',
+    marginTop: scale(1)
   },
   titleSpacerdesti: {
     marginLeft: '1%',
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
   seeAllTextContainer: {
     flex: 1, // Ensures it takes the remaining space and pushes text to the right
     alignItems: 'flex-end', // Aligns text to the right
-    marginTop: scale(9), // If you want a bit of space above
+    marginTop: scale(1), // If you want a bit of space above
   },
   locationImage: {
     width: 34,  // Adjust width
@@ -283,15 +283,15 @@ const styles = StyleSheet.create({
   },
   scheduleContainer: {
     padding: wp('4%'), // Dynamic padding based on screen width
-    marginTop: hp('2%'),
+    //marginTop: hp('2%'),
     // marginTop: verticalScale(20),
-    paddingHorizontal: scale(16),
+    paddingHorizontal: scale(14),
     backgroundColor: '#fff',
     paddingBottom: verticalScale(20),
   },
   scheduleheadContainer:{
     flexDirection: 'row',
-    marginBottom: hp('2%'),
+    //marginBottom: hp('2%'),
     justifyContent: 'space-between',
     alignItems: 'center',
     ...alignment.PxSmall

@@ -1,4 +1,4 @@
-import { StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet, Dimensions, Platform } from 'react-native';
 import { colors } from '../../utils/colors';
 
 const { width } = Dimensions.get('window');
@@ -9,22 +9,26 @@ export default StyleSheet.create({
     backgroundColor: '#F8F9FA',
   },
   headerGradient: {
-    paddingTop: 20,
+    paddingTop: Platform.OS === 'ios' ? 50 : 40,
     paddingBottom: 20,
     paddingHorizontal: 20,
-    // borderBottomLeftRadius: 30,
-    // borderBottomRightRadius: 30,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    marginBottom:20,
     // borderTopLeftRadius:30,
     // borderTopRightRadius:30,
   },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backButton: {
+    marginRight: 15,
+  },
   headerTitle: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#fff',
-    textAlign: 'center',
-    textShadowColor: 'rgba(0, 0, 0, 0.2)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
+    color: 'white',
   },
   container: {
     flex: 1,
@@ -117,11 +121,13 @@ export default StyleSheet.create({
   },
   formGroup: {
     flex: 1,
+    
   },
   input: {
     flex: 1,
     fontSize: 16,
     color: '#2C3E50',
+    
   },
   datePickerButton: {
     flexDirection: 'row',

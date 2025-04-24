@@ -128,8 +128,8 @@ function MakeSchedule() {
         return {
           Description: day.description.trim(),
           date: fromDate.toISOString().split('T')[0], // Format as YYYY-MM-DD
-          location: {
-            latitude: parseFloat(day.latitude),
+        location: {
+          latitude: parseFloat(day.latitude),
             longitude: parseFloat(day.longitude)
           }
         };
@@ -172,7 +172,7 @@ function MakeSchedule() {
         formData.append(`planDescription[${index}][location][longitude]`, plan.location.longitude.toString());
       });
 
-      const accessToken = await AsyncStorage.getItem('accessToken');
+    const accessToken = await AsyncStorage.getItem('accessToken');
       if (!accessToken) {
         Alert.alert('Error', 'Authentication required');
         return;
@@ -246,7 +246,7 @@ function MakeSchedule() {
   // Function to remove a day from the trip plan
   const removeDay = (id) => {
     if (!isSubmitted) {
-      const updatedDays = days.filter((day) => day.id !== id);
+    const updatedDays = days.filter((day) => day.id !== id);
       updateScheduleState({ days: updatedDays });
     } else {
       Alert.alert('Cannot Remove', 'Schedule has already been submitted and cannot be modified.');
@@ -256,9 +256,9 @@ function MakeSchedule() {
   // Function to update a day's description or location
   const updateDayDetails = (id, field, value) => {
     if (!isSubmitted) {
-      const updatedDays = days.map((day) =>
-        day.id === id ? { ...day, [field]: value } : day
-      );
+    const updatedDays = days.map((day) =>
+      day.id === id ? { ...day, [field]: value } : day
+    );
       updateScheduleState({ days: updatedDays });
     } else {
       Alert.alert('Cannot Update', 'Schedule has already been submitted and cannot be modified.');
@@ -268,7 +268,7 @@ function MakeSchedule() {
   // Open map for location selection for a specific day
   const openMapForDay = (dayId) => {
     if (!isSubmitted) {
-      navigation.navigate('MapScreen', { dayId });
+    navigation.navigate('MapScreen', { dayId });
     } else {
       Alert.alert('Cannot Modify', 'Schedule has already been submitted and cannot be modified.');
     }
@@ -326,7 +326,31 @@ function MakeSchedule() {
         colors={['#A60F93', '#8B0B7D', '#6D0861']}
         style={styles.headerGradient}
       >
-        <Text style={styles.headerTitle}>Create Your Trip Schedule</Text>
+        <View style={styles.headerContainer}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => {
+              Alert.alert(
+                'Leave Form',
+                'Are you sure you want to leave? Your changes will not be saved.',
+                [
+                  {
+                    text: 'Cancel',
+                    style: 'cancel',
+                  },
+                  {
+                    text: 'OK',
+                    onPress: () => navigation.navigate('Destination'),
+                  },
+                ],
+                { cancelable: true }
+              );
+            }}
+          >
+            <Icon name="arrow-back" size={24} color="white" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Create Your Trip Schedule</Text>
+        </View>
       </LinearGradient>
 
       <ScrollView 
@@ -355,42 +379,42 @@ function MakeSchedule() {
             <Text style={styles.labelRow}>Trip Name</Text>
             <View style={styles.inputContainer}>
               <Icon name="airplane" size={20} color="#666" style={styles.inputIcon} />
-              <TextInput
-                style={styles.underlineInput}
-                value={tripName}
+            <TextInput
+              style={styles.underlineInput}
+              value={tripName}
                 onChangeText={(text) => updateScheduleState({ tripName: text })}
-                placeholder="Enter trip name"
+              placeholder="Enter trip name"
                 placeholderTextColor="#999"
-              />
+            />
             </View>
           </View>
 
           {/* Location Section */}
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionTitle}>LOCATION</Text>
-            <View style={styles.row}>
-              <View style={styles.formGroup}>
+          <View style={styles.row}>
+            <View style={styles.formGroup}>
                 <View style={styles.inputContainer}>
                   <Icon name="location" size={20} color="#666" style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.input}
-                    value={locationFrom}
+              <TextInput
+                style={styles.input}
+                value={locationFrom}
                     onChangeText={(text) => updateScheduleState({ locationFrom: text })}
-                    placeholder="From location"
+                placeholder="From location"
                     placeholderTextColor="#999"
-                  />
+              />
                 </View>
-              </View>
-              <View style={styles.formGroup}>
+            </View>
+            <View style={styles.formGroup}>
                 <View style={styles.inputContainer}>
                   <Icon name="location" size={20} color="#666" style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.input}
-                    value={locationTo}
+              <TextInput
+                style={styles.input}
+                value={locationTo}
                     onChangeText={(text) => updateScheduleState({ locationTo: text })}
-                    placeholder="To location"
+                placeholder="To location"
                     placeholderTextColor="#999"
-                  />
+              />
                 </View>
               </View>
             </View>
@@ -449,7 +473,7 @@ function MakeSchedule() {
             {days.map((day) => (
               <View key={day.id} style={styles.dayCard}>
                 <View style={styles.dayHeader}>
-                  <Text style={styles.dayTitle}>{`Day ${day.id}`}</Text>
+                <Text style={styles.dayTitle}>{`Day ${day.id}`}</Text>
                   <TouchableOpacity
                     style={styles.removeDayButton}
                     onPress={() => removeDay(day.id)}
@@ -467,24 +491,24 @@ function MakeSchedule() {
                   placeholderTextColor="#999"
                 />
 
-                <TouchableOpacity
-                  onPress={() => openMapForDay(day.id)}
+                  <TouchableOpacity
+                    onPress={() => openMapForDay(day.id)}
                   style={styles.mapButton}
                 >
-                  <Icon name="location-sharp" size={24} color="white" />
-                  <Text style={styles.mapButtonText}>Select Location</Text>
-                </TouchableOpacity>
+                    <Icon name="location-sharp" size={24} color="white" />
+                    <Text style={styles.mapButtonText}>Select Location</Text>
+                  </TouchableOpacity>
 
                 {day.latitude && day.longitude && (
-                  <MapView
-                    style={styles.map}
-                    initialRegion={{
+                <MapView
+                  style={styles.map}
+                  initialRegion={{
                       latitude: parseFloat(day.latitude),
                       longitude: parseFloat(day.longitude),
-                      latitudeDelta: 0.0922,
-                      longitudeDelta: 0.0421,
-                    }}
-                  >
+                    latitudeDelta: 0.0922,
+                    longitudeDelta: 0.0421,
+                  }}
+                >
                     <Marker
                       coordinate={{
                         latitude: parseFloat(day.latitude),

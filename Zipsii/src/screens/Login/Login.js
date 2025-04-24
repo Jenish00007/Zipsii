@@ -27,6 +27,8 @@ const SignInScreen = () => {
   useEffect(() => {
     const checkUser = async () => {
       const storedUser = await AsyncStorage.getItem('user');
+      const data = await AsyncStorage.getItem('accessToken');
+
       if (storedUser) {
         // If user is already logged in, navigate to MainLanding
         navigation.navigate('MainLanding');
