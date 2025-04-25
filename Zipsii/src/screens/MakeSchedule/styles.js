@@ -121,6 +121,7 @@ export default StyleSheet.create({
   },
   formGroup: {
     flex: 1,
+    padding: 4,
     
   },
   input: {

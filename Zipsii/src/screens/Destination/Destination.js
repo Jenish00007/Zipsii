@@ -16,19 +16,22 @@ import { TextDefault } from '../../components';
 
 const baseUrl = 'http://172.20.10.5:3030'
 function Destination({ route, navigation }) {
-  const { image, cardTitle, subtitle } = route.params
-  // const [comment, setComment] = useState('')
-  const [isExpanded, setIsExpanded] = useState(false) // State to track if the description is expanded
-  const [activeTab, setActiveTab] = useState('Main Attractions') // State to track active tab
-  const [isFollowing, setIsFollowing] = useState(false) // State to track following status
-  const [isSaved, setIsSaved] = useState(false) // State to track saved status
-  const [discoverbynearest, setDiscoverbyNearest] = useState([])
-  const [loading, setLoading] = useState(true); // Loading state
-  const item_id = route.params.product?.id ?? route.params.id;
-  const image1 = route.params.product?.image ?? route.params.image;
+  // Add default values and safe access
+  const params = route?.params || {};
+  const { image, cardTitle, subtitle } = params;
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [activeTab, setActiveTab] = useState('Main Attractions');
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [discoverbynearest, setDiscoverbyNearest] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  // Safe access to nested properties with optional chaining and nullish coalescing
+  const item_id = params?.product?.id ?? params?.id ?? null;
+  const image1 = params?.product?.image ?? params?.image ?? null;
   
   const [nextPageToken, setNextPageToken] = useState(null);
-  console.log( route.params.product)
+  console.log( params.product)
   // Fetch data from an open-source API (JSONPlaceholder API for demonstration)
   // useEffect(() => {
   //   const fetchDiscoverbyNearest = async() => {
@@ -336,24 +339,93 @@ function Destination({ route, navigation }) {
   //   }
   // }
   // Example function to fetch comments
-  async function fetchComments() {
+  const fetchComments = async () => {
     try {
-      const response = await fetch('http://172.20.10.5:3030/comments')
-      if (!response.ok) {
-        throw new Error('Failed to fetch comments')
+      setLoading(true);
+      if (!item_id) {
+        console.warn('No item_id available for fetching comments');
+        return;
       }
-      const data = await response.json()
-      console.log('Fetched comments from backend:', data)
-      setComments(data) // Update your state with the fetched comments
+
+      const response = await fetch(`${baseUrl}/comments/${item_id}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      setComments(data?.comments || []);
     } catch (error) {
-      console.error('Error fetching comments:', error)
+      console.error('Error fetching comments:', error);
+      setComments([]);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   // Call the fetch function when the component mounts or whenever needed
   useEffect(() => {
     fetchComments()
   }, [])
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        if (!item_id) {
+          console.warn('No item_id available for fetching data');
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch(`${baseUrl}/discover_by_nearest`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setDiscoverbyNearest(data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        // You might want to set some error state here
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [item_id]);
+
+  const handleLikePress = async () => {
+    try {
+      if (!item_id) {
+        console.warn('No item_id available for like/unlike action');
+        return;
+      }
+
+      setLikeLoading(true);
+      const endpoint = isLiked ? 'unlike' : 'like';
+      const response = await fetch(`${baseUrl}/${endpoint}/${item_id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        setIsLiked(!isLiked);
+        setLikesCount(prevCount => isLiked ? prevCount - 1 : prevCount + 1);
+      }
+    } catch (error) {
+      console.error('Error handling like/unlike:', error);
+      Alert.alert('Error', 'Failed to update like status. Please try again.');
+    } finally {
+      setLikeLoading(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -377,7 +449,7 @@ function Destination({ route, navigation }) {
               />
 
               {/* Save icon on the image */}
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 style={titleStyles.saveButton}
                 onPress={handleSave}
               >
@@ -385,13 +457,13 @@ function Destination({ route, navigation }) {
                   ? <FontAwesome name="bookmark" size={24} color="#FFFFFF" />
                   : <FontAwesome name="bookmark-o" size={24} color="#FFFFFF" />
                 }
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
 
             {/* Detail Container */}
             <View style={styles.detailContainer}>
               {/* Title row with Follow button */}
-              <View style={titleStyles.titleRow}>
+              {/* <View style={titleStyles.titleRow}>
                 <Text style={styles.detailTitle}>{cardTitle}</Text>
                 <TouchableOpacity
                   style={[
@@ -407,7 +479,7 @@ function Destination({ route, navigation }) {
                     {isFollowing ? 'Following' : 'Follow'}
                   </Text>
                 </TouchableOpacity>
-              </View>
+              </View> */}
 
               {/* Subtitle with map button */}
               <View style={styles.subtitleContainer}>
