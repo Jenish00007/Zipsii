@@ -87,5 +87,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'aqua',
     alignContent: 'center'
   },
+  ratingText: {
+    fontSize: 12,
+    color: colors.fontMainColor,
+    marginLeft: 2,
+  },
 });
 export default styles;

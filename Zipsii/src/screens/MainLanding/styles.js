@@ -389,5 +389,18 @@ const styles = StyleSheet.create({
    color: colors.btncolor,
    fontWeight: "500",
  },
+ contentContainer: {
+    flex: 1,
+    width: '100%',
+  },
+  bottomTabContainer: {
+    width: '100%',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: colors.white,
+    zIndex: 1000,
+  },
 })
 export default styles

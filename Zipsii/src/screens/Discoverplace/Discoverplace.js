@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, ScrollView, TouchableOpacity } from 'react-native';
-import styles from '../../utils/styles'
+import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import baseStyles from '../../utils/styles'
 import BottomTab from '../../components/BottomTab/BottomTab';
 import { BackHeader } from '../../components/Headers/Headers'; 
 import { MaterialCommunityIcons, SimpleLineIcons, Ionicons } from '@expo/vector-icons'; 
@@ -9,6 +9,25 @@ import { TextDefault } from '../../components';
 import { textStyles } from '../../utils';
 import { base_url } from '../../utils/base_url';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { MaterialIcons } from '@expo/vector-icons';
+
+// Merge the styles
+const styles = {
+  ...baseStyles,
+  contentContainer: {
+    padding: 8,
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  ratingText: {
+    fontSize: 12,
+    color: colors.fontMainColor,
+    marginLeft: 2,
+  },
+};
 
 //const baseUrl = 'http://192.168.1.6:3030'; 
 function DiscoverPlace({ navigation }) {
@@ -51,6 +70,7 @@ function DiscoverPlace({ navigation }) {
           image: item.image, // Make sure the URL is correct
           title: item.name,
           subtitle: item.subtitle,
+          rating: item.rating
         }));
         setCardData(formattedData);
       } catch (error) {
@@ -105,6 +125,7 @@ function DiscoverPlace({ navigation }) {
                   image: card.image,
                   cardTitle: card.title,
                   subtitle: card.subtitle,
+                  rating: card.rating
                 })
               }
             >
@@ -112,10 +133,17 @@ function DiscoverPlace({ navigation }) {
                 <MaterialCommunityIcons name="heart-outline" size={20} color={colors.errorColor} />
               </View>
               <Image source={{ uri: card.image }} style={styles.cardImage} />
-              <Text style={styles.cardTitle}>{card.title}</Text>
-              <View style={styles.subtitleContainer}>
-                <SimpleLineIcons name="location-pin" size={15} color={colors.fontThirdColor} />
-                <Text style={styles.cardSubtitle}>{card.subtitle}</Text>
+              <View style={styles.contentContainer}>
+                <Text style={styles.cardTitle}>{card.title}</Text>
+                {card.rating && (
+                  <View style={styles.ratingContainer}>
+                    <MaterialIcons name="star" size={14} color={colors.yellowColor} />
+                    <Text style={styles.ratingText}>{card.rating}</Text>
+                  </View>
+                )}
+                <View style={styles.subtitleContainer}>
+                  <Text style={styles.cardSubtitle}>{card.subtitle}</Text>
+                </View>
               </View>
             </TouchableOpacity>
           ))}

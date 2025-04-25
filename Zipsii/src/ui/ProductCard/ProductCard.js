@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Image, TouchableOpacity, Alert, Text } from 'react-native';
 import styles from './styles';
 import { colors, scale } from '../../utils';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 
@@ -86,7 +86,12 @@ function ProductCard(props) {
           </Text>
 
           <View style={styles.priceContainer}>
-            {/* Optionally add more product information like price or rating */}
+            {props.rating && (
+              <View style={styles.ratingContainer}>
+                <MaterialIcons name="star" size={14} color={colors.yellowColor} />
+                <Text style={styles.ratingText}>{props.rating}</Text>
+              </View>
+            )}
           </View>
         </View>
       </View>

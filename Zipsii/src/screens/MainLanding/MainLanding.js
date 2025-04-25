@@ -188,7 +188,8 @@ function MainLanding(props) {
           setBest_destination(bestDestinationData.data.slice(0, 100).map(item => ({
             id: item._id || item.name,
             image: item.image,
-            name: item.name
+            name: item.name,
+            rating: item.rating
           })));
         } else {
           setBest_destination([]);
@@ -198,7 +199,8 @@ function MainLanding(props) {
           setAll_destination(allDestinationData.data.slice(0, 100).map(item => ({
             id: item._id || item.name,
             image: item.image,
-            name: item.name
+            name: item.name,
+            rating: item.rating
           })));
         } else {
           setAll_destination([]);
@@ -267,12 +269,14 @@ function MainLanding(props) {
         }
 
         if (Array.isArray(discoverByNearestData?.data)) {
-          setDiscoverbyNearest(discoverByNearestData.data.slice(0, 100).map(item => ({
-            id: item._id || item.name,
+          const formattedData = discoverByNearestData.data.slice(0, 100).map(item => ({
+            id: item._id || item.image,
             image: item.image,
             title: item.name,
-            subtitle: item.address || item.rating || 'No subtitle'
-          })));
+            subtitle: item.address || item.rating || 'No subtitle',
+            rating: item.rating
+          }));
+          setDiscoverbyNearest(formattedData);
         } else {
           setDiscoverbyNearest([]);
         }
@@ -465,7 +469,11 @@ function MainLanding(props) {
           keyExtractor={(item, index) => item.id}
           data={discoverbynearest}
           renderItem={({ item, index }) => (
-            <DiscoverByNearest styles={styles.itemCardContainer} {...item} />
+            <DiscoverByNearest 
+              styles={styles.itemCardContainer} 
+              {...item}
+              rating={item.rating}
+            />
           )}
         />
       )}
@@ -656,17 +664,21 @@ function MainLanding(props) {
   return (
     <SafeAreaView style={[styles.flex, styles.safeAreaStyle]}>
       <View style={[styles.grayBackground, styles.flex]}>
-        <FlatList
-          keyExtractor={(item, index) => index.toString()}
-          showsVerticalScrollIndicator={false}
-          numColumns={2}
-          ListHeaderComponent={renderHeader}
-          data={selectedButton === 'All' ? all_destination : []}
-          renderItem={({ item }) => (
-            <ProductCard styles={styles.productCard} {...item} />
-          )}
-        />
-        <BottomTab screen="HOME" />
+        <View style={styles.contentContainer}>
+          <FlatList
+            keyExtractor={(item, index) => index.toString()}
+            showsVerticalScrollIndicator={false}
+            numColumns={2}
+            ListHeaderComponent={renderHeader}
+            data={selectedButton === 'All' ? all_destination : []}
+            renderItem={({ item }) => (
+              <ProductCard styles={styles.productCard} {...item} />
+            )}
+          />
+        </View>
+        <View style={styles.bottomTabContainer}>
+          <BottomTab screen="HOME" />
+        </View>
       </View>
     </SafeAreaView>
   );
