@@ -6,6 +6,7 @@ import styles from './styles';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { scale, colors } from '../../utils';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 function BottomTab({ screen }) {
   const navigation = useNavigation();
@@ -46,6 +47,19 @@ function BottomTab({ screen }) {
           />
         </View>
         <Text style={getTextStyle('WhereToGo')}>Where to Go</Text>
+      </TouchableOpacity>
+
+      {/* Split/Expense Calculator Icon */}
+      <TouchableOpacity
+        onPress={() => navigation.navigate('ExpenseCalculator')}
+        style={styles.footerBtnContainer}
+      >
+        <MaterialIcons
+          name="attach-money"
+          size={scale(20)}
+          color={getIconColor('EXPENSE')}
+        />
+        <Text style={getTextStyle('EXPENSE')}>Split</Text>
       </TouchableOpacity>
 
       {/* Upload Icon */}

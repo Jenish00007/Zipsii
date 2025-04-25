@@ -1,83 +1,42 @@
-import { Dimensions, StyleSheet } from 'react-native';
-import { verticalScale, scale } from '../../utils/scaling';
-import { fontStyles } from '../../utils/fontStyles';
-import { colors } from '../../utils';
+import { StyleSheet } from 'react-native';
+import { alignment, colors, scale } from '../../utils';
 
-const { height, width } = Dimensions.get('window');
-
-const styles = StyleSheet.create({
+export default StyleSheet.create({
   footerContainer: {
-    width,
-    height: height * 0.08,
+    width: '100%',
+    backgroundColor: colors.themeBackground,
     flexDirection: 'row',
-    backgroundColor: colors.white,
     justifyContent: 'space-around',
     alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: colors.grayLinesColor,
+    paddingVertical: scale(10),
+    elevation: 0,
+    shadowOpacity: 0,
   },
   footerBtnContainer: {
-    width: '25%',
-    height: '100%',
-    justifyContent: 'center',
+    flex: 1,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   imgContainer: {
-    justifyContent: 'center',
+    width: scale(20),
+    height: scale(20),
     alignItems: 'center',
-  },
-  activeText: {
-    marginTop: verticalScale(4),
-    color: colors.btncolor,
-    fontSize: 10,
-    fontFamily: fontStyles.PoppinsBold,
-    fontWeight: 'bold',
-  },
-  inactiveText: {
-    marginTop: verticalScale(4),
-    color: colors.darkGrayText,
-    fontSize: 10,
-    fontFamily: fontStyles.PoppinsRegular,
-    fontWeight: 'bold',
+    justifyContent: 'center',
   },
   profileContainer: {
-    width: '100%',
-    justifyContent: 'center',
+    width: scale(20),
+    height: scale(20),
     alignItems: 'center',
-    position: 'relative',
-  },
-  profileBadge: {
-    width: verticalScale(8),
-    height: verticalScale(8),
-    position: 'absolute',
-    right: '25%',
-    top: 0,
-    backgroundColor: colors.greenColor,
-    borderRadius: verticalScale(4),
-  },
-  badgeContainer: {
-    position: 'absolute',
-    top: -scale(5),
-    right: -scale(10),
-    backgroundColor: colors.redColor,
-    borderRadius: scale(10),
-    height: scale(16),
-    width: scale(16),
     justifyContent: 'center',
-    alignItems: 'center',
   },
-  badgeText: {
-    color: colors.white,
+  activeText: {
     fontSize: scale(10),
-    fontWeight: 'bold',
+    marginTop: scale(2),
+    color: colors.greenColor,
   },
-  iconContainer: {
-    width: 50,
-    height: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 25,
+  inactiveText: {
+    fontSize: scale(10),
+    marginTop: scale(2),
+    color: colors.darkGrayText,
   },
 });
-
-export default styles;
