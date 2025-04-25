@@ -402,5 +402,19 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     zIndex: 1000,
   },
+  container: {
+    flex: 1,
+    backgroundColor: colors.themeBackground,
+  },
+  mainContent: {
+    flex: 1,
+    paddingBottom: scale(60), // Add padding for bottom tab
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: scale(60), // Add padding for bottom tab
+  },
 })
 export default styles

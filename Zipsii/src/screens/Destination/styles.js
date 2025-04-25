@@ -6,7 +6,17 @@ const { width } = Dimensions.get('window');
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.white,
+    backgroundColor: colors.themeBackground,
+  },
+  mainContent: {
+    flex: 1,
+    paddingBottom: scale(60), // Add padding to account for bottom tab
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: scale(60), // Add padding here too for loading state
   },
   scrollContainer: {
     flexGrow: 1,
