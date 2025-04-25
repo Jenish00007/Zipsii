@@ -16,6 +16,19 @@ function DiscoverPlace({ navigation }) {
     navigation.goBack(); // Navigate to the previous screen when the back arrow is pressed
   };
 
+  // Add navigation handlers
+  const handleNotificationPress = () => {
+    navigation.navigate('Notification');
+  };
+
+  const handleSearchPress = () => {
+    navigation.navigate('SearchPage');
+  };
+
+  const handleProfilePress = () => {
+    navigation.navigate('ProfileDashboard');
+  };
+
   // State to hold the dynamic data
   const [cardData, setCardData] = useState([]);
 
@@ -53,8 +66,14 @@ function DiscoverPlace({ navigation }) {
       <View style={styles.protractorShape} />
       <View style={styles.backgroundCurvedContainer} />
       
-      {/* BackHeader component */}
-      <BackHeader backPressed={backPressed} title="Discover Place"/> 
+      {/* BackHeader component with navigation handlers */}
+      <BackHeader 
+        backPressed={backPressed} 
+        title="Discover Place"
+        onNotificationPressed={handleNotificationPress}
+        onSearchPressed={handleSearchPress}
+        onProfilePressed={handleProfilePress}
+      /> 
 
       {/* Header Container (Title + Button Row) */}
       <View style={styles.headerContainer}>

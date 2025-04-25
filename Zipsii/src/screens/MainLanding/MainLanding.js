@@ -447,7 +447,7 @@ function MainLanding(props) {
 
   const renderDiscoverByNearest = () => (
     <View style={styles.titleSpaceredge}>
-      <TextDefault textColor={colors.fontMainColor} H5 bold style={styles.titleSpacer}>
+      <TextDefault textColor={colors.fontMainColor} H5 bold style={styles.titleSpacernearest}>
         {'Discover by Nearest'}
       </TextDefault>
       <View style={styles.seeAllTextContainer}>
@@ -531,7 +531,7 @@ function MainLanding(props) {
 
   const renderAllDestination = () => (
     <View style={styles.titleSpacer}>
-      <TextDefault textColor={colors.fontMainColor} H4>
+      <TextDefault textColor={colors.fontMainColor} H4 bold>
         {'All Destination'}
       </TextDefault>
     </View>

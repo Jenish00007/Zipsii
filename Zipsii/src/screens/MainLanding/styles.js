@@ -164,6 +164,11 @@ const styles = StyleSheet.create({
     marginLeft: '4%',
     marginTop: scale(15)
   },
+  titleSpacernearest: {
+    marginLeft: '4%',
+    marginTop: scale(15),
+    marginBottom: '2%',
+  },
   titleSpaceredge: {
     marginLeft: '1%',
     marginTop: scale(1)

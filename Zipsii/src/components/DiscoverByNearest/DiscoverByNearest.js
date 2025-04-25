@@ -32,18 +32,24 @@ const styles = StyleSheet.create({
      backgroundColor: colors.white,
      borderRadius: 10,
      ...alignment.PxSmall,
+     shadowColor: '#000',
+     shadowOffset: {
+       width: 0,
+       height: 1,
+     },
+     shadowOpacity: 0.1,
+     shadowRadius: 2,
+     elevation: 2,
      borderWidth: 1,
-     borderColor: colors.grayLinesColor,
-     borderRadius: 6,
-     elevation: 6,
+     borderColor: '#F0F0F0', // Very light gray color for subtle border
    },
    cardImage: {
     width: "100%",
-    height: 110,
+    height: 100,
     borderRadius: 10,
   },
   cardTitle: {
-    marginTop: 5,
+    marginTop: 8,
     fontSize: 14,
     fontWeight: "bold",
     color: colors.fontMainColor,
@@ -51,6 +57,7 @@ const styles = StyleSheet.create({
     ellipsizeMode: 'tail',
   },
   cardSubtitle: {
+    marginTop: 4,
     fontSize: 12,
     color: colors.fontThirdColor,
     numberOfLines: 2,
