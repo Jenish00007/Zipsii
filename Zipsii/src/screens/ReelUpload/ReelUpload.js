@@ -91,14 +91,15 @@ function ReelUpload() {
     }
   
     const formData = new FormData();
-    formData.append('caption', title);
-    formData.append('description', description);
-    formData.append('media', {
-      uri: image.uri,
-      name: image.uri.split('/').pop(),
-      type: image.type || 'image/jpeg', // default if type not available
-    });
-  
+    formData.append('postTitle', title);
+    formData.append('postType', 'Public'); // Default to Public
+    formData.append('mediaType', 'image');
+    
+    // Convert local file URI to proper URL format
+    const imageUri = image.uri.replace('file://', '');
+    formData.append('mediaUrl[]',imageUri)
+    formData.append('tags[]', 'new');
+    
     try {
       const accessToken = await AsyncStorage.getItem('accessToken');
 
@@ -107,18 +108,21 @@ function ReelUpload() {
         return;
       }
 
-      const response = await fetch(`${base_url}/post/`, {
+      const response = await fetch(`${base_url}/post/create`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'multipart/form-data',
         },
         body: formData,
       });
 
+      console.log('Response status:', response.status);
       const responseData = await response.json();
+      console.log('Response data:', responseData);
 
       if (response.ok) {
-        console.log("Reel uploaded:", responseData);
+        console.log("Post created:", responseData);
         
         // Send notification to followers
         const followersResponse = await fetch(`${base_url}/user/followers`, {
@@ -136,15 +140,20 @@ function ReelUpload() {
           });
         }
 
-        Alert.alert("Success", "Your reel was successfully uploaded!");
+        Alert.alert("Success", "Your post was successfully created!");
         navigation.goBack();
       } else {
-        console.error("Error uploading reel:", responseData);
-        Alert.alert("Error", responseData.message || "There was an error uploading your reel.");
+        console.error("Error creating post:", responseData);
+        Alert.alert("Error", responseData.message || "There was an error creating your post.");
       }
     } catch (error) {
-      console.error("Error in uploading reel:", error);
-      Alert.alert("Error", "There was an error uploading your reel.");
+      console.error("Error in creating post:", error);
+      console.error("Error details:", {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+      Alert.alert("Error", "There was an error creating your post. Please check your internet connection and try again.");
     }
   };
   

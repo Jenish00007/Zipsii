@@ -10,7 +10,7 @@ import { useState, useEffect } from 'react';
 import { colors } from '../../utils';
 import { base_url } from '../../utils/base_url';
 
-//const baseUrl = 'http://192.168.1.6:3030';
+//const baseUrl = 'https://admin.zypsii.com';
 function ProfileDashboard(props) {
   const navigation = useNavigation();
   const [profileInfo, setProfileInfo] = useState({

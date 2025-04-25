@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity } from "react-native";
 import styles from "../../utils/styles";
-import { BackHeader, BottomTab, TextDefault } from '../../components';
+import { BackHeader, BottomTab } from '../../components';
 import { SafeAreaView } from "react-native-safe-area-context";
 import Schedule from './Schedule/AllSchedule';
 import { base_url } from '../../utils/base_url';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
-//const baseUrl = 'http://192.168.1.6:3030'; // Update the base URL if necessary
+//const baseUrl = 'https://admin.zypsii.com'; // Update the base URL if necessary
 
 function MySchedule({ navigation }) {
   const today = new Date();

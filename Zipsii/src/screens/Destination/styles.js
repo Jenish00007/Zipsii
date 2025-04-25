@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   readMore: {
-    color: colors.Zipsii_color, // Set this to your desired link color (e.g., purple or blue)
+    color: colors.Zypsii_color, // Set this to your desired link color (e.g., purple or blue)
     fontWeight: 'bold',
   },
   commenttitle:{

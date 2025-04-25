@@ -92,5 +92,15 @@ const styles = StyleSheet.create({
     color: colors.fontMainColor,
     marginLeft: 2,
   },
+  locationText: {
+    fontSize: scale(12),
+    color: colors.grayColor,
+    marginTop: scale(4),
+  },
+  distanceText: {
+    fontSize: scale(12),
+    color: colors.grayColor,
+    marginLeft: scale(8),
+  },
 });
 export default styles;

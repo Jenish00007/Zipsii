@@ -27,15 +27,20 @@ const styles = {
     color: colors.fontMainColor,
     marginLeft: 2,
   },
+  selectedTripButton: {
+    backgroundColor: colors.primary,
+  },
+  selectedTripButtonText: {
+    color: colors.Zypsii_color,
+  },
 };
 
-//const baseUrl = 'http://192.168.1.6:3030'; 
+//const baseUrl = 'https://admin.zypsii.com'; 
 function DiscoverPlace({ navigation }) {
   const backPressed = () => {
-    navigation.goBack(); // Navigate to the previous screen when the back arrow is pressed
+    navigation.goBack();
   };
 
-  // Add navigation handlers
   const handleNotificationPress = () => {
     navigation.navigate('Notification');
   };
@@ -48,45 +53,83 @@ function DiscoverPlace({ navigation }) {
     navigation.navigate('ProfileDashboard');
   };
 
-  // State to hold the dynamic data
   const [cardData, setCardData] = useState([]);
+  const [selectedTripType, setSelectedTripType] = useState('Friendship Trip');
+  const [loading, setLoading] = useState(false);
 
-  // Fetch data from an open-source API (JSONPlaceholder API for demonstration)
-  useEffect(() => {
-    const fetchCardData = async () => {
-      try {
-        const accessToken = await AsyncStorage.getItem('accessToken');
-        const response = await fetch(`${base_url}/schedule/places/getNearest`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`
-          }
-        })
-        const responce = await response.json();
-  
-        // Log to verify the data structure  
-        const formattedData = responce.data.slice(0, 100).map(item => ({
-          id: item._id || item.image,
-          image: item.image, // Make sure the URL is correct
-          title: item.name,
-          subtitle: item.subtitle,
-          rating: item.rating
-        }));
-        setCardData(formattedData);
-      } catch (error) {
-        console.error('Error fetching data:', error);
+  const tripTypes = ['Friendship Trip', 'Honeymoon Trip', 'Weekend Trip'];
+
+  const getApiParams = (tripType) => {
+    switch (tripType) {
+      case 'Friendship Trip':
+        return { type: 'restaurant', keyword: 'pizza', opennow: true };
+      case 'Honeymoon Trip':
+        return { type: 'hotel', keyword: 'resort', opennow: true };
+      case 'Weekend Trip':
+        return { type: 'attraction', keyword: 'park', opennow: true };
+      default:
+        return { type: 'restaurant', keyword: 'pizza', opennow: true };
+    }
+  };
+
+  const fetchCardData = async (tripType) => {
+    try {
+      setLoading(true);
+      const accessToken = await AsyncStorage.getItem('accessToken');
+      const params = getApiParams(tripType);
+      const queryString = new URLSearchParams(params).toString();
+      
+      const response = await fetch(`${base_url}/schedule/places/getNearest?${queryString}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      });
+      
+      const responseData = await response.json();
+      
+      // Check if responseData exists and has the expected structure
+      if (!responseData || !responseData.data) {
+        console.warn('Unexpected API response structure:', responseData);
+        setCardData([]);
+        return;
       }
-    };
-  
-    fetchCardData();
-  }, []);
-  
+
+      // Ensure data is an array before using slice
+      const dataArray = Array.isArray(responseData.data) ? responseData.data : [];
+      
+      const formattedData = dataArray.map(item => ({
+        id: item._id || item.image,
+        image: item.image,
+        title: item.name,
+        subtitle: item.address,
+        rating: item.rating,
+        location: item.location,
+        distance: item.distanceInKilometer
+      }));
+      
+      setCardData(formattedData);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setCardData([]); // Set empty array on error
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCardData(selectedTripType);
+  }, [selectedTripType]);
+
+  const handleTripTypePress = (tripType) => {
+    setSelectedTripType(tripType);
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.protractorShape} />
       <View style={styles.backgroundCurvedContainer} />
       
-      {/* BackHeader component with navigation handlers */}
       <BackHeader 
         backPressed={backPressed} 
         title="Discover Place"
@@ -95,17 +138,26 @@ function DiscoverPlace({ navigation }) {
         onProfilePressed={handleProfilePress}
       /> 
 
-      {/* Header Container (Title + Button Row) */}
       <View style={styles.headerContainer}>
         <Text style={styles.title}>{'Which trip would you love to go on?'}</Text>
         <View style={styles.buttonRow}>
-          {['Friendship Trip', 'Honeymoon Trip', 'Weekend Trip'].map((label, index) => (
-            <TouchableOpacity key={index} style={styles.tripButton}>
-              <Text style={styles.tripButtonText}>{label}</Text>
+          {tripTypes.map((label) => (
+            <TouchableOpacity 
+              key={label} 
+              style={[
+                styles.tripButton,
+                selectedTripType === label && styles.selectedTripButton
+              ]}
+              onPress={() => handleTripTypePress(label)}
+            >
+              <Text style={[
+                styles.tripButtonText,
+                selectedTripType === label && styles.selectedTripButtonText
+              ]}>{label}</Text>
               <Ionicons
                 name="chevron-forward-outline"
                 size={18}
-                color={colors.fontMainColor}
+                color={selectedTripType === label ? colors.Zypsii_color : colors.fontMainColor}
               />
             </TouchableOpacity>
           ))}
@@ -125,7 +177,9 @@ function DiscoverPlace({ navigation }) {
                   image: card.image,
                   cardTitle: card.title,
                   subtitle: card.subtitle,
-                  rating: card.rating
+                  rating: card.rating,
+                  location: card.location,
+                  distance: card.distance
                 })
               }
             >
@@ -139,6 +193,7 @@ function DiscoverPlace({ navigation }) {
                   <View style={styles.ratingContainer}>
                     <MaterialIcons name="star" size={14} color={colors.yellowColor} />
                     <Text style={styles.ratingText}>{card.rating}</Text>
+                    <Text style={[styles.ratingText, { marginLeft: 8 }]}>{card.distance}</Text>
                   </View>
                 )}
                 <View style={styles.subtitleContainer}>

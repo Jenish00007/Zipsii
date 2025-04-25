@@ -31,7 +31,6 @@ function Destination({ route, navigation }) {
   const image1 = params?.product?.image ?? params?.image ?? null;
   
   const [nextPageToken, setNextPageToken] = useState(null);
-  console.log( params.product)
   // Fetch data from an open-source API (JSONPlaceholder API for demonstration)
   // useEffect(() => {
   //   const fetchDiscoverbyNearest = async() => {
@@ -115,11 +114,11 @@ function Destination({ route, navigation }) {
   useEffect(() => {
     const fetchDestinationData = async() => {
       try {
-        const response = await fetch('http://172.20.10.5:3030/destination')
+        const response = await fetch(`${base_url}/schedule/places/getNearest`)
         const data = await response.json()
         setDestinationData(data) // ✅ Store fetched data in state
       } catch (error) {
-        console.error('Error fetching destination data:', error)
+       // console.error('Error fetching destination data:', error)
       }
     }
 
@@ -132,11 +131,11 @@ function Destination({ route, navigation }) {
   useEffect(() => {
     const fetchTutorialVideos = async() => {
       try {
-        const response = await fetch('http://172.20.10.5:3030/tutorialVideos') // Replace with your backend URL
+        const response = await fetch() // Replace with your backend URL
         const data = await response.json()
         setTutorialVideos(data.videos) // Access the 'videos' array from the response
       } catch (error) {
-        console.error('Error fetching tutorial videos:', error)
+        //console.error('Error fetching tutorial videos:', error)
       }
     }
 
@@ -157,7 +156,7 @@ function Destination({ route, navigation }) {
           setDescriptionexplore([])
         }
       } catch (error) {
-        console.error('Error fetching description explore:', error)
+        //console.error('Error fetching description explore:', error)
         setDescriptionexplore([])
       }
     }
@@ -194,7 +193,7 @@ function Destination({ route, navigation }) {
 
     try {
       const accessToken = await AsyncStorage.getItem('accessToken'); // Get the access token
-      const response = await fetch(`http://172.20.10.5:3030/update-like-status?id=${item_id}`, {
+      const response = await fetch(`${base_url}/update-like-status?id=${item_id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -432,7 +431,7 @@ function Destination({ route, navigation }) {
       <View style={styles.mainContent}>
         {loading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={colors.Zipsii_color} />
+            <ActivityIndicator size="large" color={colors.Zypsii_color} />
           </View>
         ) : (
           <ScrollView 
@@ -498,7 +497,7 @@ function Destination({ route, navigation }) {
 
                 {/* Map button */}
                 <TouchableOpacity style={titleStyles.mapButton} onPress={handleOpenMap}>
-                  <MaterialIcons name="map" size={18} color={colors.Zipsii_color || '#3498db'} />
+                  <MaterialIcons name="map" size={18} color={colors.Zypsii_color || '#3498db'} />
                   <Text style={titleStyles.mapButtonText}>Map</Text>
                 </TouchableOpacity>
               </View>
@@ -706,7 +705,7 @@ const tabStyles = {
     backgroundColor: '#F0F0F0'
   },
   activeTab: {
-    backgroundColor: colors.Zipsii_color
+    backgroundColor: colors.Zypsii_color
   },
   tabText: {
     fontSize: 14,
@@ -746,7 +745,7 @@ const titleStyles = {
     paddingHorizontal: 16,
     paddingVertical: 6,
     borderRadius: 20,
-    backgroundColor: colors.Zipsii_color,
+    backgroundColor: colors.Zypsii_color,
     alignItems: 'center',
     justifyContent: 'center'
   },
@@ -769,10 +768,10 @@ const titleStyles = {
     paddingVertical: 2,
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: colors.Zipsii_color
+    borderColor: colors.Zypsii_color
   },
   mapButtonText: {
-    color: colors.Zipsii_color || '#3498db',
+    color: colors.Zypsii_color || '#3498db',
     fontSize: 12,
     marginLeft: 4,
     fontWeight: '500'
@@ -802,7 +801,7 @@ const actionStyles = {
     width: 45,
     height: 45,
     borderRadius: 25,
-    backgroundColor: colors.Zipsii_color,
+    backgroundColor: colors.Zypsii_color,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 5

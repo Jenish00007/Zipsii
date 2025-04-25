@@ -13,7 +13,7 @@ import { colors } from "../../utils";
 import { alignment } from "../../utils";
 import { base_url } from "../../utils/base_url";
 
-//const baseUrl = 'http://192.168.1.6:3030'; // Backend API base URL
+//const baseUrl = 'https://admin.zypsii.com'; // Backend API base URL
 
 function SearchPage() {
   const [searchText, setSearchText] = useState("");
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
   },
   activeTabText: {
     fontSize: 16,
-    color: colors.Zipsii_color,
+    color: colors.Zypsii_color,
     fontWeight: "600",
   },
   activeIndicator: {
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor:colors.Zipsii_color,
+    backgroundColor:colors.Zypsii_color,
     borderTopLeftRadius: 3,
     borderTopRightRadius: 3,
   },

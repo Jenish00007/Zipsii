@@ -9,7 +9,7 @@ import { TextDefault } from '../../components';
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import DiscoverByNearest from '../../components/DiscoverByNearest/DiscoverByNearest';
 import { base_url } from '../../utils/base_url';
-//const baseUrl = 'http://192.168.1.6:3030';
+//const baseUrl = 'https://admin.zypsii.com';
 const Map = ({ route }) => {
   const navigation = useNavigation();
   const backPressed = () => {

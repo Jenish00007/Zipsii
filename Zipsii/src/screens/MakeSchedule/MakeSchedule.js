@@ -345,7 +345,7 @@ function MakeSchedule() {
                   },
                   {
                     text: 'OK',
-                    onPress: () => navigation.navigate('Destination'),
+                    onPress: () => navigation.navigate('MainLanding'),
                   },
                 ],
                 { cancelable: true }
