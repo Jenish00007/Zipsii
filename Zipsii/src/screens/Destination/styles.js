@@ -1,5 +1,5 @@
 import { StyleSheet, Dimensions } from 'react-native';
-import { alignment, colors } from '../../utils';
+import { alignment, colors, scale } from '../../utils';
 
 const { width } = Dimensions.get('window');
 
@@ -10,18 +10,15 @@ const styles = StyleSheet.create({
   },
   mainContent: {
     flex: 1,
-    paddingBottom: scale(60), // Add padding to account for bottom tab
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingBottom: scale(60), // Add padding here too for loading state
   },
   scrollContainer: {
     flexGrow: 1,
-    // paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingBottom: scale(100), // Increased padding to ensure content is scrollable past the bottom tab
   },
   imageContainer: {
     width: '100%',

@@ -438,6 +438,9 @@ function Destination({ route, navigation }) {
           <ScrollView 
             contentContainerStyle={styles.scrollContainer}
             showsVerticalScrollIndicator={false}
+            bounces={true}
+            overScrollMode="always"
+            scrollEventThrottle={16}
           >
             {/* Image Container */}
             <View style={styles.imageContainer}>
