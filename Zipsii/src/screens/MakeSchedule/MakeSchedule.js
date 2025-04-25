@@ -24,6 +24,7 @@ import { updateSchedule, updateDayLocation, setSubmitted } from '../../redux/sli
 import styles from "./styles";
 import { base_url } from "../../utils/base_url";
 import { colors } from '../../utils/colors';
+import CustomLoader from '../../components/Loader/CustomLoader';
 
 const { width } = Dimensions.get('window');
 
@@ -48,6 +49,7 @@ function MakeSchedule() {
 
   const [showFromDatePicker, setShowFromDatePicker] = useState(false);
   const [showToDatePicker, setShowToDatePicker] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Function to update schedule state
   const updateScheduleState = (updates) => {
@@ -65,6 +67,7 @@ function MakeSchedule() {
   // Function to handle the form submission
   const handleSubmit = async () => {
     try {
+      setIsLoading(true);
       // Validate required fields
       if (!bannerImage) {
         Alert.alert('Error', 'Banner image is required');
@@ -229,6 +232,8 @@ function MakeSchedule() {
           }
         ]
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -530,16 +535,40 @@ function MakeSchedule() {
           <TouchableOpacity 
             style={styles.submitButton}
             onPress={handleSubmit}
+            disabled={isLoading}
           >
-            <LinearGradient
+             <LinearGradient
               colors={['#A60F93', '#8B0B7D', '#6D0861']}
               style={styles.submitButtonGradient}
             >
-              <Text style={styles.submitButtonText}>Create Schedule</Text>
+              <Text style={styles.submitButtonText}>
+                {isLoading ? 'Creating...' : 'Create Schedule'}
+              </Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Date Pickers */}
+      {showFromDatePicker && (
+        <DateTimePicker
+          value={fromDate || new Date()}
+          mode="date"
+          display="default"
+          onChange={onFromDateChange}
+        />
+      )}
+      {showToDatePicker && (
+        <DateTimePicker
+          value={toDate || new Date()}
+          mode="date"
+          display="default"
+          onChange={onToDateChange}
+        />
+      )}
+
+      {/* Loader */}
+      {isLoading && <CustomLoader message="Creating your schedule..." />}
     </KeyboardAvoidingView>
   );
 }
