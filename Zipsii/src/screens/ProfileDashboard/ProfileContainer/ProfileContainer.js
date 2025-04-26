@@ -74,6 +74,7 @@ function ProfileContainer({profileInfo}) {
             { label: 'Delete', icon: 'delete', route: 'DeleteButton' },
             { label: 'Logout', icon: 'logout', route: 'Logout' },
             { label: 'Favourites', icon: 'star-outline', route: 'Favourite' },
+            { label: 'FAQ', icon: 'help-outline', route: 'FAQ' },
             { label: 'My Schedule', icon: 'list', route: 'MySchedule' },
             // { label: 'Help Center', icon: 'help', route: 'HelpCenter' },
             // { label: 'Privacy Policy', icon: 'lock', route: 'PrivacyPolicy' },

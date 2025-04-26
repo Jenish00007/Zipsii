@@ -495,6 +495,8 @@ const Stories = () => {
             showAddStoryButton={true}
             addStoryButtonStyle={styles.addStoryButton}
             addStoryButtonIcon={<Entypo name="circle-with-plus" style={styles.addIcon} />}
+            unPressedBorderColor="#A60F93"
+
           />
         </View>
       </View>

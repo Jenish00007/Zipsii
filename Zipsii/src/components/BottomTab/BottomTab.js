@@ -49,18 +49,7 @@ function BottomTab({ screen }) {
         <Text style={getTextStyle('WhereToGo')}>Where to Go</Text>
       </TouchableOpacity>
 
-      {/* Split/Expense Calculator Icon */}
-      <TouchableOpacity
-        onPress={() => navigation.navigate('ExpenseCalculator')}
-        style={styles.footerBtnContainer}
-      >
-        <MaterialIcons
-          name="attach-money"
-          size={scale(20)}
-          color={getIconColor('EXPENSE')}
-        />
-        <Text style={getTextStyle('EXPENSE')}>Split</Text>
-      </TouchableOpacity>
+    
 
       {/* Upload Icon */}
       <TouchableOpacity
@@ -75,6 +64,19 @@ function BottomTab({ screen }) {
         <Text style={getTextStyle('FAVOURITES')}>Upload</Text>
       </TouchableOpacity>
 
+  {/* Split/Expense Calculator Icon */}
+  <TouchableOpacity
+        onPress={() => navigation.navigate('SplitDashboard')}
+        style={styles.footerBtnContainer}
+      >
+        <MaterialIcons
+          name="attach-money"
+          size={scale(20)}
+          color={getIconColor('SPLIT')}
+        />
+        <Text style={getTextStyle('SPLIT')}>Split</Text>
+      </TouchableOpacity>
+      
        {/* My Orders Icon */}
        {/* <TouchableOpacity
         onPress={() => navigation.navigate('MessageList')}

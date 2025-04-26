@@ -53,6 +53,9 @@ function Drawer() {
       <NavigationStack.Screen name="Favourite" component={Screen.FavoritesPage} />
       <NavigationStack.Screen name="MapScreen" component={Screen.MapScreen} />
       <NavigationStack.Screen name="FollowersList" component={Screen.FollowersList} />
+      <NavigationStack.Screen name="FAQ" component={Screen.FAQ} />
+      <NavigationStack.Screen name="SplitDashboard" component={Screen.SplitDashboard} />
+      <NavigationStack.Screen name="CreateSplit" component={Screen.CreateSplit} />
     </NavigationStack.Navigator>
   );
 }
