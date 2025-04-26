@@ -25,6 +25,7 @@ import styles from "./styles";
 import { base_url } from "../../utils/base_url";
 import { colors } from '../../utils/colors';
 import CustomLoader from '../../components/Loader/CustomLoader';
+import { BackHeader } from '../../components';
 
 const { width } = Dimensions.get('window');
 
@@ -322,6 +323,24 @@ function MakeSchedule() {
     }
   };
 
+  const backPressed = () => {
+    Alert.alert(
+      'Leave Form',
+      'Are you sure you want to leave? Your changes will not be saved.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'OK',
+          onPress: () => navigation.navigate('MainLanding'),
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
   return (
     <KeyboardAvoidingView 
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -331,31 +350,10 @@ function MakeSchedule() {
         colors={['#A60F93', '#8B0B7D', '#6D0861']}
         style={styles.headerGradient}
       >
-        <View style={styles.headerContainer}>
-          <TouchableOpacity 
-            style={styles.backButton}
-            onPress={() => {
-              Alert.alert(
-                'Leave Form',
-                'Are you sure you want to leave? Your changes will not be saved.',
-                [
-                  {
-                    text: 'Cancel',
-                    style: 'cancel',
-                  },
-                  {
-                    text: 'OK',
-                    onPress: () => navigation.navigate('MainLanding'),
-                  },
-                ],
-                { cancelable: true }
-              );
-            }}
-          >
-            <Icon name="arrow-back" size={24} color="white" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Create Your Trip Schedule</Text>
-        </View>
+        <BackHeader 
+          title="Create Your Trip Schedule"
+          backPressed={backPressed}
+        />
       </LinearGradient>
 
       <ScrollView 

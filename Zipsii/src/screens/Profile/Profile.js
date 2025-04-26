@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, Image, TouchableOpacity, FlatList, ImageBackground, Dimensions } from 'react-native';
 import styles from './styles';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { BackHeader } from '../../components';
 
 const ProfileScreen = ({ navigation }) => {
   const [activeIcon, setActiveIcon] = useState('th-large'); // Default active icon
@@ -26,6 +27,10 @@ const ProfileScreen = ({ navigation }) => {
           .fill(null)
           .map((_, index) => ({ id: `${index + 1}`, isPlaceholder: true }));
 
+  const backPressed = () => {
+    navigation.goBack();
+  };
+
   return (
     <View style={styles.container}>
       <ImageBackground
@@ -33,12 +38,10 @@ const ProfileScreen = ({ navigation }) => {
         style={styles.backgroundImage}
         imageStyle={styles.backgroundImageStyle} // Image-specific styles
       >
-        {/* Header Section */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <Text style={styles.backButtonText}>{'<'}</Text>
-          </TouchableOpacity>
-        </View>
+        <BackHeader 
+          title="Profile"
+          backPressed={backPressed}
+        />
 
         {/* Profile Section */}
         <View style={styles.profileContainer}>

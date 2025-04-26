@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
 import styles from "../../utils/styles";
 import { BackHeader, BottomTab } from '../../components';
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -12,12 +12,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 function MySchedule({ navigation }) {
   const today = new Date();
-  const [selectedDate, setSelectedDate] = useState(today);
+  const [selectedDate, setSelectedDate] = useState(null);
   const [all_schedule, setAll_schedule] = useState([]);
+  const [isLoading, setIsLoading] = useState(true); // Add loading state
 
   // Fetch all schedule data
   useEffect(() => {
     const fetch_all_schedule = async () => {
+      setIsLoading(true); // Set loading to true when starting fetch
       const accessToken = await AsyncStorage.getItem('accessToken');
       console.log(accessToken);
       try {
@@ -63,6 +65,8 @@ function MySchedule({ navigation }) {
         }
       } catch (error) {
         console.error('Error fetching data:', error);
+      } finally {
+        setIsLoading(false); // Set loading to false when fetch completes
       }
     };
     fetch_all_schedule();
@@ -85,17 +89,17 @@ function MySchedule({ navigation }) {
     return dates;
   };
 
-  const year = selectedDate.getFullYear();
-  const month = selectedDate.getMonth();
+  const year = today.getFullYear();
+  const month = today.getMonth();
   const dates = getDatesForMonth(year, month);
 
   // Filter schedules for the selected date
-  const filteredSchedules = all_schedule.filter(schedule => {
+  const filteredSchedules = selectedDate ? all_schedule.filter(schedule => {
     const scheduleDate = new Date(schedule.date);
     const selectedDateString = selectedDate.toISOString().split('T')[0];
     const scheduleDateString = scheduleDate.toISOString().split('T')[0];
     return scheduleDateString === selectedDateString;
-  });
+  }) : all_schedule; // Show all schedules when no date is selected
 
   // Handle navigation between months
   const handlePrevMonth = () => {
@@ -126,7 +130,7 @@ function MySchedule({ navigation }) {
       <View style={[styles.datecontainer, { flex: 1, width: '100%' }]}>
         <View style={[styles.dateScheduleContainer, { width: '100%' }]}>
           <View style={styles.monthNavigation}>
-            <Text style={styles.monthText}>{formatMonthYear(selectedDate)}</Text>
+            <Text style={styles.monthText}>{formatMonthYear(today)}</Text>
             <TouchableOpacity onPress={handlePrevMonth}>
               <Text style={styles.navButton}>{"<"}</Text>
             </TouchableOpacity>
@@ -145,14 +149,14 @@ function MySchedule({ navigation }) {
                 onPress={() => setSelectedDate(item.fullDate)}
                 style={[
                   styles.dayContainer,
-                  item.dateString === selectedDate.toISOString().split('T')[0] &&
+                  selectedDate && item.dateString === selectedDate.toISOString().split('T')[0] &&
                   styles.selectedDayContainer,
                 ]}
               >
                 <Text
                   style={[
                     styles.weekText,
-                    item.dateString === selectedDate.toISOString().split('T')[0] &&
+                    selectedDate && item.dateString === selectedDate.toISOString().split('T')[0] &&
                     styles.selectedWeekText,
                   ]}
                 >
@@ -161,7 +165,7 @@ function MySchedule({ navigation }) {
                 <Text
                   style={[
                     styles.dayText,
-                    item.dateString === selectedDate.toISOString().split('T')[0] &&
+                    selectedDate && item.dateString === selectedDate.toISOString().split('T')[0] &&
                     styles.selectedDayText,
                   ]}
                 >
@@ -173,26 +177,33 @@ function MySchedule({ navigation }) {
           />
         </View>
         <View style={{ flex: 1, width: '100%' }}>
-          <FlatList
-            style={{ flex: 1, width: '100%' }}
-            contentContainerStyle={{ 
-              paddingBottom: 80,
-              paddingHorizontal: 10,
-              width: '100%'
-            }}
-            vertical
-            showsVerticalScrollIndicator={false}
-            keyExtractor={(item) => item.id.toString()} 
-            data={filteredSchedules}
-            renderItem={({ item }) => <Schedule item={item} />}
-            ListEmptyComponent={
-              <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 20 }}>
-                <Text style={{ color: '#666', fontSize: 16 }}>
-                  No schedules for this date
-                </Text>
-              </View>
-            }
-          />
+          {isLoading ? (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+              <ActivityIndicator size="large" color="#0000ff" />
+              <Text style={{ marginTop: 10, color: '#666' }}>Loading schedules...</Text>
+            </View>
+          ) : (
+            <FlatList
+              style={{ flex: 1, width: '100%' }}
+              contentContainerStyle={{ 
+                paddingBottom: 80,
+                paddingHorizontal: 10,
+                width: '100%'
+              }}
+              vertical
+              showsVerticalScrollIndicator={false}
+              keyExtractor={(item) => item.id.toString()} 
+              data={filteredSchedules}
+              renderItem={({ item }) => <Schedule item={item} />}
+              ListEmptyComponent={
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 20 }}>
+                  <Text style={{ color: '#666', fontSize: 16 }}>
+                    {selectedDate ? 'No schedules for this date' : 'No schedules available'}
+                  </Text>
+                </View>
+              }
+            />
+          )}
         </View>
       </View>
      

@@ -30,7 +30,7 @@ const Schedule = ({item}) => {
                   <View style={styles.locationRow}>
                     <Icon name="location-outline" size={16} color="#333" />
                     <Text style={styles.routeText}>
-                    {item.from.length > 7 ? item.from.slice(0, 7) + '...' : item.from}
+                    {item.from.length > 5 ? item.from.slice(0, 5) + '...' : item.from}
                   </Text>
                   </View>
                 </View>
@@ -39,7 +39,7 @@ const Schedule = ({item}) => {
                   <View style={styles.locationRow}>
                     <Icon name="location-outline" size={16} color="#333" />
                     <Text style={styles.routeText}>
-                      {item.to.length > 7 ? item.to.slice(0, 7) + '...' : item.to}
+                      {item.to.length > 5 ? item.to.slice(0, 5) + '...' : item.to}
                     </Text>
                   </View>
                 </View>

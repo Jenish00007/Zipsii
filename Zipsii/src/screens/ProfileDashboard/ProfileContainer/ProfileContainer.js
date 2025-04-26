@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { TouchableOpacity, View, Image, ScrollView } from 'react-native';
+import { TouchableOpacity, View, Image, ScrollView, Share } from 'react-native';
 import styles from './styles';
 import { Feather, MaterialIcons, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -10,6 +10,29 @@ import { colors } from '../../../utils';
 function ProfileContainer({profileInfo}) {
   const navigation = useNavigation();
 
+  const handleShare = async () => {
+    try {
+      const shareOptions = {
+        message: `Check out ${profileInfo?.name}'s profile on Zipsii!`,
+        url: `zipsii://profile/${profileInfo?.id}`,
+        title: `Share ${profileInfo?.name}'s Profile`
+      };
+
+      const result = await Share.share(shareOptions);
+      
+      if (result.action === Share.sharedAction) {
+        if (result.activityType) {
+          console.log('Shared with activity type:', result.activityType);
+        } else {
+          console.log('Shared successfully');
+        }
+      } else if (result.action === Share.dismissedAction) {
+        console.log('Share dismissed');
+      }
+    } catch (error) {
+      console.error('Error sharing profile:', error);
+    }
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -25,8 +48,8 @@ function ProfileContainer({profileInfo}) {
             </TouchableOpacity>
           </View>
           <View style={styles.circle}>
-            <TouchableOpacity onPress={() => console.log('Share button pressed')}>
-            <MaterialCommunityIcons name="share-all-outline"  size={24} color={colors.white} />
+            <TouchableOpacity onPress={handleShare}>
+              <MaterialCommunityIcons name="share-all-outline" size={24} color={colors.white} />
             </TouchableOpacity>
           </View>
         </View>

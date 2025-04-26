@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -18,12 +18,33 @@ import * as ImagePicker from 'expo-image-picker'; // Import ImagePicker
 import styles from "./Styles";
 import { base_url } from "../../utils/base_url";
 import NotificationService from "../../services/NotificationService";
+import ContentTypeModal from "../../components/ContentTypeModal/ContentTypeModal";
 
 function ReelUpload() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState(null); // For storing the selected image
+  const [showContentTypeModal, setShowContentTypeModal] = useState(true);
+  const [contentType, setContentType] = useState(null);
   const navigation = useNavigation();
+
+  useEffect(() => {
+    setShowContentTypeModal(true);
+  }, []);
+
+  const handleContentTypeSelect = (type) => {
+    setContentType(type);
+    setShowContentTypeModal(false);
+  };
+
+  const handleBackPress = () => {
+    if (contentType) {
+      setShowContentTypeModal(true);
+      setContentType(null);
+    } else {
+      navigation.goBack();
+    }
+  };
 
   const pickImage = async () => {
     Alert.alert(
@@ -183,76 +204,74 @@ function ReelUpload() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Add Header with Back Button */}
+      <ContentTypeModal
+        visible={showContentTypeModal}
+        onClose={() => setShowContentTypeModal(false)}
+        onSelectType={handleContentTypeSelect}
+      />
+
       <View style={styles.header}>
         <TouchableOpacity 
           style={styles.backButton}
-          onPress={() => navigation.goBack()}
+          onPress={handleBackPress}
         >
           <Ionicons name="arrow-back" size={24} color={colors.fontMainColor} />
         </TouchableOpacity>
-        {/* <Text style={styles.headerTitle}>Create Reel</Text> */}
       </View>
 
-      <ScrollView>
-        {/* Image Selection Section */}
-        <TouchableOpacity 
-          style={styles.imageContainer} 
-          onPress={pickImage}
-        >
-        {image ? (
-            <Image 
-              source={{ uri: image.uri }} 
-              style={styles.selectedImage} 
+      {contentType && (
+        <ScrollView>
+          {/* Image Selection Section */}
+          <TouchableOpacity 
+            style={styles.imageContainer} 
+            onPress={pickImage}
+          >
+            {image ? (
+              <Image 
+                source={{ uri: image.uri }} 
+                style={styles.selectedImage} 
+              />
+            ) : (
+              <View style={styles.placeholderContainer}>
+                <Ionicons name="camera" size={50} color={colors.btncolor} />
+                <Text style={styles.placeholderText}>Tap to add photo</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+
+          {/* Title Input */}
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.titleInput}
+              placeholder="Add a title..."
+              placeholderTextColor="#999"
+              value={title}
+              onChangeText={setTitle}
             />
-        ) : (
-            <View style={styles.placeholderContainer}>
-              <Ionicons name="camera" size={50} color={colors.btncolor} />
-              <Text style={styles.placeholderText}>Tap to add photo</Text>
-            </View>
-        )}
-      </TouchableOpacity>
+          </View>
 
-        {/* Title Input */}
-        <View style={styles.inputContainer}>
-      <TextInput
-            style={styles.titleInput}
-            placeholder="Add a title..."
-            placeholderTextColor="#999"
-        value={title}
-        onChangeText={setTitle}
-      />
-        </View>
+          {/* Description Input */}
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.descriptionInput}
+              placeholder="Add a description..."
+              placeholderTextColor="#999"
+              value={description}
+              onChangeText={setDescription}
+              multiline
+              numberOfLines={4}
+            />
+          </View>
 
-        {/* Description Input */}
-        <View style={styles.inputContainer}>
-      <TextInput
-            style={styles.descriptionInput}
-            placeholder="Add a description..."
-            placeholderTextColor="#999"
-        value={description}
-        onChangeText={setDescription}
-        multiline
-            numberOfLines={4}
-          />
-        </View>
-
-        {/* Submit Button */}
-        <TouchableOpacity 
-          style={styles.submitButton} 
-          onPress={handleSubmit}
-        >
-          <Text style={styles.submitButtonText}>Share</Text>
-      </TouchableOpacity>
-
-      {/* Test Notification Button */}
-      {/* <TouchableOpacity 
-          style={[styles.submitButton, { backgroundColor: colors.btncolor }]} 
-        onPress={testNotification}
-      >
-        <Text style={styles.submitButtonText}>Test Notification</Text>
-      </TouchableOpacity> */}
-      </ScrollView>
+          {/* Submit Button */}
+          <TouchableOpacity 
+            style={styles.submitButton} 
+            onPress={handleSubmit}
+          >
+            <Text style={styles.submitButtonText}>Share</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 }

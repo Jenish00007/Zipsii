@@ -19,13 +19,13 @@ const DiscoverByNearest = (props) => {
           <View style={styles.discoverCardDistance}>
             <Ionicons name="location-outline" size={14} color={colors.Zypsii_color} />
             <TextDefault style={styles.distanceText}>
-              {props.distance ? `${props.distance} km` : 'N/A'}
+            {props.distance ? `${props.distance} km` : 'N/A'}
             </TextDefault>
           </View>
           <View style={styles.discoverCardRating}>
             <MaterialIcons name="star" size={14} color={colors.Zypsii_color} />
             <TextDefault style={styles.ratingText}>
-              {props.rating ? props.rating.toFixed(1) : '0.0'}
+            {!isNaN(Number(props.rating)) ? Number(props.rating).toFixed(1) : '0.0'}
             </TextDefault>
           </View>
         </View>
