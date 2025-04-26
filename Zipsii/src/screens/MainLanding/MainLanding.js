@@ -189,7 +189,8 @@ function MainLanding(props) {
             id: item._id || item.name,
             image: item.image,
             name: item.name,
-            rating: item.rating
+            rating: item.rating,
+            distanceInKilometer: item.distanceInKilometer
           })));
         } else {
           setBest_destination([]);
@@ -200,7 +201,8 @@ function MainLanding(props) {
             id: item._id || item.name,
             image: item.image,
             name: item.name,
-            rating: item.rating
+            rating: item.rating,
+            distanceInKilometer: item.distanceInKilometer
           })));
         } else {
           setAll_destination([]);
@@ -273,8 +275,9 @@ function MainLanding(props) {
             id: item._id || item.image,
             image: item.image,
             title: item.name,
-            subtitle: item.address || item.rating || 'No subtitle',
-            rating: item.rating
+            subtitle: item.address || 'No address',
+            rating: parseFloat(item.rating) || 0,
+            distance: item.distanceInKilometer ? parseFloat(item.distanceInKilometer).toFixed(1) : null
           }));
           setDiscoverbyNearest(formattedData);
         } else {
@@ -500,10 +503,37 @@ function MainLanding(props) {
           keyExtractor={(item, index) => item.id}
           data={best_destination}
           renderItem={({ item, index }) => (
-            <ProductCard styles={styles.itemCardContainer} {...item} />
+            <ProductCard 
+              styles={styles.itemCardContainer} 
+              {...item}
+              rating={parseFloat(item.rating) || 0}
+              distance={item.distanceInKilometer ? parseFloat(item.distanceInKilometer).toFixed(1) : null}
+            />
           )}
         />
       )}
+    </View>
+  );
+
+  const renderAllDestination = () => (
+    <View style={styles.titleSpacer}>
+      <TextDefault textColor={colors.fontMainColor} H4 bold>
+        {'All Destination'}
+      </TextDefault>
+      <FlatList
+        horizontal={true}
+        showsHorizontalScrollIndicator={false}
+        keyExtractor={(item, index) => item.id}
+        data={all_destination}
+        renderItem={({ item, index }) => (
+          <ProductCard 
+            styles={styles.itemCardContainer} 
+            {...item}
+            rating={parseFloat(item.rating) || 0}
+            distance={item.distanceInKilometer ? parseFloat(item.distanceInKilometer).toFixed(1) : null}
+          />
+        )}
+      />
     </View>
   );
 
@@ -534,14 +564,6 @@ function MainLanding(props) {
           contentContainerStyle={{ paddingBottom: 20 }}
         />
       )}
-    </View>
-  );
-
-  const renderAllDestination = () => (
-    <View style={styles.titleSpacer}>
-      <TextDefault textColor={colors.fontMainColor} H4 bold>
-        {'All Destination'}
-      </TextDefault>
     </View>
   );
 

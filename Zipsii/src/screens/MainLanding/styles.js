@@ -302,22 +302,24 @@ const styles = StyleSheet.create({
     ...alignment.PxSmall
   },
   card: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: colors.lightpink,
-    borderRadius: scale(20),
-    padding: scale(10),
-    marginRight: scale(10),
-    borderWidth: 1,
-    borderColor: colors.grayLinesColor,
-    elevation: 4,
+    width: 150,
+    marginRight: 10,
+    borderRadius: 10,
+    overflow: 'hidden',
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
-  image: {
-    width: scale(100),
-    height: scale(110),
-    borderRadius: scale(25),
-    marginRight: scale(10),
-    marginTop: 4,
+  cardImage: {
+    width: '100%',
+    height: 120,
+    resizeMode: 'cover',
   },
   cardContent: {
     flex: 1,
@@ -415,6 +417,55 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingBottom: scale(60), // Add padding for bottom tab
+  },
+  discoverCard: {
+    width: width * 0.45,
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    marginRight: scale(10),
+    marginBottom: scale(10),
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    overflow: 'hidden',
+  },
+  discoverCardImage: {
+    width: '100%',
+    height: scale(120),
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+  },
+  discoverCardContent: {
+    padding: scale(10),
+  },
+  discoverCardTitle: {
+    fontSize: scale(14),
+    fontWeight: 'bold',
+    color: colors.fontMainColor,
+    marginBottom: scale(4),
+  },
+  discoverCardSubtitle: {
+    fontSize: scale(12),
+    color: colors.fontThirdColor,
+    marginBottom: scale(8),
+  },
+  discoverCardFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  discoverCardRating: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  discoverCardDistance: {
+    fontSize: scale(12),
+    color: colors.fontThirdColor,
   },
 })
 export default styles

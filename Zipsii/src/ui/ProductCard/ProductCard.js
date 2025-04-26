@@ -48,6 +48,12 @@ function ProductCard(props) {
     }
   };
 
+  // Format distance to show one decimal place
+  const formatDistance = (distance) => {
+    if (!distance) return '0.0 km';
+    return `${parseFloat(distance).toFixed(1)} km`;
+  };
+
   return (
     <TouchableOpacity
       activeOpacity={1}
@@ -86,12 +92,16 @@ function ProductCard(props) {
           </Text>
 
           <View style={styles.priceContainer}>
-            {props.rating && (
-              <View style={styles.ratingContainer}>
-                <MaterialIcons name="star" size={14} color={colors.yellowColor} />
-                <Text style={styles.ratingText}>{props.rating}</Text>
-              </View>
-            )}
+            <View style={styles.distanceContainer}>
+              <Ionicons name="location-outline" size={14} color={colors.fontThirdColor} />
+              <Text style={styles.distanceText}>
+                {formatDistance(props.distance)}
+              </Text>
+            </View>
+            <View style={styles.ratingContainer}>
+              <MaterialIcons name="star" size={14} color={colors.yellowColor} />
+              <Text style={styles.ratingText}>{props.rating || '0.0'}</Text>
+            </View>
           </View>
         </View>
       </View>

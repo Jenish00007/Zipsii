@@ -383,7 +383,27 @@ const Stories = () => {
             onPress={pickImage}
           >
             <Ionicons name="images" size={24} color="#000" />
-            <Text style={styles.modalButtonText}>Choose from Library</Text>
+            <Text style={styles.modalButtonText}>Choose Story from Library</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.modalButton}
+            onPress={() => {
+              setShowImagePickerModal(false);
+              navigation.navigate('ReelUpload');
+            }}
+          >
+            <Ionicons name="videocam" size={24} color="#000" />
+            <Text style={styles.modalButtonText}>Upload Reel</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.modalButton}
+            onPress={() => {
+              setShowImagePickerModal(false);
+              navigation.navigate('ReelUpload');
+            }}
+          >
+            <Ionicons name="image" size={24} color="#000" />
+            <Text style={styles.modalButtonText}>Upload Post</Text>
           </TouchableOpacity>
           <TouchableOpacity 
             style={[styles.modalButton, styles.cancelButton]}

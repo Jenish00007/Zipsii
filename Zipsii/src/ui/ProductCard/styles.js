@@ -1,76 +1,73 @@
-import { StyleSheet } from 'react-native'
+import { StyleSheet, Dimensions } from 'react-native'
 import { alignment, colors, scale} from '../../utils'
+
+const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   cardContainer: {
-    width: '100%',
-    height: '70%', // Reduced height (adjust this value as needed)
+    width: width * 0.4,
     backgroundColor: colors.white,
-    borderRadius: 10, // Optional: Rounded corners
-    shadowColor: '#000', // Shadow color for iOS
-    shadowOffset: { width: 0, height: 2 }, // Offset for shadow
-    shadowOpacity: 0.25, // Opacity of shadow
-    shadowRadius: 3.84, // Blur radius for shadow
-    elevation: 5, // Elevation for Android shadow
-    padding: 10,
-    marginBottom: 20
+    borderRadius: 10,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    margin: 5,
+    overflow: 'hidden'
   },
   topCardContainer: {
     width: '100%',
-    height: '70%',
-    position: 'relative', // Makes child absolute positioning work
-    borderRadius: 10,
-    backgroundColor: colors.grayLinesColor,
-  },
-  cardImageContainer: {
-    width: '90%',
-    height: '90%',
     position: 'relative',
-    
   },
   imgResponsive: {
-    flex: 1,
-    width: undefined,
-    height: undefined,
-    borderRadius: 5,
+    width: '100%',
+    height: 150,
+    resizeMode: 'cover'
   },
   botCardContainer: {
-    width: '100%',
-    height: '30%',
-    alignItems: 'center',
-    backgroundColor: colors.container,
-    ...alignment.PTxSmall
+    padding: 10,
+    backgroundColor: colors.white,
   },
   botSubCardContainer: {
-    width: '90%',
-    height: '100%',
-    justifyContent: 'space-between',
-    ...alignment.PBxSmall
+    width: '100%',
   },
   priceContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: '100%'
+    alignItems: 'center',
+    marginTop: 5,
+  },
+  distanceContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  distanceText: {
+    fontSize: 12,
+    color: colors.fontThirdColor,
+    marginLeft: 4,
   },
   ratingContainer: {
-    width: '30%',
-    height: '100%',
-    alignItems: 'center',
     flexDirection: 'row',
-    justifyContent: 'flex-end'
+    alignItems: 'center',
+  },
+  ratingText: {
+    fontSize: 12,
+    color: colors.fontMainColor,
+    marginLeft: 4,
+    fontWeight: '500',
   },
   aboutRestaurant: {
     width: '20%',
     justifyContent: 'center'
   },
   likeContainer: {
-    position: 'absolute', // Positioning it inside the parent container
-    top: 10, // Adjust the value as needed for spacing from the top
-    right: 10, // Adjust the value as needed for spacing from the right
-    zIndex: 1, // Ensure it's above other elements
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderColor: colors.greenColor
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: colors.white,
+    borderRadius: 20,
+    padding: 5,
   },
   offerContainer: {
     position: 'absolute', // Positioned relative to the parent container
@@ -87,20 +84,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'aqua',
     alignContent: 'center'
   },
-  ratingText: {
-    fontSize: 12,
-    color: colors.fontMainColor,
-    marginLeft: 2,
-  },
   locationText: {
     fontSize: scale(12),
     color: colors.grayColor,
     marginTop: scale(4),
   },
-  distanceText: {
-    fontSize: scale(12),
-    color: colors.grayColor,
-    marginLeft: scale(8),
-  },
 });
+
 export default styles;

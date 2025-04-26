@@ -102,10 +102,10 @@ function DiscoverPlace({ navigation }) {
         id: item._id || item.image,
         image: item.image,
         title: item.name,
-        subtitle: item.address,
-        rating: item.rating,
+        subtitle: item.address || 'No address',
+        rating: parseFloat(item.rating) || 0,
         location: item.location,
-        distance: item.distanceInKilometer
+        distance: item.distanceInKilometer ? parseFloat(item.distanceInKilometer).toFixed(1) : null
       }));
       
       setCardData(formattedData);
