@@ -26,8 +26,8 @@ function CategoryCard(props) {
         {/* <Image source={props.icon} style={styles.icon} /> */}
       </View>
       <View style={styles.textContainer}>
-        <TextDefault numberOfLines={1} H5>
-        {props.cardLabel}
+        <TextDefault H5 style={styles.text} numberOfLines={1} ellipsizeMode="tail">
+          {props.cardLabel}
         </TextDefault>
       </View>
     </TouchableOpacity>
