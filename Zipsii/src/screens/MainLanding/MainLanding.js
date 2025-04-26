@@ -515,25 +515,33 @@ function MainLanding(props) {
     </View>
   );
 
+  // const renderAllDestination = () => (
+  //   <View style={styles.titleSpacer}>
+  //     <TextDefault textColor={colors.fontMainColor} H4 bold>
+  //       {'All Destination'}
+  //     </TextDefault>
+  //     <FlatList
+  //       horizontal={true}
+  //       showsHorizontalScrollIndicator={false}
+  //       keyExtractor={(item, index) => item.id}
+  //       data={all_destination}
+  //       renderItem={({ item, index }) => (
+  //         <ProductCard 
+  //           styles={styles.itemCardContainer} 
+  //           {...item}
+  //           rating={parseFloat(item.rating) || 0}
+  //           distance={item.distanceInKilometer ? parseFloat(item.distanceInKilometer).toFixed(1) : null}
+  //         />
+  //       )}
+  //     />
+  //   </View>
+  // );
+
   const renderAllDestination = () => (
     <View style={styles.titleSpacer}>
       <TextDefault textColor={colors.fontMainColor} H4 bold>
         {'All Destination'}
       </TextDefault>
-      <FlatList
-        horizontal={true}
-        showsHorizontalScrollIndicator={false}
-        keyExtractor={(item, index) => item.id}
-        data={all_destination}
-        renderItem={({ item, index }) => (
-          <ProductCard 
-            styles={styles.itemCardContainer} 
-            {...item}
-            rating={parseFloat(item.rating) || 0}
-            distance={item.distanceInKilometer ? parseFloat(item.distanceInKilometer).toFixed(1) : null}
-          />
-        )}
-      />
     </View>
   );
 
