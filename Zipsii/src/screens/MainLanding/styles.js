@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
   },
   itemCardContainer: {
     width: scale(180),
-    height: scale(300),
+    height: scale(220),
     borderRadius: scale(6),
     borderColor: colors.whiteColor,
     borderWidth: scale(3),
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
   titleSpacernearest: {
     marginLeft: '4%',
     marginTop: scale(15),
-    marginBottom: '2%',
+    marginBottom: '4%',
   },
   titleSpaceredge: {
     marginLeft: '1%',

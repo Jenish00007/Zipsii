@@ -3,6 +3,8 @@ import { View, Text, Image, TouchableOpacity, FlatList } from 'react-native';
 import { styles } from './styles';
 import { useNavigation } from '@react-navigation/native'; // Import useNavigation
 import Icon from 'react-native-vector-icons/Ionicons'; // Import vector icons
+import { AntDesign } from '@expo/vector-icons'; // Import AntDesign icons
+import { colors } from '../../../utils';// Import colors
 
 const Schedule = ({item}) => {
   const navigation = useNavigation(); // Access navigation object
@@ -44,6 +46,10 @@ const Schedule = ({item}) => {
               </View>
               <Text style={styles.date}>📅 {item.date}</Text>
               <Text style={styles.riders}>🏍️ ({item.riders})</Text>
+              <View style={styles.ratingContainer}>
+                <AntDesign name="star" size={18} color={colors.Zypsii_color} />
+                <Text style={styles.ratingText}>{item.rating || '0.0'}</Text>
+              </View>
             </View>
             <TouchableOpacity style={styles.joinedButton}>
               <Text style={styles.joinedText}>{item.joined ? 'Joined' : 'Join'}</Text>

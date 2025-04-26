@@ -489,11 +489,10 @@ function Destination({ route, navigation }) {
                 <Text style={styles.detailSubtitle}>{subtitle}</Text>
 
                 {/* Ratings */}
-                <TouchableOpacity onPress={() => navigation.navigate('Review')} style={[styles.ratingsContainer, { marginLeft: 10 }]}>
-                  <AntDesign name="star" size={18} color="#FFD700" />
-                  <Text style={styles.ratingsText}>4.7</Text>
-                  <Text style={styles.ratingsCount}>(2498)</Text>
-                </TouchableOpacity>
+                <View style={styles.ratingContainer}>
+                  <AntDesign name="star" size={18} color={colors.Zypsii_color} />
+                  <Text style={styles.ratingText}>{item.rating || '0.0'}</Text>
+                </View>
 
                 {/* Map button */}
                 <TouchableOpacity style={titleStyles.mapButton} onPress={handleOpenMap}>

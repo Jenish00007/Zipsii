@@ -93,13 +93,13 @@ function ProductCard(props) {
 
           <View style={styles.priceContainer}>
             <View style={styles.distanceContainer}>
-              <Ionicons name="location-outline" size={14} color={colors.fontThirdColor} />
+              <Ionicons name="location-outline" size={14} color={colors.Zypsii_color} />
               <Text style={styles.distanceText}>
                 {formatDistance(props.distance)}
               </Text>
             </View>
             <View style={styles.ratingContainer}>
-              <MaterialIcons name="star" size={14} color={colors.yellowColor} />
+              <MaterialIcons name="star" size={14} color={colors.Zypsii_color} />
               <Text style={styles.ratingText}>{props.rating || '0.0'}</Text>
             </View>
           </View>

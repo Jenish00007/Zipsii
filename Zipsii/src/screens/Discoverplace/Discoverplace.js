@@ -191,7 +191,7 @@ function DiscoverPlace({ navigation }) {
                 <Text style={styles.cardTitle}>{card.title}</Text>
                 {card.rating && (
                   <View style={styles.ratingContainer}>
-                    <MaterialIcons name="star" size={14} color={colors.yellowColor} />
+                    <MaterialIcons name="star" size={14} color={colors.Zypsii_color} />
                     <Text style={styles.ratingText}>{card.rating}</Text>
                     <Text style={[styles.ratingText, { marginLeft: 8 }]}>{card.distance}</Text>
                   </View>
