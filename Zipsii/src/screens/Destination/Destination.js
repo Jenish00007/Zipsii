@@ -482,12 +482,12 @@ function Destination({ route, navigation }) {
               <Text style={styles.detailTitle}>{params?.product?.name || destinationData?.name}</Text>
               
               {/* Location and Rating Info */}
-              <View style={styles.infoContainer}>
+              {/* <View style={styles.infoContainer}>
                 <View style={styles.subtitleContainer}>
                   <Ionicons name="location-outline" size={16} color={colors.Zypsii_color} />
                   <Text style={styles.detailSubtitle}>{params?.product?.subtitle || destinationData?.subtitle}</Text>
                 </View>
-              </View>
+              </View> */}
               <View style={styles.ratingsContainer}>
                 <MaterialIcons name="star" size={16} color={colors.Zypsii_color} />
                 <Text style={styles.ratingsText}>
@@ -503,6 +503,13 @@ function Destination({ route, navigation }) {
 
               {/* Quick Action Icons */}
               <View style={actionStyles.actionContainer}>
+                <TouchableOpacity style={actionStyles.actionItem} onPress={handleOpenMap}>
+                  <View style={actionStyles.actionIconContainer}>
+                    <Ionicons name="map-outline" size={20} color="#FFFFFF" />
+                  </View>
+                  <Text style={actionStyles.actionText}>Map</Text>
+                </TouchableOpacity>
+
                 <TouchableOpacity style={actionStyles.actionItem} onPress={handleCall}>
                   <View style={actionStyles.actionIconContainer}>
                     <Feather name="phone-call" size={20} color="#FFFFFF" />
