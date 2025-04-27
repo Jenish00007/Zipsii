@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   View, 
   FlatList, 
@@ -7,7 +7,9 @@ import {
   ImageBackground, 
   TouchableOpacity, 
   NativeModules,
-  Image 
+  Image,
+  ActivityIndicator,
+  BackHandler
 } from 'react-native';
 import SwiperFlatList from 'react-native-swiper-flatlist';
 import styles from './styles';
@@ -28,10 +30,10 @@ import Post from '../../components/Posts/Post';
 import DiscoverByNearest from '../../components/DiscoverByNearest/DiscoverByNearest';
 import Schedule from '../MySchedule/Schedule/AllSchedule';
 import SkeletonLoader from '../../components/Loader/SkeletonLoader';
-import { BackHandler } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { base_url } from '../../utils/base_url';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useStatusBar } from '../../utils/useStatusBar';
 
 
 //const baseUrl = 'http://172.20.10.5:3030';
@@ -691,10 +693,12 @@ function MainLanding(props) {
     </>
   );
 
+  useStatusBar(colors.btncolor, 'light-content');
+
   return (
     <SafeAreaView style={[styles.flex, styles.safeAreaStyle]}>
       <View style={[styles.grayBackground, styles.flex]}>
-        <View style={styles.contentContainer}>
+        <View style={[styles.contentContainer, , { paddingBottom: 100 }]}>
           <FlatList
             keyExtractor={(item, index) => index.toString()}
             showsVerticalScrollIndicator={false}

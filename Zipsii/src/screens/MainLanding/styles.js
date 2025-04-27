@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
   },
   titleSpaceredge: {
     marginLeft: '1%',
-    marginTop: scale(1)
+    marginTop: scale(15)
   },
   titleSpacerdesti: {
     marginLeft: '1%',

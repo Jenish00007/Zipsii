@@ -9,9 +9,11 @@ import { useNavigation } from '@react-navigation/native';
 import { useState, useEffect } from 'react';
 import { colors } from '../../utils';
 import { base_url } from '../../utils/base_url';
+import { useStatusBar } from '../../utils/useStatusBar';
 
 //const baseUrl = 'https://admin.zypsii.com';
 function ProfileDashboard(props) {
+  useStatusBar(colors.btncolor, 'light-content');
   const navigation = useNavigation();
   const [profileInfo, setProfileInfo] = useState({
     id: 1,
@@ -21,11 +23,11 @@ function ProfileDashboard(props) {
     Following: '0',
     image: '../../assets/profileimage.jpg'
   });
+
   useEffect(() => {
     const fetchProfileInfo = async () => {
       try {
         const response = await fetch(`${base_url}/userInfo`);
-        // Check if response is ok before parsing
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
@@ -39,19 +41,17 @@ function ProfileDashboard(props) {
         setProfileInfo(data);
       } catch (error) {
         console.error('Error fetching data:', error);
-        // Keep the default profile data in case of error
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchProfileInfo();
   }, []);
+
   return (
     <SafeAreaView style={[styles.flex, styles.safeAreaStyle]}>
       <ScrollView 
-        contentContainerStyle={[styles.flex, styles.mainContainer]} // Use ScrollView for scrolling
-        showsVerticalScrollIndicator={false} // Optional: hide the scroll indicator
+        contentContainerStyle={[styles.flex, styles.mainContainer]}
+        showsVerticalScrollIndicator={false}
       >
         <ProfileContainer profileInfo={profileInfo}/>
         <View style={styles.tabContainer}>
@@ -85,7 +85,7 @@ function ProfileDashboard(props) {
         </View>
         {/* <CardContainer /> */}
       </ScrollView>
-     <View style={{height:200,backgroundColor:'white'}}></View>
+      <View style={{height:200,backgroundColor:'white'}}></View>
     </SafeAreaView>
   );
 }

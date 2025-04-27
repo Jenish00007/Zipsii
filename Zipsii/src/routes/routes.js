@@ -25,7 +25,6 @@ const MainStack = createStackNavigator();
 function Drawer() {
   return (
     <NavigationStack.Navigator screenOptions={{ headerShown: false }}>
-      <NavigationStack.Screen name='Login' component={Screen.Login}/>
       <NavigationStack.Screen name="MainLanding" component={Screen.MainLanding} />
       <NavigationStack.Screen name="ExpenseCalculator" component={Screen.ExpenseCalculator} />
       <NavigationStack.Screen name="DeleteButton" component={Screen.DeleteButton} />
@@ -95,8 +94,9 @@ function AppContainer() {
       ref={ref => {
         navigationService.setGlobalRef(ref);
       }}>
-      <MainStack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Onboarding">
+      <MainStack.Navigator screenOptions={{ headerShown: false }}>
         <MainStack.Screen name="Onboarding" component={Screen.OnboardingScreen} />
+        <MainStack.Screen name="Login" component={Screen.Login} />
         <MainStack.Screen name="Drawer" component={Drawer} />
       </MainStack.Navigator>
     </NavigationContainer>
