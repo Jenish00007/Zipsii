@@ -171,7 +171,7 @@ const ProfilePage = ({ navigation }) => {
     const accessToken = await AsyncStorage.getItem('accessToken');
   
     try {
-      const response = await fetch(`${base_url}/editProfile`, {
+      const response = await fetch(`${base_url}/user/editProfile`, {
         method: 'put',
         headers: {
           'Authorization': `Bearer ${accessToken}`,

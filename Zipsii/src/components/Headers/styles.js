@@ -14,61 +14,83 @@ export default {
     backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'absolute', // Position it absolutely
-    top: 0, // Stick it to the top
+    position: 'absolute',
+    top: 0,
     zIndex: 2,
-    
   },
   subContainer: {
     width: '100%',
-    height: '80%',
+    height: '100%',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    ...alignment.MLxSmall,
-    paddingHorizontal: 10,
+    paddingHorizontal: 15,
   },
   leftContainer: {
-    width: '15%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  backButton: {
+    width: 50,
+    height: 50,
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'absolute', // Ensures it doesn't affect the layout
-    ...alignment.PLmedium,
-    top: 18
+    backgroundColor: 'rgba(47, 47, 47, 0.5)',
+    borderRadius: 25,
+    marginRight: 15,
   },
   headerText: {
     fontFamily: fontStyles.PoppinsBold,
-    fontSize: scale(16),
-    textAlign: 'center', // Center the text
-    // position: 'absolute', // Makes the title independent of other elements
-    left: '35%', // Centers the title horizontally
-    // transform: [{ translateX: -width * 0.15 }], // Adjust centering offset (based on width of left and right containers)
-    color: colors.white, // Optional: Customize text color
-    top: 18,
+    fontSize: scale(18),
+    color: colors.white,
     flex: 1,
-    
   },
   rightContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-end',
   },
-  profileImage: {
-    width: 40,
-    height: 40,
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     borderRadius: 20,
+    paddingHorizontal: 10,
+    height: 40,
+    marginRight: 10,
+  },
+  searchIcon: {
+    marginRight: 5,
+  },
+  searchInput: {
+    color: colors.white,
+    width: 120,
+    height: 40,
   },
   iconButton: {
-    marginHorizontal: 10,
-    top: 18
-  },
-  circle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 40,
+    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(47, 47, 47, 0.5)', // Black with 50% transparency
-    
-},
-
+    backgroundColor: 'rgba(47, 47, 47, 0.5)',
+    borderRadius: 20,
+    marginLeft: 10,
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: -5,
+    right: -5,
+    backgroundColor: colors.btncolor,
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 5,
+  },
+  badgeText: {
+    color: colors.white,
+    fontSize: scale(10),
+    fontWeight: 'bold',
+  },
 };

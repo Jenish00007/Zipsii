@@ -12,10 +12,13 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { colors } from "../../utils";
 import { alignment } from "../../utils";
 import { base_url } from "../../utils/base_url";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNavigation } from '@react-navigation/native';
 
 //const baseUrl = 'https://admin.zypsii.com'; // Backend API base URL
 
 function SearchPage() {
+  const navigation = useNavigation();
   const [searchText, setSearchText] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isFocused, setIsFocused] = useState(false);
@@ -27,25 +30,53 @@ function SearchPage() {
       setSearchResults([]); // Clear results if search is empty
       return;
     }
+    const accessToken = await AsyncStorage.getItem('accessToken');
+    console.log('Access Token:', accessToken); // Log token for debugging
 
     const url = activeTab === "People"
-      ? `${base_url}/search_people?query=${text}`
-      : `${base_url}/search_places?query=${text}`;
+      ? `${base_url}/user/getProfile?filter=users&search=${text}`
+      : `${base_url}/user/getProfile?filter=place&search=${text}`;
 
     try {
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
       const data = await response.json();
+      
+      console.log('API Response:', {
+        url,
+        rawData: data,
+        activeTab,
+        searchText: text,
+        status: response.status
+      });
 
-      const formattedData = data.map(item => ({
-        id: item.id.toString(),
-        image: item.image,
-        name: item.name || item.title,
-        tagline: item.tagline || item.subtitle,
-      }));
-
-      setSearchResults(formattedData);
+      if (data.success && data.data) {
+        const formattedData = [{
+          id: data.data._id,
+          image: data.data.profileImage || 'https://via.placeholder.com/50',
+          name: activeTab === "People" ? data.data.fullName : data.data.name,
+          tagline: activeTab === "People" ? data.data.userName : data.data.address,
+          email: data.data.email,
+          website: data.data.website,
+          bio: data.data.bio,
+          location: data.data.location
+        }];
+        
+        console.log('Formatted Data:', formattedData);
+        setSearchResults(formattedData);
+      } else {
+        console.log('No data found in response');
+        setSearchResults([]);
+      }
     } catch (error) {
       console.error('Error fetching search results:', error);
+      setSearchResults([]);
     }
   };
 
@@ -59,13 +90,20 @@ function SearchPage() {
   const renderItem = ({ item }) => (
     <View style={styles.personContainer}>
       <Image 
-        source={{ uri: item.image }} 
+        source={{ uri: item.image || 'https://via.placeholder.com/50' }} 
         style={styles.avatar}
-       
       />
       <View style={styles.personDetails}>
         <Text style={styles.personName}>{item.name}</Text>
-        <Text style={styles.personTagline}>{item.tagline}</Text>
+        <Text style={styles.personTagline}>
+          {activeTab === "People" ? `@${item.tagline}` : item.tagline}
+        </Text>
+        {item.bio && <Text style={styles.bioText}>{item.bio}</Text>}
+        {item.website && (
+          <Text style={styles.websiteText} numberOfLines={1}>
+            🌐 {item.website}
+          </Text>
+        )}
       </View>
     </View>
   );
@@ -84,7 +122,10 @@ function SearchPage() {
     <View style={styles.container}>
       {/* Back button and search bar */}
       <View style={styles.headerContainer}>
-        <TouchableOpacity style={styles.backButton}>
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
           <Icon name="chevron-back" size={28} color="#333" />
         </TouchableOpacity>
         
@@ -284,6 +325,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.fontThirdColor || "#777",
     fontWeight: "normal",
+  },
+  bioText: {
+    fontSize: 14,
+    color: colors.fontThirdColor || "#777",
+    marginTop: 4,
+  },
+  websiteText: {
+    fontSize: 14,
+    color: colors.Zypsii_color,
+    marginTop: 4,
   },
   noResults: {
     textAlign: "center",

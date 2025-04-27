@@ -141,7 +141,12 @@ function MainLanding(props) {
               'Authorization': `Bearer ${accessToken}`
             }
           }),          
-          fetch(`${base_url}/get_all_posts`),
+          fetch(`${base_url}/post/listing/filter`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${accessToken}`
+            }
+          }),
           fetch(`${base_url}/schedule/places/getNearest`, {
             method: 'GET',
             headers: {
@@ -246,15 +251,58 @@ function MainLanding(props) {
           setAll_schedule([]);
         }
 
-        if (Array.isArray(allPostsData)) {
-          setAllPosts(allPostsData.slice(0, 100).map(item => ({
-            id: item.id,
-            postPersonImage: item.postPersonImage,
-            postTitle: item.postTitle,
-            postImage: item.postImage,
-            likes: item.likes,
-            isLiked: item.isLiked
-          })));
+        if (Array.isArray(allPostsData?.data)) {
+          setAllPosts(allPostsData.data.map(item => {
+            // Process mediaUrl array
+            let mediaUrls = item.mediaUrl;
+            
+            // Handle string URLs
+            if (typeof mediaUrls === 'string') {
+              try {
+                // Try to parse if it's a JSON string
+                if (mediaUrls.startsWith('[')) {
+                  mediaUrls = JSON.parse(mediaUrls);
+                } else {
+                  // Single URL string
+                  mediaUrls = [mediaUrls];
+                }
+              } catch (e) {
+                console.log('Error parsing mediaUrl:', e);
+                mediaUrls = [mediaUrls];
+              }
+            }
+
+            // Ensure mediaUrls is always an array
+            if (!Array.isArray(mediaUrls)) {
+              mediaUrls = [mediaUrls];
+            }
+
+            // Filter out null or undefined URLs
+            mediaUrls = mediaUrls.filter(url => url != null);
+
+            // Clean up URLs if needed
+            mediaUrls = mediaUrls.map(url => {
+              if (typeof url === 'string') {
+                return url.replace(/\\/g, '').replace(/"/g, '');
+              }
+              return url;
+            });
+
+            return {
+              _id: item._id,
+              postTitle: item.postTitle,
+              postType: item.postType,
+              mediaType: item.mediaType,
+              mediaUrl: mediaUrls,
+              createdBy: item.createdBy,
+              tags: Array.isArray(item.tags) ? item.tags : [],
+              likesCount: item.likesCount || 0,
+              commentsCount: item.commentsCount || 0,
+              shareCount: item.shareCount || 0,
+              createdAt: item.createdAt,
+              updatedAt: item.updatedAt
+            };
+          }));
         } else {
           setAllPosts([]);
         }
@@ -549,13 +597,7 @@ function MainLanding(props) {
 
   const renderItem = ({ item }) => {
     return (
-      <Post
-        postPersonImage={item.postPersonImage}
-        postTitle={item.postTitle}
-        postImage={item.postImage}
-        likes={item.likes}
-        isLiked={item.isLiked}
-      />
+      <Post item={item} />
     );
   };
 
@@ -570,7 +612,7 @@ function MainLanding(props) {
         <FlatList
           data={all_posts}
           renderItem={renderItem}
-          keyExtractor={(item, index) => index.toString()}
+          keyExtractor={(item) => item._id}
           contentContainerStyle={{ paddingBottom: 20 }}
         />
       )}

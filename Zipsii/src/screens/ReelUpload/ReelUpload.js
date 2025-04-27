@@ -38,12 +38,12 @@ function ReelUpload() {
   };
 
   const handleBackPress = () => {
-    if (contentType) {
-      setShowContentTypeModal(true);
-      setContentType(null);
-    } else {
+    // if (contentType) {
+    //   setShowContentTypeModal(true);
+    //   setContentType(null);
+    // } else {
       navigation.goBack();
-    }
+    //}
   };
 
   const pickImage = async () => {
