@@ -351,7 +351,7 @@ function MakeSchedule() {
         style={styles.headerGradient}
       >
         <BackHeader 
-        title="Create Your Schedule"
+        title="Schedule"
         backPressed={backPressed}
         style={{ marginRight: 10 }} 
       />
