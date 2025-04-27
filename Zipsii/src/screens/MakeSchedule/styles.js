@@ -14,21 +14,27 @@ export default StyleSheet.create({
     paddingHorizontal: 20,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
-    marginBottom:20,
-    // borderTopLeftRadius:30,
-    // borderTopRightRadius:30,
+    marginBottom: 20,
   },
   headerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-start',
+    width: '100%',
   },
   backButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     marginRight: 15,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     color: 'white',
+    flex: 1,
+    textAlign: 'center',
+    marginRight: 40, // To balance the back button space
   },
   container: {
     flex: 1,

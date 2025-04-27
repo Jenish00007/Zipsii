@@ -343,23 +343,28 @@ function MakeSchedule() {
 
   return (
     <KeyboardAvoidingView 
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.mainContainer}
     >
       <LinearGradient
-        colors={['#A60F93', '#8B0B7D', '#6D0861']}
+        colors={['#A60F93', '#870E6B']}
         style={styles.headerGradient}
       >
-        <BackHeader 
-          title="Create Your Trip Schedule"
-          backPressed={backPressed}
-        />
+        <View style={styles.headerContainer}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Icon name="arrow-back" size={24} color="white" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Create Your Trip</Text>
+        </View>
       </LinearGradient>
 
       <ScrollView 
-        style={styles.container} 
-        showsVerticalScrollIndicator={false}
+        style={styles.container}
         contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
       >
         <View style={styles.tripContainer}>
           {/* Banner Image Section */}
