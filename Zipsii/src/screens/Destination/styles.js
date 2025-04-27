@@ -45,14 +45,21 @@ const styles = StyleSheet.create({
     color: colors.fontMainColor,
     marginBottom: 8,
   },
+  infoContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
   subtitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-start',
+    flex: 1,
   },
   detailSubtitle: {
     fontSize: 16,
     color: colors.fontThirdColor,
+    marginLeft: 5,
   },
   icon: {
     marginRight: 5,
@@ -127,43 +134,59 @@ const styles = StyleSheet.create({
   ratingsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    ...alignment.MLlarge
+    marginTop: 8,
   },
-  
   ratingsText: {
     fontSize: 16,
     fontWeight: '600',
     color: colors.fontPrimaryColor,
-    marginHorizontal: 3,
+    marginLeft: 5,
   },
-  
   ratingsCount: {
     fontSize: 14,
     color: colors.fontThirdColor,
   },
+  distanceContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  distanceText: {
+    fontSize: 14,
+    color: colors.fontThirdColor,
+    marginLeft: 5,
+  },
   overlayHeader: {
     position: 'absolute',
-    top: 50, // Adjust this value to fine-tune the vertical alignment
+    top: 50,
     left: 20,
     right: 20,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    zIndex: 2, // Ensures the header is above the image
+    zIndex: 2,
   },
-  
   backButton: {
-    backgroundColor: 'rgba(0,0,0,0.5)', // Semi-transparent background
+    backgroundColor: 'rgba(0,0,0,0.5)',
     borderRadius: 50,
     padding: 8,
   },
-  
   headerTitle: {
     color: colors.white,
     fontSize: 20,
     fontWeight: 'bold',
+    flex: 1,
+    textAlign: 'center',
+  },
+  headerIcons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  iconButton: {
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 50,
+    padding: 8,
     marginLeft: 10,
-    alignSelf: 'center',
   },
   discoverRow: {
     flexDirection: "row",

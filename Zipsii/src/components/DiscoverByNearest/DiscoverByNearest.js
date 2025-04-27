@@ -1,12 +1,28 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { TextDefault } from '../../components';
 import { colors } from "../../utils";
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
 const DiscoverByNearest = (props) => {
+  const navigation = useNavigation();
+
+  const handlePress = () => {
+    navigation.navigate('Destination', { 
+      product: {
+        id: props.id,
+        name: props.title,
+        image: props.image,
+        distance: props.distance,
+        rating: props.rating,
+        subtitle: props.subtitle
+      }
+    });
+  };
+
   return (
-    <View style={styles.discoverCard}>
+    <TouchableOpacity onPress={handlePress} style={styles.discoverCard}>
       <Image source={{ uri: props.image }} style={styles.discoverCardImage} />
       <View style={styles.discoverCardContent}>
         <TextDefault numberOfLines={1} style={styles.discoverCardTitle}>
@@ -30,7 +46,7 @@ const DiscoverByNearest = (props) => {
           </View>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { View, StyleSheet, Alert, Text, FlatList, TextInput, Image, ScrollView, TouchableOpacity, Linking } from 'react-native'
+import { View, StyleSheet, Alert, Text, FlatList, TextInput, Image, ScrollView, TouchableOpacity, Linking, SafeAreaView } from 'react-native'
 import styles from './styles'
 import BottomTab from '../../components/BottomTab/BottomTab'
 import { BackHeader } from '../../components'
@@ -61,47 +61,33 @@ function Destination({ route, navigation }) {
 
   const fetchDiscoverbyNearest = async (token = "") => {
     try {
-      setLoading(true);
       const accessToken = await AsyncStorage.getItem('accessToken');
-      
-      const url = token
-        ? `${base_url}/schedule/places/getNearest?nextPageToken=${token}`
-        : `${base_url}/schedule/places/getNearest`;
-
-      const response = await fetch(url, {
-        method: 'GET',
+      const response = await fetch(`${base_url}/schedule/places/getNearest`, {
         headers: {
           'Authorization': `Bearer ${accessToken}`
         }
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      console.log(result)
       
-      if (!result.data || !Array.isArray(result.data)) {
-        throw new Error('Invalid data format received');
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
       }
-
-      const formattedData = result.data.map(item => ({
-        id: item._id,
-        image: item.image,
-        title: item.name,
-        subtitle: item.subtitle
-      }));
-
-      // Append new data to existing
-      setDiscoverbyNearest(prevData => [...prevData, ...formattedData]);
-      // Save the nextPageToken for future calls
-      setNextPageToken(result.nextPageToken || null);
+      
+      const data = await response.json();
+      
+      if (data && data.data) {
+        const formattedData = data.data.map(item => ({
+          id: item._id,
+          image: item.image,
+          title: item.name,
+          subtitle: item.subtitle,
+          distance: item.distanceInKilometer ? parseFloat(item.distanceInKilometer).toFixed(1) : '0.0',
+          rating: item.rating || '0.0'
+        }));
+        
+        setDiscoverbyNearest(formattedData);
+      }
     } catch (error) {
-      console.error("Error fetching data:", error);
-      Alert.alert('Error', 'Failed to load nearby places. Please try again later.');
-    } finally {
-      setLoading(false);
+      console.error('Error fetching nearest places:', error);
     }
   };
 
@@ -122,14 +108,18 @@ function Destination({ route, navigation }) {
           }
         });
         const data = await response.json();
-        setDestinationData(data.data[0]); // Store the first item as destination data
+        if (data && data.data && data.data.length > 0) {
+          // Find the specific destination by ID if available
+          const specificDestination = data.data.find(item => item._id === item_id);
+          setDestinationData(specificDestination || data.data[0]);
+        }
       } catch (error) {
         console.error('Error fetching destination data:', error);
       }
     }
 
     fetchDestinationData();
-  }, []);
+  }, [item_id]);
 
   // YouTube tutorial videos data
   const [tutorialVideos, setTutorialVideos] = useState([])
@@ -444,7 +434,7 @@ function Destination({ route, navigation }) {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.mainContent}>
         {loading ? (
           <View style={styles.loadingContainer}>
@@ -460,62 +450,55 @@ function Destination({ route, navigation }) {
           >
             {/* Image Container */}
             <View style={styles.imageContainer}>
-              <Image source={{ uri: image1 }} style={styles.detailImage} />
-              <BackHeader
-                title="Details"
-                backPressed={backPressed}
-                style={{ position: 'absolute', top: 50, left: 20, right: 20 }}
+              <Image
+                source={{ uri: image1 || destinationData?.image }}
+                style={styles.detailImage}
+                resizeMode="cover"
               />
-
-              {/* Save icon on the image */}
-              {/* <TouchableOpacity
-                style={titleStyles.saveButton}
-                onPress={handleSave}
-              >
-                {isSaved
-                  ? <FontAwesome name="bookmark" size={24} color="#FFFFFF" />
-                  : <FontAwesome name="bookmark-o" size={24} color="#FFFFFF" />
-                }
-              </TouchableOpacity> */}
+              <View style={styles.overlayHeader}>
+                <TouchableOpacity style={styles.backButton} onPress={backPressed}>
+                  <Ionicons name="arrow-back" size={24} color={colors.white} />
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>{params?.product?.name || destinationData?.name}</Text>
+                <View style={styles.headerIcons}>
+                  <TouchableOpacity 
+                    style={styles.iconButton}
+                    onPress={() => navigation.navigate('SearchPage')}
+                  >
+                    <Ionicons name="search" size={24} color={colors.white} />
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={styles.iconButton}
+                    onPress={() => navigation.navigate('Notification')}
+                  >
+                    <Ionicons name="notifications-outline" size={24} color={colors.white} />
+                  </TouchableOpacity>
+                </View>
+              </View>
             </View>
 
             {/* Detail Container */}
             <View style={styles.detailContainer}>
-              {/* Title row with Follow button */}
-              {/* <View style={titleStyles.titleRow}>
-                <Text style={styles.detailTitle}>{cardTitle}</Text>
-                <TouchableOpacity
-                  style={[
-                    titleStyles.followButton,
-                    isFollowing ? titleStyles.followingButton : {}
-                  ]}
-                  onPress={handleFollow}
-                >
-                  <Text style={[
-                    titleStyles.followButtonText,
-                    isFollowing ? titleStyles.followingButtonText : {}
-                  ]}>
-                    {isFollowing ? 'Following' : 'Follow'}
-                  </Text>
-                </TouchableOpacity>
-              </View> */}
-
-              {/* Subtitle with map button */}
-              <View style={styles.subtitleContainer}>
-                <SimpleLineIcons name="location-pin" size={18} color={colors.fontThirdColor} />
-                <Text style={styles.detailSubtitle}>{subtitle}</Text>
-
-                {/* Ratings */}
-                <View style={styles.ratingContainer}>
-                  <AntDesign name="star" size={18} color={colors.Zypsii_color} />
-                  <Text style={styles.ratingText}>{destinationData?.rating || '0.0'}</Text>
+              <Text style={styles.detailTitle}>{params?.product?.name || destinationData?.name}</Text>
+              
+              {/* Location and Rating Info */}
+              <View style={styles.infoContainer}>
+                <View style={styles.subtitleContainer}>
+                  <Ionicons name="location-outline" size={16} color={colors.Zypsii_color} />
+                  <Text style={styles.detailSubtitle}>{params?.product?.subtitle || destinationData?.subtitle}</Text>
                 </View>
-
-                {/* Map button */}
-                <TouchableOpacity style={titleStyles.mapButton} onPress={handleOpenMap}>
-                  <MaterialIcons name="map" size={18} color={colors.Zypsii_color || '#3498db'} />
-                  <Text style={titleStyles.mapButtonText}>Map</Text>
-                </TouchableOpacity>
+              </View>
+              <View style={styles.ratingsContainer}>
+                <MaterialIcons name="star" size={16} color={colors.Zypsii_color} />
+                <Text style={styles.ratingsText}>
+                  {params?.product?.rating || destinationData?.rating || '0.0'}
+                </Text>
+              </View>
+              <View style={styles.distanceContainer}>
+                <Ionicons name="location-outline" size={16} color={colors.Zypsii_color} />
+                <Text style={styles.distanceText}>
+                  {params?.product?.distance ? `${params.product.distance} km` : destinationData?.distance ? `${destinationData.distance} km` : 'N/A'}
+                </Text>
               </View>
 
               {/* Quick Action Icons */}
@@ -666,7 +649,7 @@ function Destination({ route, navigation }) {
       </View>
       {/* Bottom Navigation */}
       <BottomTab screen="WhereToGo" style={styles.bottomTab} />
-    </View>
+    </SafeAreaView>
   )
 }
 
