@@ -10,7 +10,7 @@ export default StyleSheet.create({
   },
   headerGradient: {
     paddingTop: Platform.OS === 'ios' ? 50 : 40,
-    paddingBottom: 20,
+    paddingBottom: 40,
     paddingHorizontal: 20,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,

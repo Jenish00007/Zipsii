@@ -334,7 +334,7 @@ function MakeSchedule() {
         },
         {
           text: 'OK',
-          onPress: () => navigation.navigate('MainLanding'),
+          onPress: () => navigation.goBack(),
         },
       ],
       { cancelable: true }
@@ -351,9 +351,10 @@ function MakeSchedule() {
         style={styles.headerGradient}
       >
         <BackHeader 
-          title="Create Your Trip Schedule"
-          backPressed={backPressed}
-        />
+        title="Schedule"
+        backPressed={backPressed}
+        style={{ marginRight: 10 }} 
+      />
       </LinearGradient>
 
       <ScrollView 

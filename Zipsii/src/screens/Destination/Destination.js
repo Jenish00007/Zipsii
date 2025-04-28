@@ -80,6 +80,7 @@ function Destination({ route, navigation }) {
       }
 
       const result = await response.json();
+      console.log(result)
       
       if (!result.data || !Array.isArray(result.data)) {
         throw new Error('Invalid data format received');
@@ -114,16 +115,21 @@ function Destination({ route, navigation }) {
   useEffect(() => {
     const fetchDestinationData = async() => {
       try {
-        const response = await fetch(`${base_url}/schedule/places/getNearest`)
-        const data = await response.json()
-        setDestinationData(data) // ✅ Store fetched data in state
+        const accessToken = await AsyncStorage.getItem('accessToken');
+        const response = await fetch(`${base_url}/schedule/places/getNearest`, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`
+          }
+        });
+        const data = await response.json();
+        setDestinationData(data.data[0]); // Store the first item as destination data
       } catch (error) {
-       // console.error('Error fetching destination data:', error)
+        console.error('Error fetching destination data:', error);
       }
     }
 
-    fetchDestinationData()
-  }, [])
+    fetchDestinationData();
+  }, []);
 
   // YouTube tutorial videos data
   const [tutorialVideos, setTutorialVideos] = useState([])
@@ -346,7 +352,13 @@ function Destination({ route, navigation }) {
         return;
       }
 
-      const response = await fetch(`${baseUrl}/comments/${item_id}`);
+      const accessToken = await AsyncStorage.getItem('accessToken');
+      const response = await fetch(`${base_url}/comments/${item_id}`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      });
+      
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -375,15 +387,20 @@ function Destination({ route, navigation }) {
           return;
         }
 
-        const response = await fetch(`${baseUrl}/discover_by_nearest`);
+        const accessToken = await AsyncStorage.getItem('accessToken');
+        const response = await fetch(`${base_url}/discover_by_nearest`, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`
+          }
+        });
+        
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        setDiscoverbyNearest(data);
+        setDiscoverbyNearest(data.data || []);
       } catch (error) {
         console.error('Error fetching data:', error);
-        // You might want to set some error state here
       } finally {
         setLoading(false);
       }
@@ -491,7 +508,7 @@ function Destination({ route, navigation }) {
                 {/* Ratings */}
                 <View style={styles.ratingContainer}>
                   <AntDesign name="star" size={18} color={colors.Zypsii_color} />
-                  <Text style={styles.ratingText}>{item.rating || '0.0'}</Text>
+                  <Text style={styles.ratingText}>{destinationData?.rating || '0.0'}</Text>
                 </View>
 
                 {/* Map button */}

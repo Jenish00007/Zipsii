@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import baseStyles from '../../utils/styles'
 import BottomTab from '../../components/BottomTab/BottomTab';
 import { BackHeader } from '../../components/Headers/Headers'; 
@@ -11,27 +11,114 @@ import { base_url } from '../../utils/base_url';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialIcons } from '@expo/vector-icons';
 
+// Skeleton Loader Component
+const SkeletonLoader = () => (
+  <View style={styles.grayContainer}>
+    {[...Array(6)].map((_, index) => (
+      <View key={index} style={styles.skeletonCard}>
+        <View style={styles.skeletonImage} />
+        <View style={styles.skeletonContent}>
+          <View style={styles.skeletonTitle} />
+          <View style={styles.skeletonSubtitle} />
+          <View style={styles.skeletonFooter}>
+            <View style={styles.skeletonRating} />
+            <View style={styles.skeletonDistance} />
+          </View>
+        </View>
+      </View>
+    ))}
+  </View>
+);
+
 // Merge the styles
 const styles = {
   ...baseStyles,
   contentContainer: {
     padding: 8,
+    width: '100%',
+  },
+  infoContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 8,
+    width: '100%',
+  },
+  distanceContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  distanceText: {
+    fontSize: 12,
+    color: colors.fontMainColor,
+    marginLeft: 4,
   },
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
   },
   ratingText: {
     fontSize: 12,
     color: colors.fontMainColor,
-    marginLeft: 2,
+    marginLeft: 4,
   },
   selectedTripButton: {
     backgroundColor: colors.primary,
   },
   selectedTripButtonText: {
     color: colors.Zypsii_color,
+  },
+  skeletonCard: {
+    width: '48%',
+    backgroundColor: colors.white,
+    marginVertical: 10,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 5,
+    padding: 10,
+  },
+  skeletonImage: {
+    width: '100%',
+    height: 120,
+    backgroundColor: colors.grayLinesColor,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  skeletonContent: {
+    padding: 5,
+  },
+  skeletonTitle: {
+    height: 16,
+    backgroundColor: colors.grayLinesColor,
+    borderRadius: 4,
+    marginBottom: 8,
+    width: '80%',
+  },
+  skeletonSubtitle: {
+    height: 12,
+    backgroundColor: colors.grayLinesColor,
+    borderRadius: 4,
+    marginBottom: 8,
+    width: '60%',
+  },
+  skeletonFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  skeletonRating: {
+    height: 12,
+    width: 40,
+    backgroundColor: colors.grayLinesColor,
+    borderRadius: 4,
+  },
+  skeletonDistance: {
+    height: 12,
+    width: 40,
+    backgroundColor: colors.grayLinesColor,
+    borderRadius: 4,
   },
 };
 
@@ -166,43 +253,50 @@ function DiscoverPlace({ navigation }) {
 
       {/* Card List */}
       <ScrollView style={styles.scrollContainer}>
-        <View style={styles.grayContainer}>
-          {cardData.map((card) => (
-            <TouchableOpacity
-              key={card.id}
-              style={styles.card}
-              onPress={() =>
-                navigation.navigate('Destination', {
-                  id: card.id,
-                  image: card.image,
-                  cardTitle: card.title,
-                  subtitle: card.subtitle,
-                  rating: card.rating,
-                  location: card.location,
-                  distance: card.distance
-                })
-              }
-            >
-              <View style={styles.likeIconContainer}>
-                <MaterialCommunityIcons name="heart-outline" size={20} color={colors.errorColor} />
-              </View>
-              <Image source={{ uri: card.image }} style={styles.cardImage} />
-              <View style={styles.contentContainer}>
-                <Text style={styles.cardTitle}>{card.title}</Text>
-                {card.rating && (
-                  <View style={styles.ratingContainer}>
-                    <MaterialIcons name="star" size={14} color={colors.Zypsii_color} />
-                    <Text style={styles.ratingText}>{card.rating}</Text>
-                    <Text style={[styles.ratingText, { marginLeft: 8 }]}>{card.distance}</Text>
-                  </View>
-                )}
-                <View style={styles.subtitleContainer}>
-                  <Text style={styles.cardSubtitle}>{card.subtitle}</Text>
+        {loading ? (
+          <SkeletonLoader />
+        ) : (
+          <View style={styles.grayContainer}>
+            {cardData.map((card) => (
+              <TouchableOpacity
+                key={card.id}
+                style={styles.card}
+                onPress={() =>
+                  navigation.navigate('Destination', {
+                    id: card.id,
+                    image: card.image,
+                    cardTitle: card.title,
+                    subtitle: card.subtitle,
+                    rating: card.rating,
+                    location: card.location,
+                    distance: card.distance
+                  })
+                }
+              >
+                <View style={styles.likeIconContainer}>
+                  <MaterialCommunityIcons name="heart-outline" size={20} color={colors.errorColor} />
                 </View>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
+                <Image source={{ uri: card.image }} style={styles.cardImage} />
+                <View style={styles.contentContainer}>
+                  <Text style={styles.cardTitle}>{card.title}</Text>
+                  <View style={styles.infoContainer}>
+                    <View style={styles.distanceContainer}>
+                      <Ionicons name="location-outline" size={14} color={colors.Zypsii_color} />
+                      <Text style={styles.distanceText}>{card.distance} km</Text>
+                    </View>
+                    <View style={styles.ratingContainer}>
+                      <MaterialIcons name="star" size={14} color={colors.Zypsii_color} />
+                      <Text style={styles.ratingText}>{card.rating}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.subtitleContainer}>
+                    <Text style={styles.cardSubtitle}>{card.subtitle}</Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
       </ScrollView>
 
       {/* Bottom Navigation */}
