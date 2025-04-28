@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import navigationService from './navigationService';
 import * as Notifications from 'expo-notifications';
 import * as Screen from '../screens';
+import TripMap from '../screens/TripMap/TripMap';
 
 const NavigationStack = createStackNavigator();
 const MainStack = createStackNavigator();
@@ -55,6 +56,8 @@ function Drawer() {
       <NavigationStack.Screen name="FAQ" component={Screen.FAQ} />
       <NavigationStack.Screen name="SplitDashboard" component={Screen.SplitDashboard} />
       <NavigationStack.Screen name="CreateSplit" component={Screen.CreateSplit} />
+      <NavigationStack.Screen name="SplitDetail" component={Screen.SplitDetail} />
+      <NavigationStack.Screen name="TripMap" component={TripMap} />
     </NavigationStack.Navigator>
   );
 }
@@ -95,7 +98,7 @@ function AppContainer() {
         navigationService.setGlobalRef(ref);
       }}>
       <MainStack.Navigator screenOptions={{ headerShown: false }}>
-        <MainStack.Screen name="Onboarding" component={Screen.OnboardingScreen} />
+        {/* <MainStack.Screen name="Onboarding" component={Screen.OnboardingScreen} /> */}
         <MainStack.Screen name="Login" component={Screen.Login} />
         <MainStack.Screen name="Drawer" component={Drawer} />
       </MainStack.Navigator>

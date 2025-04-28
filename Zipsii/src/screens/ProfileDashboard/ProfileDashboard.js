@@ -17,7 +17,7 @@ function ProfileDashboard(props) {
   const navigation = useNavigation();
   const [profileInfo, setProfileInfo] = useState({
     id: 1,
-    name: 'Leonardo',
+    name: 'Jenish',
     Posts: '0',
     Followers: '0',
     Following: '0',

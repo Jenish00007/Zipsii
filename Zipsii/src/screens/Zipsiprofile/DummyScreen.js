@@ -7,14 +7,13 @@ import { colors } from '../../utils';
 import { Feather, MaterialIcons, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import Post from '../../components/Posts/Post';
 import Schedule from '../MySchedule/Schedule/AllSchedule';
-
-const baseUrl = 'http://172.20.10.5:8000';
+import { base_url } from '../../utils/base_url';
 
 const DummyScreen = ({ navigation }) => {
   const [activeIcon, setActiveIcon] = useState('th-large'); // Default active icon
   const [profileInfo, setProfileInfo] = useState({
     id: 1,
-    name: 'Leonardo',
+    name: 'Jenish',
     Posts: '0',
     Followers: '0',
     Following: '0',
@@ -228,7 +227,7 @@ const DummyScreen = ({ navigation }) => {
           source={{uri:profileInfo.image}} // Local profile image
           style={styles.profileImage}
         />
-        <Text style={styles.name}>{profileInfo.name || 'Leonardo'}</Text>
+        <Text style={styles.name}>{profileInfo.name || 'Jenish'}</Text>
         <Text style={styles.description}>{profileInfo.notes}</Text>
       </TouchableOpacity>
 

@@ -34,9 +34,10 @@ import { useFocusEffect } from '@react-navigation/native';
 import { base_url } from '../../utils/base_url';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useStatusBar } from '../../utils/useStatusBar';
+import ChatSupport from '../../components/ChatSupport/ChatSupport';
+import FloatingSupportButton from '../../components/FloatingChatButton/FloatingChatButton';
 
 
-//const baseUrl = 'http://172.20.10.5:3030';
 
 function MainLanding(props) {
   const navigation = useNavigation();
@@ -62,6 +63,7 @@ function MainLanding(props) {
   const [all_posts, setAllPosts] = useState([]);
   const [all_shorts, setAllShorts] = useState([]);
   const [discoverbynearest, setDiscoverbyNearest] = useState([]);
+  const [isChatVisible, setIsChatVisible] = useState(false);
 
   // Back handler
   useFocusEffect(
@@ -106,8 +108,16 @@ function MainLanding(props) {
 
         // Get access token once for all authenticated requests
         const accessToken = await AsyncStorage.getItem('accessToken');
+        if (!accessToken) {
+          throw new Error('No access token found');
+        }
 
-        // Make all API requests in parallel
+        // Create a timeout promise
+        const timeoutPromise = (ms) => new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Request timeout')), ms)
+        );
+
+        // Make all API requests in parallel with timeout
         const [
           discoverByInterestResponse,
           bestDestinationResponse,
@@ -117,49 +127,87 @@ function MainLanding(props) {
           allShortsResponse,
           discoverByNearestResponse
         ] = await Promise.all([
-          fetch(`${base_url}/schedule/places/getNearest`, {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${accessToken}`
-            }
-          }),
+          Promise.race([
+            fetch(`${base_url}/schedule/places/getNearest`, {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${accessToken}`
+              }
+            }),
+            timeoutPromise(10000) // 10 second timeout
+          ]),
+          Promise.race([
             fetch(`${base_url}/schedule/places/getNearest?bestDestination=true`, {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${accessToken}`
-            }
-          }),
-          fetch(`${base_url}/schedule/places/getNearest`, {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${accessToken}`
-            }
-          }),          
-          fetch(`${base_url}/schedule/listing/filter`, {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${accessToken}`
-            }
-          }),          
-          fetch(`${base_url}/post/listing/filter`, {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${accessToken}`
-            }
-          }),
-          fetch(`${base_url}/schedule/places/getNearest`, {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${accessToken}`
-            }
-          }),
-          fetch(`${base_url}/schedule/places/getNearest`, {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${accessToken}`
-            }
-          })
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${accessToken}`
+              }
+            }),
+            timeoutPromise(10000)
+          ]),
+          Promise.race([
+            fetch(`${base_url}/schedule/places/getNearest`, {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${accessToken}`
+              }
+            }),
+            timeoutPromise(10000)
+          ]),
+          Promise.race([
+            fetch(`${base_url}/schedule/listing/filter`, {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${accessToken}`
+              }
+            }),
+            timeoutPromise(10000)
+          ]),
+          Promise.race([
+            fetch(`${base_url}/post/listing/filter`, {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${accessToken}`
+              }
+            }),
+            timeoutPromise(10000)
+          ]),
+          Promise.race([
+            fetch(`${base_url}/schedule/places/getNearest`, {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${accessToken}`
+              }
+            }),
+            timeoutPromise(10000)
+          ]),
+          Promise.race([
+            fetch(`${base_url}/schedule/places/getNearest`, {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${accessToken}`
+              }
+            }),
+            timeoutPromise(10000)
+          ])
         ]);
+
+        // Check if any response failed
+        const responses = [
+          discoverByInterestResponse,
+          bestDestinationResponse,
+          allDestinationResponse,
+          allScheduleResponse,
+          allPostsResponse,
+          allShortsResponse,
+          discoverByNearestResponse
+        ];
+
+        responses.forEach(response => {
+          if (!response.ok) {
+            throw new Error(`API request failed with status ${response.status}`);
+          }
+        });
 
         // Process all responses
         const [
@@ -344,17 +392,24 @@ function MainLanding(props) {
         setAllPosts([]);
         setAllShorts([]);
         setDiscoverbyNearest([]);
+        
+        // Log specific error details
+        if (error.message === 'Request timeout') {
+          console.error('One or more API requests timed out');
+        } else if (error.message === 'No access token found') {
+          console.error('Authentication error: No access token found');
+        } else {
+          console.error('Network or server error:', error);
+        }
       } finally {
         // Set all loading states to false after all data is processed
-        setTimeout(() => {
-          setIsDiscoverByInterestLoading(false);
-          setIsBestDestinationLoading(false);
-          setIsAllDestinationLoading(false);
-          setIsScheduleLoading(false);
-          setIsPostsLoading(false);
-          setIsShortsLoading(false);
-          setIsNearestLoading(false);
-        }, 500); // Add a small delay to ensure smooth transition
+        setIsDiscoverByInterestLoading(false);
+        setIsBestDestinationLoading(false);
+        setIsAllDestinationLoading(false);
+        setIsScheduleLoading(false);
+        setIsPostsLoading(false);
+        setIsShortsLoading(false);
+        setIsNearestLoading(false);
       }
     };
 
@@ -556,7 +611,7 @@ function MainLanding(props) {
             <ProductCard 
               styles={styles.itemCardContainer} 
               {...item}
-              rating={parseFloat(item.rating) || 0}
+              rating={parseInt(item.rating) || 0}
               distance={item.distanceInKilometer ? parseFloat(item.distanceInKilometer).toFixed(1) : null}
             />
           )}
@@ -565,33 +620,29 @@ function MainLanding(props) {
     </View>
   );
 
-  // const renderAllDestination = () => (
-  //   <View style={styles.titleSpacer}>
-  //     <TextDefault textColor={colors.fontMainColor} H4 bold>
-  //       {'All Destination'}
-  //     </TextDefault>
-  //     <FlatList
-  //       horizontal={true}
-  //       showsHorizontalScrollIndicator={false}
-  //       keyExtractor={(item, index) => item.id}
-  //       data={all_destination}
-  //       renderItem={({ item, index }) => (
-  //         <ProductCard 
-  //           styles={styles.itemCardContainer} 
-  //           {...item}
-  //           rating={parseFloat(item.rating) || 0}
-  //           distance={item.distanceInKilometer ? parseFloat(item.distanceInKilometer).toFixed(1) : null}
-  //         />
-  //       )}
-  //     />
-  //   </View>
-  // );
-
   const renderAllDestination = () => (
     <View style={styles.titleSpacer}>
       <TextDefault textColor={colors.fontMainColor} H4 bold>
         {'All Destination'}
       </TextDefault>
+      {isAllDestinationLoading ? (
+        <HorizontalListLoader count={8} />
+      ) : (
+        <FlatList
+          horizontal={true}
+          showsHorizontalScrollIndicator={false}
+          data={all_destination}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <ProductCard 
+              styles={styles.itemCardContainer} 
+              {...item}
+              rating={parseFloat(item.rating) || 0}
+              distance={item.distanceInKilometer ? parseFloat(item.distanceInKilometer).toFixed(1) : null}
+            />
+          )}
+        />
+      )}
     </View>
   );
 
@@ -740,22 +791,25 @@ function MainLanding(props) {
   return (
     <SafeAreaView style={[styles.flex, styles.safeAreaStyle]}>
       <View style={[styles.grayBackground, styles.flex]}>
-        <View style={[styles.contentContainer, , { paddingBottom: 100 }]}>
+        <View style={[styles.contentContainer, { paddingBottom: 100 }]}>
           <FlatList
             keyExtractor={(item, index) => index.toString()}
             showsVerticalScrollIndicator={false}
-            numColumns={2}
             ListHeaderComponent={renderHeader}
-            data={selectedButton === 'All' ? all_destination : []}
-            renderItem={({ item }) => (
-              <ProductCard styles={styles.productCard} {...item} />
-            )}
+            data={[]}
+            renderItem={() => null}
+            ListEmptyComponent={null}
           />
         </View>
         <View style={styles.bottomTabContainer}>
           <BottomTab screen="HOME" />
         </View>
       </View>
+      <FloatingSupportButton onPress={() => setIsChatVisible(true)} />
+      <ChatSupport
+        visible={isChatVisible}
+        onClose={() => setIsChatVisible(false)}
+      />
     </SafeAreaView>
   );
 }

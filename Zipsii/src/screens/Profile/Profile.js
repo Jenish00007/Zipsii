@@ -49,7 +49,7 @@ const ProfileScreen = ({ navigation }) => {
             source={require('../../assets/profileimage.jpg')} // Local profile image
             style={styles.profileImage}
           />
-          <Text style={styles.name}>Leonardo</Text>
+          <Text style={styles.name}>Jenish</Text>
           <Text style={styles.description}>Digital goodies designer. Everything is designed.</Text>
         </View>
 

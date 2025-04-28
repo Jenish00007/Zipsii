@@ -31,6 +31,7 @@ import MapScreen from './mapscreen/MapScreen '
 import FollowersList from './FollowersList/FollowersList'
 import SplitDashboard from './Split/SplitDashboard'
 import CreateSplit from './Split/CreateSplit'
+import SplitDetail from './Split/SplitDetail'
 
 
 export {
@@ -67,4 +68,5 @@ export {
   FAQ,
   SplitDashboard,
   CreateSplit,
+  SplitDetail,
 }

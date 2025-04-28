@@ -76,7 +76,7 @@ function ProductCard(props) {
             disabled={loading}  // Disable while loading
           >
             <Ionicons
-              name={liked ? 'ios-bookmark' : 'ios-bookmark-outline'}
+              name={liked ? 'bookmark' : 'bookmark-outline'}
               size={scale(20)}
               color={colors.greenColor}
             />
@@ -99,8 +99,8 @@ function ProductCard(props) {
               </Text>
             </View>
             <View style={styles.ratingContainer}>
-              <MaterialIcons name="star" size={14} color={colors.Zypsii_color} />
-              <Text style={styles.ratingText}>{props.rating || '0.0'}</Text>
+              <Ionicons name="star" size={14} color={colors.Zypsii_color} />
+              <Text style={styles.ratingText}>{props.rating || '0'}</Text>
             </View>
           </View>
         </View>

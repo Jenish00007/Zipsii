@@ -14,7 +14,6 @@ import { base_url } from '../../utils/base_url'
 import { TextDefault } from '../../components';
 
 
-const baseUrl = 'http://172.20.10.5:3030'
 function Destination({ route, navigation }) {
   // Add default values and safe access
   const params = route?.params || {};
@@ -154,7 +153,7 @@ function Destination({ route, navigation }) {
   useEffect(() => {
     const fetchDescriptionexplore = async() => {
       try {
-        const response = await fetch('http://172.20.10.5:3030/descriptionexplore') // Replace with your backend URL
+        const response = await fetch(`${base_url}/descriptionexplore`) // Replace with your backend URL
         const data = await response.json()
         if (data && data.dataexplore) {
           setDescriptionexplore(data.dataexplore)
@@ -307,7 +306,7 @@ function Destination({ route, navigation }) {
     if (!comment.trim()) return // Prevent empty comments
 
     try {
-      const response = await fetch('http://172.20.10.5:3030/comments', {
+      const response = await fetch(`${base_url}/comments`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -481,34 +480,26 @@ function Destination({ route, navigation }) {
 
             {/* Detail Container */}
             <View style={styles.detailContainer}>
-              {/* Title row with Follow button */}
-              {/* <View style={titleStyles.titleRow}>
-                <Text style={styles.detailTitle}>{cardTitle}</Text>
-                <TouchableOpacity
-                  style={[
-                    titleStyles.followButton,
-                    isFollowing ? titleStyles.followingButton : {}
-                  ]}
-                  onPress={handleFollow}
-                >
-                  <Text style={[
-                    titleStyles.followButtonText,
-                    isFollowing ? titleStyles.followingButtonText : {}
-                  ]}>
-                    {isFollowing ? 'Following' : 'Follow'}
-                  </Text>
-                </TouchableOpacity>
-              </View> */}
+              {/* Title */}
+              <Text style={styles.detailTitle}>{params?.product?.name || cardTitle}</Text>
 
               {/* Subtitle with map button */}
               <View style={styles.subtitleContainer}>
                 <SimpleLineIcons name="location-pin" size={18} color={colors.fontThirdColor} />
-                <Text style={styles.detailSubtitle}>{subtitle}</Text>
+                <Text style={styles.detailSubtitle}>{params?.product?.subtitle || subtitle}</Text>
 
                 {/* Ratings */}
                 <View style={styles.ratingContainer}>
                   <AntDesign name="star" size={18} color={colors.Zypsii_color} />
-                  <Text style={styles.ratingText}>{destinationData?.rating || '0.0'}</Text>
+                  <Text style={styles.ratingText}>{params?.product?.rating || '0'}</Text>
+                </View>
+
+                {/* Distance */}
+                <View style={styles.distanceContainer}>
+                  <Ionicons name="location-outline" size={18} color={colors.fontThirdColor} />
+                  <Text style={styles.distanceText}>
+                    {params?.product?.distance ? `${params.product.distance} km` : 'N/A'}
+                  </Text>
                 </View>
 
                 {/* Map button */}
@@ -620,7 +611,9 @@ function Destination({ route, navigation }) {
                   renderItem={({ item }) => (
                     <DiscoverByNearest 
                       styles={styles.itemCardContainer} 
-                      {...item} 
+                      {...item}
+                      rating={parseInt(item.rating) || 0}
+                      distance={item.distanceInKilometer ? parseFloat(item.distanceInKilometer).toFixed(1) : null}
                     />
                   )}
                 />

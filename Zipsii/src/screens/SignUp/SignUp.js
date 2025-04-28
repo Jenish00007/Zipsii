@@ -47,12 +47,13 @@ const SignUpScreen = () => {
 
     setLoading(true);
     try {
+      console.log('Sending signup request to:', `${base_url}/user/signUp`);
       const response = await fetch(`${base_url}/user/signUp`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ fullName, email, password, latitude, longitude }), // Include lat/long in request
+        body: JSON.stringify({ fullName, email, password, latitude, longitude }),
       });
 
       if (response.ok) {

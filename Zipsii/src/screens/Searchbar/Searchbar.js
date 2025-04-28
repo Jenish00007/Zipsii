@@ -8,7 +8,7 @@ import {
   Image,
   TouchableOpacity,
 } from "react-native";
-import Icon from "react-native-vector-icons/Ionicons";
+import { Ionicons } from '@expo/vector-icons';
 import { colors } from "../../utils";
 import { alignment } from "../../utils";
 import { base_url } from "../../utils/base_url";
@@ -35,7 +35,7 @@ function SearchPage() {
 
     const url = activeTab === "People"
       ? `${base_url}/user/getProfile?filter=users&search=${text}`
-      : `${base_url}/user/getProfile?filter=place&search=${text}`;
+      : `${base_url}/schedule/places/getNearest?searchPlaceName=${encodeURIComponent(text)}`;
 
     try {
       const response = await fetch(url, {
@@ -57,19 +57,32 @@ function SearchPage() {
       });
 
       if (data.success && data.data) {
-        const formattedData = [{
-          id: data.data._id,
-          image: data.data.profileImage || 'https://via.placeholder.com/50',
-          name: activeTab === "People" ? data.data.fullName : data.data.name,
-          tagline: activeTab === "People" ? data.data.userName : data.data.address,
-          email: data.data.email,
-          website: data.data.website,
-          bio: data.data.bio,
-          location: data.data.location
-        }];
-        
-        console.log('Formatted Data:', formattedData);
-        setSearchResults(formattedData);
+        if (activeTab === "Places") {
+          // Format place data
+          const formattedData = data.data.map(place => ({
+            id: place._id,
+            image: place.image,
+            name: place.name,
+            tagline: place.address,
+            rating: place.rating,
+            distance: place.distanceInKilometer,
+            location: place.location
+          }));
+          setSearchResults(formattedData);
+        } else {
+          // Format people data (existing logic)
+          const formattedData = [{
+            id: data.data._id,
+            image: data.data.profileImage || 'https://via.placeholder.com/50',
+            name: data.data.fullName,
+            tagline: data.data.userName,
+            email: data.data.email,
+            website: data.data.website,
+            bio: data.data.bio,
+            location: data.data.location
+          }];
+          setSearchResults(formattedData);
+        }
       } else {
         console.log('No data found in response');
         setSearchResults([]);
@@ -88,24 +101,55 @@ function SearchPage() {
 
   // Render each search result item
   const renderItem = ({ item }) => (
-    <View style={styles.personContainer}>
-      <Image 
-        source={{ uri: item.image || 'https://via.placeholder.com/50' }} 
-        style={styles.avatar}
-      />
-      <View style={styles.personDetails}>
-        <Text style={styles.personName}>{item.name}</Text>
-        <Text style={styles.personTagline}>
-          {activeTab === "People" ? `@${item.tagline}` : item.tagline}
-        </Text>
-        {item.bio && <Text style={styles.bioText}>{item.bio}</Text>}
-        {item.website && (
-          <Text style={styles.websiteText} numberOfLines={1}>
-            🌐 {item.website}
+    <TouchableOpacity 
+      onPress={() => {
+        if (activeTab === "Places") {
+          navigation.navigate('Destination', {
+            product: {
+              id: item.id,
+              image: item.image,
+              name: item.name,
+              subtitle: item.tagline,
+              rating: item.rating,
+              distance: item.distance,
+              location: item.location
+            }
+          });
+        }
+      }}
+    >
+      <View style={styles.personContainer}>
+        <Image 
+          source={{ uri: item.image || 'https://via.placeholder.com/50' }} 
+          style={styles.avatar}
+        />
+        <View style={styles.personDetails}>
+          <Text style={styles.personName}>{item.name}</Text>
+           {activeTab === "People" ?
+          <Text style={styles.personTagline}>
+            {item.tagline}
           </Text>
-        )}
+          :
+          null
+          }
+          {activeTab === "Places" && (
+            <>
+              <View style={styles.ratingContainer}>
+                <Ionicons name="star" size={14} color={colors.Zypsii_color} />
+                <Text style={styles.ratingText}>{item.rating || '0'}</Text>
+                <Text style={styles.distanceText}>{item.distance}</Text>
+              </View>
+            </>
+          )}
+          {item.bio && <Text style={styles.bioText}>{item.bio}</Text>}
+          {item.website && (
+            <Text style={styles.websiteText} numberOfLines={1}>
+              🌐 {item.website}
+            </Text>
+          )}
+        </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   // Display number of results
@@ -126,11 +170,11 @@ function SearchPage() {
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Icon name="chevron-back" size={28} color="#333" />
+          <Ionicons name="chevron-back" size={28} color="#333" />
         </TouchableOpacity>
         
         <View style={styles.searchBarContainer}>
-          <Icon name="search" size={22} color="#999" style={styles.searchIcon} />
+          <Ionicons name="search" size={22} color="#999" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
             value={searchText}
@@ -341,6 +385,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#999",
     marginTop: 40,
+  },
+  ratingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 4,
+  },
+  ratingText: {
+    fontSize: 14,
+    color: colors.Zypsii_color,
+    marginLeft: 4,
+  },
+  distanceText: {
+    fontSize: 14,
+    color: colors.fontThirdColor || "#777",
+    marginLeft: 4,
   },
 });
 

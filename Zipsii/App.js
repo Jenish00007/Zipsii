@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StatusBar, Platform } from 'react-native';
+import { StatusBar, Platform, View } from 'react-native';
 import * as Font from 'expo-font';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
@@ -7,7 +7,6 @@ import FlashMessage from 'react-native-flash-message';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AppContainer from './src/routes/routes';
 import { colors } from './src/utils/colors';
-import { Spinner } from './src/components';
 import { ScheduleProvider } from './src/context/ScheduleContext';
 import { AuthProvider } from './src/components/Auth/AuthContext';
 import { Provider } from 'react-redux';
@@ -25,53 +24,23 @@ Notifications.setNotificationHandler({
 export default function App() {
   const [fontLoaded, setFontLoaded] = useState(false);
   const [expoPushToken, setExpoPushToken] = useState('');
-  const notificationListener = useRef();
-  const responseListener = useRef();
 
   useEffect(() => {
-    loadAppData();
-    
-    // Set up notification listeners
-    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
-      // Handle notification received while app is in foreground
-      console.log('Notification received:', notification);
-      // You can show a custom alert or update UI here
-    });
-
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-      // Handle user tapping on a notification
-      console.log('Notification response:', response);
-      // You can navigate to specific screens based on notification data
-      const data = response.notification.request.content.data;
-      if (data) {
-        // Handle navigation based on notification data
-        console.log('Notification data:', data);
+    async function loadFonts() {
+      try {
+        await Font.loadAsync({
+          // Add your custom fonts here if needed
+        });
+        setFontLoaded(true);
+      } catch (error) {
+        console.error('Error loading fonts:', error);
+        setFontLoaded(true); // Set to true even if font loading fails
       }
-    });
+    }
 
-    return () => {
-      // Clean up listeners on unmount
-      Notifications.removeNotificationSubscription(notificationListener.current);
-      Notifications.removeNotificationSubscription(responseListener.current);
-    };
+    loadFonts();
+    registerForPushNotificationsAsync();
   }, []);
-
-  async function loadAppData() {
-    // Load custom fonts
-    await Font.loadAsync({
-      'Poppins-Regular': require('./src/assets/font/Poppins/Poppins-Regular.ttf'),
-      'Poppins-Bold': require('./src/assets/font/Poppins/Poppins-Bold.ttf'),
-    });
-
-    // Request permissions and get push token
-    await registerForPushNotificationsAsync().then(token => {
-      setExpoPushToken(token);
-      console.log('Expo push token:', token);
-      // You might want to send this token to your backend server here
-    });
-
-    setFontLoaded(true);
-  }
 
   async function registerForPushNotificationsAsync() {
     let token;
@@ -112,7 +81,7 @@ export default function App() {
   }
 
   if (!fontLoaded) {
-    return <Spinner spinnerColor={colors.spinnerColor} />;
+    return <View style={{ flex: 1, backgroundColor: colors.headerbackground }} />;
   }
 
   return (
