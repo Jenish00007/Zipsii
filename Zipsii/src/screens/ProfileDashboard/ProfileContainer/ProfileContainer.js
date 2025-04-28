@@ -13,8 +13,8 @@ function ProfileContainer({profileInfo}) {
   const handleShare = async () => {
     try {
       const shareOptions = {
-        message: `Check out ${profileInfo?.name}'s profile on Zipsii!`,
-        url: `zipsii://profile/${profileInfo?.id}`,
+        message: `Check out ${profileInfo?.name}'s profile on Zypsii!`,
+        url: `Zypsii://profile/${profileInfo?.id}`,
         title: `Share ${profileInfo?.name}'s Profile`
       };
 
