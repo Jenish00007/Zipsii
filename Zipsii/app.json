@@ -1,14 +1,13 @@
 {
   "expo": {
-    "version": "1.0.2",
+    "version": "2.0.8",
     "name": "Zypsii",
-    "scheme": "zypsii",
-    "owner": "zypsii",
-    "description": "Zypsii Travel is a modern travel companion app built in React Native using Expo for iOS and Android. It's designed with beautiful aesthetics and best coding practices in mind, helping travelers plan, book, and manage their journeys seamlessly. The app features trip planning, booking management, and local experiences discovery.",
-    "slug": "zypsii",
+    "scheme": "ecommero-app",
+    "description": " Ecommero is a starter kit ecommerce UI theme built in React Native using Expo for IOS and Android. It's made keeping good aesthetics in mind as well keeping the best coding practices in mind. Its fully customisable to easily help you in your next ecommerce project. https://market.nativebase.io/view/react-native-e-commero-ui-theme",
+    "slug": "lofigram",
     "privacy": "public",
     "androidStatusBar": {
-      "backgroundColor": "#000000"
+      "backgroundColor": "#000"
     },
     "platforms": [
       "ios",
@@ -26,7 +25,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.zypsii.zypsii",
+      "bundleIdentifier": "com.ecommero.app",
       "usesAppleSignIn": true
     },
     "notification": {
@@ -34,23 +33,26 @@
       "color": "#D0AD8A",
       "icon": "./assets/image.png",
       "androidMode": "default",
-      "androidCollapsedTitle": "Zypsii"
+      "androidCollapsedTitle": "Ecommero"
     },
     "android": {
-      "versionCode": 2,
-      "package": "com.zypsii.zypsii",
+      "versionCode": 9,
+      "package": "com.ecommero.app",
       "permissions": [],
       "googleServicesFile": "./google-services.json"
     },
     "extra": {
       "eas": {
-        "projectId": "358d5a90-f563-4ade-a256-08b90a15f174"
+        "projectId": "5159b530-8294-440f-a72a-546bb111c0f8"
       }
     },
-    "plugins": [
-      ["expo-font", {
-        "fonts": []
-      }]
-    ]
+    "builds": {
+    "android": {
+      "release": {
+        "workflow": "managed",
+        "type": "apk"
+      }
+    }
+  }
   }
 }

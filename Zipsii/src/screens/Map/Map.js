@@ -6,7 +6,7 @@ import { alignment, colors } from "../../utils";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { useNavigation } from "@react-navigation/native";
 import { TextDefault } from '../../components';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import DiscoverByNearest from '../../components/DiscoverByNearest/DiscoverByNearest';
 import { base_url } from '../../utils/base_url';
 //const baseUrl = 'https://admin.zypsii.com';
@@ -70,14 +70,14 @@ const Map = ({ route }) => {
         {/* From-To Section */}
         <View style={styles.fromToContainer}>
           <View style={styles.locationInfo}>
-            <MaterialCommunityIcons name="map-marker-outline" size={20} color={colors.darkGray} />
+            <Icon name="map-marker-outline" size={20} color={colors.darkGray} />
             <Text style={styles.locationText}>
             {fromLocation.length > 7 ? fromLocation.slice(0, 15) + '...' : fromLocation}
           </Text>
           </View>
-          <MaterialCommunityIcons name="arrow-right" size={20} color={colors.darkGray} style={styles.arrowIcon} />
+          <Icon name="arrow-right" size={20} color={colors.darkGray} style={styles.arrowIcon} />
           <View style={styles.locationInfo}>
-            <MaterialCommunityIcons name="map-marker-outline" size={20} color={colors.darkGray} />
+            <Icon name="map-marker-outline" size={20} color={colors.darkGray} />
             <Text style={styles.locationText}>
         {toLocation && toLocation.length > 7
           ? toLocation.slice(0, 15) + '...'
