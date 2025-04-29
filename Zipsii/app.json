@@ -1,6 +1,6 @@
 {
   "expo": {
-    "version": "1.0.2",
+    "version": "1.0.3",
     "name": "Zypsii",
     "scheme": "zypsii",
     "owner": "don05",
@@ -26,7 +26,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.zypsii.zypsii",
+      "bundleIdentifier": "com.SmartKal.founder",
       "usesAppleSignIn": true
     },
     "notification": {
@@ -37,8 +37,8 @@
       "androidCollapsedTitle": "Zypsii"
     },
     "android": {
-      "versionCode": 2,
-      "package": "com.zypsii.zypsii",
+      "versionCode": 3,
+      "package": "com.SmartKal.founder",
       "permissions": [],
       "googleServicesFile": "./google-services.json"
     },

@@ -31,7 +31,7 @@ const SignInScreen = () => {
 
       if (storedUser) {
         // If user is already logged in, navigate to MainLanding
-        navigation.navigate('MainLanding');
+        navigation.navigate('Drawer', { screen: 'MainLanding' });
       }
     };
 
@@ -211,13 +211,7 @@ const SignInScreen = () => {
     }
   };
 
-  if (user) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#a60f93" />
-      </View>
-    );
-  }
+
 
   return (
     <KeyboardAvoidingView 
@@ -268,7 +262,7 @@ const SignInScreen = () => {
 
         <View style={styles.bottomSection}>
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.signupButton} onPress={() => navigation.navigate('SignUp')}>
+            <TouchableOpacity style={styles.signupButton} onPress={() => navigation.navigate('Drawer', { screen: 'SignUp' })}>
               <Text style={styles.signupButtonText}>SIGNUP</Text>
             </TouchableOpacity>
 
@@ -291,7 +285,7 @@ const SignInScreen = () => {
             </TouchableOpacity> */}
           </View>
 
-          <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
+          <TouchableOpacity onPress={() => navigation.navigate('Drawer', { screen: 'SignUp' })}>
             <Text style={styles.signupText}>Don't have an account? <Text style={styles.signupLink}>SIGN UP</Text></Text>
           </TouchableOpacity>
         </View>

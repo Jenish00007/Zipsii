@@ -99,7 +99,7 @@ function AppContainer() {
       }}>
       <MainStack.Navigator screenOptions={{ headerShown: false }}>
         {/* <MainStack.Screen name="Onboarding" component={Screen.OnboardingScreen} /> */}
-        <MainStack.Screen name="Login" component={Screen.Login} />
+        {/* <MainStack.Screen name="Login" component={Screen.Login} /> */}
         <MainStack.Screen name="Drawer" component={Drawer} />
       </MainStack.Navigator>
     </NavigationContainer>
