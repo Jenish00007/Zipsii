@@ -173,7 +173,7 @@ function MainLanding(props) {
             timeoutPromise(10000)
           ]),
           Promise.race([
-            fetch(`${base_url}/schedule/places/getNearest`, {
+            fetch(`${base_url}/shorts/listing/filter`, {
               method: 'GET',
               headers: {
                 'Authorization': `Bearer ${accessToken}`
@@ -448,28 +448,55 @@ function MainLanding(props) {
   );
 
   // Render functions
-  const renderVideoShorts = () => (
-    <View style={styles.videoShortsContainer}>
-      <TextDefault textColor={colors.fontMainColor} H5 bold>
-        {'Shorts'}
-      </TextDefault>
-      <FlatList
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        data={all_shorts}
-        keyExtractor={item => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.videoContainer}>
-            <WebView
-              source={{ uri: item.video }}
-              style={styles.webviewVideo}
-              allowsFullscreenVideo
-            />
-          </View>
-        )}
-      />
-    </View>
-  );
+  const renderVideoShorts = () => {
+    return (
+      <View style={styles.shortsContainer}>
+        <FlatList
+          data={all_shorts}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <TouchableOpacity 
+              style={styles.shortItem}
+              onPress={() => {
+                // Handle short video press
+                console.log('Short video pressed:', item.id);
+              }}
+            >
+              <View style={styles.videoContainer}>
+                <WebView
+                  source={{ uri: item.video_url }}
+                  style={styles.video}
+                  allowsFullscreenVideo={true}
+                  allowsInlineMediaPlayback={true}
+                  mediaPlaybackRequiresUserAction={false}
+                  javaScriptEnabled={true}
+                  domStorageEnabled={true}
+                />
+                <View style={styles.videoOverlay}>
+                  <View style={styles.videoInfo}>
+                    <Text style={styles.videoTitle}>{item.title}</Text>
+                    <Text style={styles.videoDescription}>{item.description}</Text>
+                  </View>
+                  <View style={styles.videoStats}>
+                    <View style={styles.statItem}>
+                      <Ionicons name="heart" size={20} color={colors.white} />
+                      <Text style={styles.statText}>{item.likes || 0}</Text>
+                    </View>
+                    <View style={styles.statItem}>
+                      <Ionicons name="chatbubble" size={20} color={colors.white} />
+                      <Text style={styles.statText}>{item.comments || 0}</Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+            </TouchableOpacity>
+          )}
+        />
+      </View>
+    );
+  };
 
   const renderScheduleContainer = () => {
     if (!all_schedule || all_schedule.length === 0) {

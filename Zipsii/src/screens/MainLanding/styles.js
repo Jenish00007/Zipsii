@@ -467,5 +467,61 @@ const styles = StyleSheet.create({
     fontSize: scale(12),
     color: colors.fontThirdColor,
   },
+  shortsContainer: {
+    marginVertical: scale(20),
+    paddingHorizontal: scale(15),
+  },
+  shortItem: {
+    width: scale(200),
+    marginRight: scale(15),
+    borderRadius: scale(10),
+    overflow: 'hidden',
+    backgroundColor: colors.black,
+  },
+  videoContainer: {
+    width: '100%',
+    height: scale(350),
+    position: 'relative',
+  },
+  video: {
+    width: '100%',
+    height: '100%',
+  },
+  videoOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: scale(15),
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  videoInfo: {
+    marginBottom: scale(10),
+  },
+  videoTitle: {
+    color: colors.white,
+    fontSize: scale(16),
+    fontWeight: 'bold',
+    marginBottom: scale(5),
+  },
+  videoDescription: {
+    color: colors.white,
+    fontSize: scale(12),
+    opacity: 0.8,
+  },
+  videoStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: scale(15),
+  },
+  statText: {
+    color: colors.white,
+    fontSize: scale(12),
+    marginLeft: scale(5),
+  },
 })
 export default styles
