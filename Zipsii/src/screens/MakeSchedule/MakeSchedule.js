@@ -211,8 +211,7 @@ function MakeSchedule() {
         formData.append(`planDescription[${index}][location][longitude]`, plan.location.longitude.toString());
       });
 
-      const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MGVmZDUxN2I4M2FmOGVmNmFiZmEzYyIsImVtYWlsIjoiamVudUBnbWFpbC5jb20iLCJ1c2VyTmFtZSI6IkplbnVfWllfNTM1IiwiaWF0IjoxNzQ1OTA5NDA3LCJleHAiOjE3NDYxNjg2MDd9.v7rIck922X0ugdvyoOwCaFc62dl3LJzSed5ZCEE09k4 need to hordcode this token ';
-      
+      const accessToken = await AsyncStorage.getItem('accessToken');
       if (!accessToken) {
         Alert.alert('Error', 'Authentication required');
         return;

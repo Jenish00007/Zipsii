@@ -27,7 +27,6 @@ const SignInScreen = () => {
   useEffect(() => {
     const checkUser = async () => {
       const storedUser = await AsyncStorage.getItem('user');
-      const data = await AsyncStorage.getItem('accessToken');
 
       if (storedUser) {
         // If user is already logged in, navigate to MainLanding
@@ -152,8 +151,7 @@ const SignInScreen = () => {
             // Use the login function from AuthContext to set the user
             login(userDetails);
             
-            navigation.navigate('MainLanding');
-          } else {
+navigation.navigate('Drawer', { screen: 'MainLanding' });          } else {
             Alert.alert('Error', data.message || 'Google login failed');
           }
         } else {

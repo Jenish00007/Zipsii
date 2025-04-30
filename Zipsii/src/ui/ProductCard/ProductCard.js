@@ -26,6 +26,9 @@ function ProductCard(props) {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${accessToken}`, // Attach the JWT token to the request header
         },
+        body:{
+          
+        }
       });
 
       if (response.ok) {

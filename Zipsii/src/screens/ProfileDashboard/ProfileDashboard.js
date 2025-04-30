@@ -10,42 +10,73 @@ import { useState, useEffect } from 'react';
 import { colors } from '../../utils';
 import { base_url } from '../../utils/base_url';
 import { useStatusBar } from '../../utils/useStatusBar';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Alert } from 'react-native';
 
 //const baseUrl = 'https://admin.zypsii.com';
 function ProfileDashboard(props) {
   useStatusBar(colors.btncolor, 'light-content');
   const navigation = useNavigation();
   const [profileInfo, setProfileInfo] = useState({
-    id: 1,
-    name: 'Jenish',
+    id: '',
+    name: '',
+    userName: '',
+    email: '',
+    website: '',
+    bio: '',
     Posts: '0',
     Followers: '0',
     Following: '0',
-    image: '../../assets/profileimage.jpg'
+    image: null
   });
 
   useEffect(() => {
-    const fetchProfileInfo = async () => {
-      try {
-        const response = await fetch(`${base_url}/userInfo`);
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        
-        const contentType = response.headers.get("content-type");
-        if (!contentType || !contentType.includes("application/json")) {
-          throw new Error("Received non-JSON response from server");
-        }
-        
-        const data = await response.json();
-        setProfileInfo(data);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-
     fetchProfileInfo();
   }, []);
+
+  const fetchProfileInfo = async () => {
+    try {
+      const accessToken = await AsyncStorage.getItem('accessToken');
+      if (!accessToken) {
+        throw new Error('No access token found');
+      }
+
+      const response = await fetch(`${base_url}/user/getProfile`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      console.log('Profile data:', result); // Debug log
+
+      if (result.success && result.data && result.data.length > 0) {
+        const userData = result.data[0];
+        setProfileInfo({
+          id: userData._id || '',
+          name: userData.fullName || '',
+          userName: userData.userName || '',
+          email: userData.email || '',
+          website: userData.website || '',
+          bio: userData.bio || '',
+          Posts: userData.posts?.length?.toString() || '0',
+          Followers: userData.followers?.length?.toString() || '0',
+          Following: userData.following?.length?.toString() || '0',
+          image: userData.profileImage || null
+        });
+      } else {
+        throw new Error('No profile data found');
+      }
+    } catch (error) {
+      console.error('Error fetching profile data:', error);
+      Alert.alert('Error', 'Failed to load profile data. Please try again.');
+    }
+  };
 
   return (
     <SafeAreaView style={[styles.flex, styles.safeAreaStyle]}>
@@ -56,31 +87,16 @@ function ProfileDashboard(props) {
         <ProfileContainer profileInfo={profileInfo}/>
         <View style={styles.tabContainer}>
           <TouchableOpacity activeOpacity={1}>
-            {/* Uncomment this section if needed */}
-            {/* <TextDefault textColor={colors.fontBrown} H5>
-              My Active Orders (
-              {orders
-                ? orders.filter(o =>
-                  ['PENDING', 'DISPATCHED', 'ACCEPTED'].includes(
-                    o.orderStatus
-                  )
-                ).length
-                : 0}
-              )
-            </TextDefault> */}
+            <TextDefault textColor={colors.fontBrown} H5>
+              My Active Orders (0)
+            </TextDefault>
           </TouchableOpacity>
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => navigation.navigate('PreviousOrders')}>
-            {/* Uncomment this section if needed */}
-            {/* <TextDefault H5>
-              Previous Orders (
-              {orders
-                ? orders.filter(o => ['DELIVERED'].includes(o.orderStatus))
-                  .length
-                : 0}
-              )
-            </TextDefault> */}
+            <TextDefault H5>
+              Previous Orders (0)
+            </TextDefault>
           </TouchableOpacity>
         </View>
         {/* <CardContainer /> */}

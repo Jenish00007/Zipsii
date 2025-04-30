@@ -107,8 +107,8 @@ function MainLanding(props) {
         setIsNearestLoading(true);
 
         // Get access token once for all authenticated requests
-        const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MGVmZDUxN2I4M2FmOGVmNmFiZmEzYyIsImVtYWlsIjoiamVudUBnbWFpbC5jb20iLCJ1c2VyTmFtZSI6IkplbnVfWllfNTM1IiwiaWF0IjoxNzQ1OTA5NDA3LCJleHAiOjE3NDYxNjg2MDd9.v7rIck922X0ugdvyoOwCaFc62dl3LJzSed5ZCEE09k4 need to hordcode this token ';
-        if (!accessToken) {
+        const accessToken = await AsyncStorage.getItem('accessToken');
+                if (!accessToken) {
           throw new Error('No access token found');
         }
 
