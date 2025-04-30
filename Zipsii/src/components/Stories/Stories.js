@@ -18,133 +18,11 @@ import SkeletonLoader from '../Loader/SkeletonLoader';
 import { base_url } from '../../utils/base_url';
 import InstaStory from 'react-native-insta-story';
 
-const defaultStories = [
-  {
-    user_id: 4,
-    user_image: 'https://pbs.twimg.com/profile_images/1222140802475773952/61OmyINj.jpg',
-    user_name: 'Ahmet Çağlar Durmuş',
-    stories: [
-      {
-        story_id: 4,
-        story_image: 'https://image.freepik.com/free-vector/universe-mobile-wallpaper-with-planets_79603-600.jpg',
-        swipeText: 'Custom swipe text for this story',
-        onPress: () => console.log('story 1 swiped'),
-      },
-      {
-        story_id: 4,
-        story_image: 'https://image.freepik.com/free-vector/mobile-wallpaper-with-fluid-shapes_79603-601.jpg',
-        swipeText: 'Custom swipe text for this story',
-        onPress: () => console.log('story 2 swiped'),
-      },
-      {
-        story_id: 4,
-        story_image: 'https://image.freepik.com/free-vector/abstract-colorful-flow-shapes-background_23-2148256082.jpg',
-        swipeText: 'Custom swipe text for this story',
-        onPress: () => console.log('story 3 swiped'),
-      },
-    ],
-  },
-  {
-    user_id: 2,
-    user_image: 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8cHJvZmlsZXxlbnwwfHwwfHw%3D&ixlib=rb-1.2.1&w=1000&q=80',
-    user_name: 'Test User',
-    stories: [
-      {
-        story_id: 1,
-        story_image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjORKvjcbMRGYPR3QIs3MofoWkD4wHzRd_eg&usqp=CAU',
-        swipeText: 'Custom swipe text for this story',
-        onPress: () => console.log('story 1 swiped'),
-      },
-      {
-        story_id: 2,
-        story_image: 'https://files.oyebesmartest.com/uploads/preview/vivo-u20-mobile-wallpaper-full-hd-(1)qm6qyz9v60.jpg',
-        swipeText: 'Custom swipe text for this story',
-        onPress: () => console.log('story 2 swiped'),
-      },
-      {
-        story_id: 3,
-        story_image: 'https://image.freepik.com/free-vector/abstract-colorful-flow-shapes-background_23-2148256082.jpg',
-        swipeText: 'Custom swipe text for this story',
-        onPress: () => console.log('story 3 swiped'),
-      },
-    ],
-  },
-  {
-    user_id: 3,
-    user_image: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8dXNlcnxlbnwwfHwwfHw%3D&ixlib=rb-1.2.1&w=1000&q=80',
-    user_name: 'John Doe',
-    stories: [
-      {
-        story_id: 1,
-        story_image: 'https://image.freepik.com/free-vector/abstract-colorful-flow-shapes-background_23-2148256082.jpg',
-        swipeText: 'Custom swipe text for this story',
-        onPress: () => console.log('story 1 swiped'),
-      },
-      {
-        story_id: 2,
-        story_image: 'https://image.freepik.com/free-vector/universe-mobile-wallpaper-with-planets_79603-600.jpg',
-        swipeText: 'Custom swipe text for this story',
-        onPress: () => console.log('story 2 swiped'),
-      },
-    ],
-  },
-  {
-    user_id: 4,
-    user_image: 'https://pbs.twimg.com/profile_images/1222140802475773952/61OmyINj.jpg',
-    user_name: 'Ahmet Çağlar Durmuş',
-    stories: [
-      {
-        story_id: 4,
-        story_image: 'https://image.freepik.com/free-vector/universe-mobile-wallpaper-with-planets_79603-600.jpg',
-        swipeText: 'Custom swipe text for this story',
-        onPress: () => console.log('story 1 swiped'),
-      },
-      {
-        story_id: 4,
-        story_image: 'https://image.freepik.com/free-vector/mobile-wallpaper-with-fluid-shapes_79603-601.jpg',
-        swipeText: 'Custom swipe text for this story',
-        onPress: () => console.log('story 2 swiped'),
-      },
-      {
-        story_id: 4,
-        story_image: 'https://image.freepik.com/free-vector/abstract-colorful-flow-shapes-background_23-2148256082.jpg',
-        swipeText: 'Custom swipe text for this story',
-        onPress: () => console.log('story 3 swiped'),
-      },
-    ],
-  },
-  {
-    user_id: 2,
-    user_image: 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8cHJvZmlsZXxlbnwwfHwwfHw%3D&ixlib=rb-1.2.1&w=1000&q=80',
-    user_name: 'Test User',
-    stories: [
-      {
-        story_id: 1,
-        story_image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjORKvjcbMRGYPR3QIs3MofoWkD4wHzRd_eg&usqp=CAU',
-        swipeText: 'Custom swipe text for this story',
-        onPress: () => console.log('story 1 swiped'),
-      },
-      {
-        story_id: 2,
-        story_image: 'https://files.oyebesmartest.com/uploads/preview/vivo-u20-mobile-wallpaper-full-hd-(1)qm6qyz9v60.jpg',
-        swipeText: 'Custom swipe text for this story',
-        onPress: () => console.log('story 2 swiped'),
-      },
-      {
-        story_id: 3,
-        story_image: 'https://image.freepik.com/free-vector/abstract-colorful-flow-shapes-background_23-2148256082.jpg',
-        swipeText: 'Custom swipe text for this story',
-        onPress: () => console.log('story 3 swiped'),
-      },
-    ],
-  },
-];
-
 const Stories = () => {
   const navigation = useNavigation();
   const [image, setImage] = useState(null);
-  const [storyInfo, setStoryInfo] = useState(defaultStories);
-  const [isLoading, setIsLoading] = useState(false);
+  const [storyInfo, setStoryInfo] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userId, setUserId] = useState();
   const [seenStories, setSeenStories] = useState(new Set());
@@ -153,6 +31,48 @@ const Stories = () => {
   const [currentUserStories, setCurrentUserStories] = useState([]);
   const [showImagePickerModal, setShowImagePickerModal] = useState(false);
   const [myStories, setMyStories] = useState([]);
+
+  const fetchStories = async () => {
+    try {
+      setIsLoading(true);
+      const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MGVmZDUxN2I4M2FmOGVmNmFiZmEzYyIsImVtYWlsIjoiamVudUBnbWFpbC5jb20iLCJ1c2VyTmFtZSI6IkplbnVfWllfNTM1IiwiaWF0IjoxNzQ1OTA5NDA3LCJleHAiOjE3NDYxNjg2MDd9.v7rIck922X0ugdvyoOwCaFc62dl3LJzSed5ZCEE09k4 need to hordcode this token ';
+    
+      const response = await fetch('https://admin.zypsii.com/story/list', {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      });
+      
+      const data = await response.json();
+      
+      if (data.status) {
+        // Transform the API response to match the format expected by InstaStory
+        const transformedStories = data.data.stories.map(story => ({
+          user_id: story._id,
+          user_image: story.thumbnailUrl,
+          user_name: story.title,
+          stories: [{
+            story_id: story._id,
+            story_image: story.videoUrl,
+            swipeText: story.description,
+            onPress: () => console.log('story swiped'),
+          }]
+        }));
+        
+        setStoryInfo(transformedStories);
+      } else {
+        setError(data.message || 'Failed to fetch stories');
+      }
+    } catch (error) {
+      setError('Error fetching stories: ' + error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStories();
+  }, []);
 
   const loadUserId = async () => {
     try {
@@ -215,59 +135,40 @@ const Stories = () => {
 
   const uploadStory = async (imageAsset) => {
     const formData = new FormData();
-    formData.append('media', {
-      uri: imageAsset.uri,
-      name: imageAsset.uri.split('/').pop(),
-      type: 'image/jpeg',
-    });
-    formData.append('userId', userId);
-    const accessToken = await AsyncStorage.getItem('accessToken');
+    formData.append('title', 'Just for testing 1');
+    formData.append('description', 'for test the data');
+    formData.append('videoUrl', imageAsset.uri);
+    formData.append('thumbnailUrl', imageAsset.uri);
+
+    const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MGVmZDUxN2I4M2FmOGVmNmFiZmEzYyIsImVtYWlsIjoiamVudUBnbWFpbC5jb20iLCJ1c2VyTmFtZSI6IkplbnVfWllfNTM1IiwiaWF0IjoxNzQ1OTA5NDA3LCJleHAiOjE3NDYxNjg2MDd9.v7rIck922X0ugdvyoOwCaFc62dl3LJzSed5ZCEE09k4';
 
     try {
-      const response = await fetch(`${base_url}/story/upload`, {
+      const response = await fetch(`${base_url}/shorts/create`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
         },
-        body: formData,
+        body: JSON.stringify({
+          title: 'Just for testing 1',
+          description: 'for test the data',
+          videoUrl: imageAsset.uri,
+          thumbnailUrl: imageAsset.uri
+        }),
       });
 
       const data = await response.json();
       if (response.ok) {
-        console.log('Story uploaded successfully:', data.story);
-        const newStory = {
-          user_id: userId,
-          user_image: data.story.userId.profilePicture || 'https://via.placeholder.com/150',
-          user_name: data.story.userId.name || 'User',
-          stories: [{
-            story_id: data.story._id,
-            story_image: data.story.mediaUrl,
-            swipeText: 'Swipe to view more',
-            onPress: () => console.log('story swiped'),
-          }]
-        };
-
-        // Check if user already exists in stories
-        const existingUserIndex = storyInfo.findIndex(story => story.user_id === userId);
-        if (existingUserIndex !== -1) {
-          // Update existing user's stories
-          setStoryInfo(prev => {
-            const updated = [...prev];
-            updated[existingUserIndex].stories = [
-              ...updated[existingUserIndex].stories,
-              newStory.stories[0]
-            ];
-            return updated;
-          });
-        } else {
-          // Add new user with story
-          setStoryInfo(prev => [...prev, newStory]);
-        }
+        console.log('Story uploaded successfully:', data);
+        // Refresh the stories list after successful upload
+        fetchStories();
       } else {
         console.error('Failed to upload story:', data.message);
+        Alert.alert('Error', data.message || 'Failed to upload story');
       }
     } catch (error) {
       console.error('Error uploading story:', error);
+      Alert.alert('Error', 'Failed to upload story. Please try again.');
     }
   };
 
@@ -424,7 +325,7 @@ const Stories = () => {
           <TouchableOpacity
             onPress={() => {
               setError(null);
-              setStoryInfo(defaultStories);
+              fetchStories();
             }}
             style={styles.retryButton}
           >
@@ -436,13 +337,23 @@ const Stories = () => {
 
     if (isLoading) {
       return (
-        <SkeletonLoader
-          count={6}
-          circleSize={68}
-          textWidth={40}
-          textHeight={10}
-          containerStyle={styles.skeletonContainer}
-        />
+        <View style={styles.storiesContainer}>
+          <SkeletonLoader
+            count={6}
+            circleSize={68}
+            textWidth={40}
+            textHeight={10}
+            containerStyle={styles.skeletonContainer}
+          />
+        </View>
+      );
+    }
+
+    if (storyInfo.length === 0) {
+      return (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>No stories available</Text>
+        </View>
       );
     }
 
@@ -496,7 +407,6 @@ const Stories = () => {
             addStoryButtonStyle={styles.addStoryButton}
             addStoryButtonIcon={<Entypo name="circle-with-plus" style={styles.addIcon} />}
             unPressedBorderColor="#A60F93"
-
           />
         </View>
       </View>
@@ -532,7 +442,7 @@ const styles = StyleSheet.create({
     height: 68,
     borderRadius: 34,
     borderWidth: 2,
-    borderColor: '#ccc',
+    borderColor: '#A60F93',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 5,
@@ -545,7 +455,7 @@ const styles = StyleSheet.create({
   storyName: {
     textAlign: 'center',
     fontSize: 10,
-    opacity: 0.5,
+    color: '#A60F93',
     marginTop: 4,
   },
   addStoryButton: {
@@ -554,7 +464,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderWidth: 1.8,
     borderRadius: 100,
-    borderColor: '#c13584',
+    borderColor: '#A60F93',
     justifyContent: 'center',
     alignItems: 'center',
     position: 'absolute',
@@ -564,7 +474,7 @@ const styles = StyleSheet.create({
   },
   addIcon: {
     fontSize: 20,
-    color: '#c13584',
+    color: '#A60F93',
   },
   closeContainer: {
     flexDirection: 'row',
@@ -578,7 +488,7 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   profileName: {
-    color: 'white',
+    color: '#A60F93',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -594,12 +504,12 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   errorText: {
-    color: 'red',
+    color: '#A60F93',
     marginBottom: 10,
   },
   retryButton: {
     padding: 10,
-    backgroundColor: '#870E6B',
+    backgroundColor: '#A60F93',
     borderRadius: 5,
   },
   retryText: {
@@ -610,24 +520,24 @@ const styles = StyleSheet.create({
   },
   disabledStoryCircle: {
     opacity: 0.5,
-    borderColor: '#ccc',
+    borderColor: '#A60F93',
   },
   yourStoryContainer: {
     alignItems: 'center',
     marginRight: 15,
   },
   storyCircleActive: {
-    borderColor: '#3897f0',
+    borderColor: '#A60F93',
   },
   storyUsername: {
     fontSize: 12,
-    color: '#000',
+    color: '#A60F93',
   },
   addIconContainer: {
     position: 'absolute',
     bottom: 0,
     right: 0,
-    backgroundColor: '#a60f93',
+    backgroundColor: '#A60F93',
     borderRadius: 100,
     padding: 0.1,
   },
@@ -652,17 +562,28 @@ const styles = StyleSheet.create({
   modalButtonText: {
     marginLeft: 10,
     fontSize: 16,
+    color: '#A60F93',
   },
   cancelButton: {
     borderBottomWidth: 0,
     justifyContent: 'center',
   },
   cancelButtonText: {
-    color: '#ff0000',
+    color: '#A60F93',
   },
   storiesContainer: {
     flexDirection: 'row',
     padding: 10,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#A60F93',
   },
 });
 

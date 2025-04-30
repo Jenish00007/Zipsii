@@ -51,6 +51,9 @@ function MakeSchedule() {
   const [showFromDatePicker, setShowFromDatePicker] = useState(false);
   const [showToDatePicker, setShowToDatePicker] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedDayIndex, setSelectedDayIndex] = useState(null);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [timeType, setTimeType] = useState('start'); // 'start' or 'end'
 
   // Function to update schedule state
   const updateScheduleState = (updates) => {
@@ -69,11 +72,27 @@ function MakeSchedule() {
   const handleSubmit = async () => {
     try {
       setIsLoading(true);
+      
       // Validate required fields
       if (!bannerImage) {
         Alert.alert('Error', 'Banner image is required');
         return;
       }
+
+      // Check image size before sending
+      const imageResponse = await fetch(bannerImage);
+      const blob = await imageResponse.blob();
+      const fileSizeInMB = blob.size / (1024 * 1024);
+      
+      if (fileSizeInMB > 10) {
+        Alert.alert(
+          'Error',
+          'Image size exceeds 10MB limit. Please select a smaller image.',
+          [{ text: 'OK' }]
+        );
+        return;
+      }
+
       if (!tripName || tripName.length < 3) {
         Alert.alert('Error', 'Trip name is required and must be at least 3 characters long');
         return;
@@ -132,8 +151,8 @@ function MakeSchedule() {
         return {
           Description: day.description.trim(),
           date: fromDate.toISOString().split('T')[0], // Format as YYYY-MM-DD
-        location: {
-          latitude: parseFloat(day.latitude),
+          location: {
+            latitude: parseFloat(day.latitude),
             longitude: parseFloat(day.longitude)
           }
         };
@@ -148,15 +167,17 @@ function MakeSchedule() {
       // Create form data for multipart/form-data
       const formData = new FormData();
       
-      // Add banner image
-      const imageUri = bannerImage.startsWith('file://') ? bannerImage : `file://${bannerImage}`;
-      formData.append('bannerImage', {
-        uri: imageUri,
-        type: 'image/jpeg',
-        name: 'banner.jpg'
-      });
+      // Add banner image with size check
+      if (bannerImage) {
+        const imageUri = bannerImage.startsWith('file://') ? bannerImage : `file://${bannerImage}`;
+        formData.append('bannerImage', {
+          uri: imageUri,
+          type: 'image/jpeg',
+          name: 'banner.jpg'
+        });
+      }
 
-      // Add all fields individually to formData
+      // Add all fields individually to formData with size optimization
       formData.append('tripName', tripName.trim());
       formData.append('travelMode', "Bike");
       formData.append('visible', "Public");
@@ -164,49 +185,80 @@ function MakeSchedule() {
       formData.append('location[from][longitude]', locationData.from.longitude.toString());
       formData.append('location[to][latitude]', locationData.to.latitude.toString());
       formData.append('location[to][longitude]', locationData.to.longitude.toString());
-      formData.append('dates[from]', fromDate.toISOString().split('T')[0]); // Format as YYYY-MM-DD
-      formData.append('dates[end]', toDate.toISOString().split('T')[0]); // Format as YYYY-MM-DD
+      formData.append('dates[from]', fromDate.toISOString().split('T')[0]);
+      formData.append('dates[end]', toDate.toISOString().split('T')[0]);
       formData.append('numberOfDays', numberOfDays.toString());
 
-      // Add each plan description item individually
-      formattedPlanDescription.forEach((plan, index) => {
+      // Optimize plan description data
+      const optimizedPlanDescription = formattedPlanDescription.map(plan => ({
+        Description: plan.Description.trim(),
+        date: plan.date,
+        startTime: plan.startTime || "09:00",
+        endTime: plan.endTime || "17:00",
+        location: {
+          latitude: parseFloat(plan.location.latitude),
+          longitude: parseFloat(plan.location.longitude)
+        }
+      }));
+
+      // Add each plan item individually in array format
+      optimizedPlanDescription.forEach((plan, index) => {
         formData.append(`planDescription[${index}][Description]`, plan.Description);
         formData.append(`planDescription[${index}][date]`, plan.date);
+        formData.append(`planDescription[${index}][startTime]`, plan.startTime);
+        formData.append(`planDescription[${index}][endTime]`, plan.endTime);
         formData.append(`planDescription[${index}][location][latitude]`, plan.location.latitude.toString());
         formData.append(`planDescription[${index}][location][longitude]`, plan.location.longitude.toString());
       });
 
-    const accessToken = await AsyncStorage.getItem('accessToken');
+      const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MGVmZDUxN2I4M2FmOGVmNmFiZmEzYyIsImVtYWlsIjoiamVudUBnbWFpbC5jb20iLCJ1c2VyTmFtZSI6IkplbnVfWllfNTM1IiwiaWF0IjoxNzQ1OTA5NDA3LCJleHAiOjE3NDYxNjg2MDd9.v7rIck922X0ugdvyoOwCaFc62dl3LJzSed5ZCEE09k4 need to hordcode this token ';
+      
       if (!accessToken) {
         Alert.alert('Error', 'Authentication required');
         return;
       }
 
-      // Log the exact data being sent
-      console.log('Submitting form data:', {
-        tripName: tripName.trim(),
-        travelMode: "Bike",
-        visible: "Public",
-        location: locationData,
-        dates: {
-          from: fromDate.toISOString().split('T')[0],
-          end: toDate.toISOString().split('T')[0]
-        },
-        numberOfDays: numberOfDays,
-        planDescription: formattedPlanDescription
-      });
+      // Log the size of the form data
+      console.log('Form data size:', formData._parts.length);
+      console.log('Base URL:', base_url);
 
       const response = await fetch(`${base_url}/schedule/create`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'multipart/form-data',
+          'Accept': 'application/json',
           'Authorization': `Bearer ${accessToken}`,
         },
         body: formData,
       });
 
-      const data = await response.json();
-      console.log('Server response:', data);
+      // Log the raw response for debugging
+      const responseText = await response.text();
+      console.log('Raw server response:', responseText);
+      console.log('Response status:', response.status);
+      console.log('Response headers:', JSON.stringify(Object.fromEntries(response.headers.entries())));
+
+      let data;
+      try {
+        // Check if response is HTML
+        if (responseText.trim().startsWith('<!DOCTYPE') || responseText.trim().startsWith('<html')) {
+          throw new Error('Server returned HTML instead of JSON. Please check the endpoint URL.');
+        }
+        
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('Error parsing response:', parseError);
+        if (response.status === 413) {
+          throw new Error('The data being sent is too large. Please reduce the size of your images or data.');
+        } else if (response.status === 404) {
+          throw new Error('Schedule creation endpoint not found. Please check the URL.');
+        } else if (response.status === 401) {
+          throw new Error('Authentication failed. Please log in again.');
+        } else if (response.status === 500) {
+          throw new Error('Server error. Please try again later.');
+        } else {
+          throw new Error(`Server returned an invalid response. Status: ${response.status}`);
+        }
+      }
 
       if (response.ok) {
         dispatch(setSubmitted(true));
@@ -218,7 +270,7 @@ function MakeSchedule() {
           const errorMessages = Object.values(data.errors).flat();
           Alert.alert('Validation Error', errorMessages.join('\n'));
         } else {
-          throw new Error(data.message || 'Failed to create schedule');
+          throw new Error(data.message || `Server error: ${response.status}`);
         }
       }
     } catch (error) {
@@ -290,19 +342,36 @@ function MakeSchedule() {
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
-      quality: 1,
+      quality: 0.5, // Compress image to 50% quality
+      maxWidth: 1200, // Limit width
+      maxHeight: 1200, // Limit height
     });
 
     if (!result.cancelled) {
+      // Check file size
+      const imageResponse = await fetch(result.uri);
+      const blob = await imageResponse.blob();
+      const fileSizeInMB = blob.size / (1024 * 1024);
+      
+      if (fileSizeInMB > 10) {
+        Alert.alert(
+          'Image Too Large',
+          'Please select an image smaller than 10MB',
+          [{ text: 'OK' }]
+        );
+        return;
+      }
+
       updateScheduleState({ bannerImage: result.uri });
     }
   };
 
-  const formatDate = (date) => {
-    if (!date) return '';
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
     const day = date.getDate().toString().padStart(2, '0');
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const year = date.getFullYear();
@@ -312,14 +381,14 @@ function MakeSchedule() {
   const onFromDateChange = (event, selectedDate) => {
     setShowFromDatePicker(Platform.OS === 'ios');
     if (selectedDate) {
-      updateScheduleState({ fromDate: selectedDate });
+      updateScheduleState({ fromDate: selectedDate.toISOString() });
     }
   };
 
   const onToDateChange = (event, selectedDate) => {
     setShowToDatePicker(Platform.OS === 'ios');
     if (selectedDate) {
-      updateScheduleState({ toDate: selectedDate });
+      updateScheduleState({ toDate: selectedDate.toISOString() });
     }
   };
 
@@ -339,6 +408,35 @@ function MakeSchedule() {
       ],
       { cancelable: true }
     );
+  };
+
+  // Function to handle time selection
+  const handleTimeSelect = (event, selectedTime) => {
+    setShowTimePicker(false);
+    if (selectedTime) {
+      const hours = selectedTime.getHours().toString().padStart(2, '0');
+      const minutes = selectedTime.getMinutes().toString().padStart(2, '0');
+      const formattedTime = `${hours}:${minutes}`;
+      
+      const updatedDays = days.map((day, index) => {
+        if (index === selectedDayIndex) {
+          return {
+            ...day,
+            [timeType === 'start' ? 'startTime' : 'endTime']: formattedTime
+          };
+        }
+        return day;
+      });
+      
+      updateScheduleState({ days: updatedDays });
+    }
+  };
+
+  // Function to open time picker
+  const openTimePicker = (index, type) => {
+    setSelectedDayIndex(index);
+    setTimeType(type);
+    setShowTimePicker(true);
   };
 
   return (
@@ -440,7 +538,7 @@ function MakeSchedule() {
                 </TouchableOpacity>
                 {showFromDatePicker && (
                   <DateTimePicker
-                    value={fromDate || new Date()}
+                    value={fromDate ? new Date(fromDate) : new Date()}
                     mode="date"
                     display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                     onChange={onFromDateChange}
@@ -460,11 +558,11 @@ function MakeSchedule() {
                 </TouchableOpacity>
                 {showToDatePicker && (
                   <DateTimePicker
-                    value={toDate || new Date()}
+                    value={toDate ? new Date(toDate) : new Date()}
                     mode="date"
                     display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                     onChange={onToDateChange}
-                    minimumDate={fromDate || new Date()}
+                    minimumDate={fromDate ? new Date(fromDate) : new Date()}
                   />
                 )}
               </View>
@@ -474,7 +572,7 @@ function MakeSchedule() {
           {/* Plan Description Section */}
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionTitle}>PLAN DESCRIPTION</Text>
-            {days.map((day) => (
+            {days.map((day, index) => (
               <View key={day.id} style={styles.dayCard}>
                 <View style={styles.dayHeader}>
                 <Text style={styles.dayTitle}>{`Day ${day.id}`}</Text>
@@ -521,6 +619,26 @@ function MakeSchedule() {
                     />
                   </MapView>
                 )}
+
+                <View style={styles.timeContainer}>
+                  <TouchableOpacity 
+                    style={styles.timeButton}
+                    onPress={() => openTimePicker(index, 'start')}
+                  >
+                    <Text style={styles.timeText}>
+                      Start: {day.startTime || "09:00"}
+                    </Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={styles.timeButton}
+                    onPress={() => openTimePicker(index, 'end')}
+                  >
+                    <Text style={styles.timeText}>
+                      End: {day.endTime || "17:00"}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             ))}
 
@@ -551,7 +669,7 @@ function MakeSchedule() {
       {/* Date Pickers */}
       {showFromDatePicker && (
         <DateTimePicker
-          value={fromDate || new Date()}
+          value={fromDate ? new Date(fromDate) : new Date()}
           mode="date"
           display="default"
           onChange={onFromDateChange}
@@ -559,10 +677,21 @@ function MakeSchedule() {
       )}
       {showToDatePicker && (
         <DateTimePicker
-          value={toDate || new Date()}
+          value={toDate ? new Date(toDate) : new Date()}
           mode="date"
           display="default"
           onChange={onToDateChange}
+        />
+      )}
+
+      {/* Add Time Picker */}
+      {showTimePicker && (
+        <DateTimePicker
+          value={new Date()}
+          mode="time"
+          is24Hour={true}
+          display="default"
+          onChange={handleTimeSelect}
         />
       )}
 
