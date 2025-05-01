@@ -35,8 +35,7 @@ const Stories = () => {
   const fetchStories = async () => {
     try {
       setIsLoading(true);
-      const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MGVmZDUxN2I4M2FmOGVmNmFiZmEzYyIsImVtYWlsIjoiamVudUBnbWFpbC5jb20iLCJ1c2VyTmFtZSI6IkplbnVfWllfNTM1IiwiaWF0IjoxNzQ1OTA5NDA3LCJleHAiOjE3NDYxNjg2MDd9.v7rIck922X0ugdvyoOwCaFc62dl3LJzSed5ZCEE09k4 need to hordcode this token ';
-    
+      const accessToken = await AsyncStorage.getItem('accessToken');
       const response = await fetch('https://admin.zypsii.com/story/list', {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
@@ -134,16 +133,10 @@ const Stories = () => {
   };
 
   const uploadStory = async (imageAsset) => {
-    const formData = new FormData();
-    formData.append('title', 'Just for testing 1');
-    formData.append('description', 'for test the data');
-    formData.append('videoUrl', imageAsset.uri);
-    formData.append('thumbnailUrl', imageAsset.uri);
-
-    const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MGVmZDUxN2I4M2FmOGVmNmFiZmEzYyIsImVtYWlsIjoiamVudUBnbWFpbC5jb20iLCJ1c2VyTmFtZSI6IkplbnVfWllfNTM1IiwiaWF0IjoxNzQ1OTA5NDA3LCJleHAiOjE3NDYxNjg2MDd9.v7rIck922X0ugdvyoOwCaFc62dl3LJzSed5ZCEE09k4';
-
     try {
-      const response = await fetch(`${base_url}/shorts/create`, {
+      const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MGVmZDUxN2I4M2FmOGVmNmFiZmEzYyIsImVtYWlsIjoiamVudUBnbWFpbC5jb20iLCJ1c2VyTmFtZSI6IkplbnVfWllfNTM1IiwiaWF0IjoxNzQ1OTA5NDA3LCJleHAiOjE3NDYxNjg2MDd9.v7rIck922X0ugdvyoOwCaFc62dl3LJzSed5ZCEE09k4';
+
+      const response = await fetch(`${base_url}/story/create`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${accessToken}`,

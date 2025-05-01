@@ -14,8 +14,10 @@ import { alignment } from "../../utils";
 import { base_url } from "../../utils/base_url";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from '@react-navigation/native';
-
+import RecommendCard from "./RecommendCard";
 //const baseUrl = 'https://admin.zypsii.com'; // Backend API base URL
+
+
 
 function SearchPage() {
   const navigation = useNavigation();
@@ -23,7 +25,9 @@ function SearchPage() {
   const [searchResults, setSearchResults] = useState([]);
   const [isFocused, setIsFocused] = useState(false);
   const [activeTab, setActiveTab] = useState("People"); // Default tab is 'People'
-
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [selectedPlace, setSelectedPlace] = useState(null);
+  const [showViewMoreModal, setShowViewMoreModal] = useState(false);
   // Fetch search results based on the active tab (People or Places)
   const fetchSearchResults = async (text) => {
     if (text.trim() === "") {
@@ -45,9 +49,9 @@ function SearchPage() {
           'Content-Type': 'application/json'
         }
       });
-      
+
       const data = await response.json();
-      
+
       console.log('API Response:', {
         url,
         rawData: data,
@@ -101,7 +105,7 @@ function SearchPage() {
 
   // Render each search result item
   const renderItem = ({ item }) => (
-    <TouchableOpacity 
+    <TouchableOpacity
       onPress={() => {
         if (activeTab === "Places") {
           navigation.navigate('Destination', {
@@ -119,18 +123,18 @@ function SearchPage() {
       }}
     >
       <View style={styles.personContainer}>
-        <Image 
-          source={{ uri: item.image || 'https://via.placeholder.com/50' }} 
+        <Image
+          source={{ uri: item.image || 'https://via.placeholder.com/50' }}
           style={styles.avatar}
         />
         <View style={styles.personDetails}>
           <Text style={styles.personName}>{item.name}</Text>
-           {activeTab === "People" ?
-          <Text style={styles.personTagline}>
-            {item.tagline}
-          </Text>
-          :
-          null
+          {activeTab === "People" ?
+            <Text style={styles.personTagline}>
+              {item.tagline}
+            </Text>
+            :
+            null
           }
           {activeTab === "Places" && (
             <>
@@ -139,6 +143,16 @@ function SearchPage() {
                 <Text style={styles.ratingText}>{item.rating || '0'}</Text>
                 <Text style={styles.distanceText}>{item.distance}</Text>
               </View>
+              <RecommendCard
+                onSchedulePress={() => {
+                  setSelectedPlace(item);
+                  setShowScheduleModal(true);
+                }}
+                onViewMorePress={() => {
+                  setSelectedPlace(item);
+                  setShowViewMoreModal(true);
+                }}
+              />
             </>
           )}
           {item.bio && <Text style={styles.bioText}>{item.bio}</Text>}
@@ -166,13 +180,13 @@ function SearchPage() {
     <View style={styles.container}>
       {/* Back button and search bar */}
       <View style={styles.headerContainer}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
           <Ionicons name="chevron-back" size={28} color="#333" />
         </TouchableOpacity>
-        
+
         <View style={styles.searchBarContainer}>
           <Ionicons name="search" size={22} color="#999" style={styles.searchIcon} />
           <TextInput
@@ -198,6 +212,8 @@ function SearchPage() {
         </View>
       </View>
 
+
+      <RecommendCard />
       {/* Results count */}
       {searchResults.length > 0 && renderResultCount()}
 
@@ -205,27 +221,27 @@ function SearchPage() {
       <View style={styles.tabContainer}>
         {["People", "Places"].map((tab) => (
           <TouchableOpacity
-          key={tab}
-          style={[
-            styles.tabButton,
-            activeTab === tab && styles.activeTabButton,
-          ]}
-          onPress={() => {
-            setActiveTab(tab);
-            setSearchResults([]); // Clear results when switching tabs
-          }}
-        >
-          <Text
+            key={tab}
             style={[
-              styles.tabText,
-              activeTab === tab && styles.activeTabText,
+              styles.tabButton,
+              activeTab === tab && styles.activeTabButton,
             ]}
+            onPress={() => {
+              setActiveTab(tab);
+              setSearchResults([]); // Clear results when switching tabs
+            }}
           >
-            {tab}
-          </Text>
-          {activeTab === tab && <View style={styles.activeIndicator} />}
-        </TouchableOpacity>
-        
+            <Text
+              style={[
+                styles.tabText,
+                activeTab === tab && styles.activeTabText,
+              ]}
+            >
+              {tab}
+            </Text>
+            {activeTab === tab && <View style={styles.activeIndicator} />}
+          </TouchableOpacity>
+
         ))}
       </View>
 
@@ -301,13 +317,13 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
     justifyContent: "space-between",  // Ensures the tabs are centered
-    alignItems: "center",  
+    alignItems: "center",
   },
   tabButton: {
     paddingVertical: 15,
     marginRight: 30,
     position: "relative",
-    alignItems: "center",   
+    alignItems: "center",
   },
   activeTabButton: {
     // Active styling handled by the indicator
@@ -328,7 +344,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor:colors.Zypsii_color,
+    backgroundColor: colors.Zypsii_color,
     borderTopLeftRadius: 3,
     borderTopRightRadius: 3,
   },
@@ -400,6 +416,81 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.fontThirdColor || "#777",
     marginLeft: 4,
+  },
+  nearbyPlacesCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 15,
+    marginTop: 15,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  nearbyPlacesTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 8,
+  },
+  nearbyPlacesSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 15,
+  },
+  nearbyPlaceItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  placeIcon: {
+    fontSize: 24,
+    marginRight: 12,
+  },
+  placeDetails: {
+    flex: 1,
+  },
+  placeName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  placeDescription: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 2,
+  },
+  placeDistance: {
+    fontSize: 12,
+    color: colors.Zypsii_color,
+    marginTop: 2,
+  },
+  nearbyPlacesButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 15,
+  },
+  nearbyPlacesButton: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginHorizontal: 5,
+  },
+  createScheduleButton: {
+    backgroundColor: colors.Zypsii_color,
+  },
+  viewMoreButton: {
+    backgroundColor: '#f0f0f0',
+  },
+  createScheduleButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  viewMoreButtonText: {
+    color: '#333',
+    fontWeight: '600',
   },
 });
 
