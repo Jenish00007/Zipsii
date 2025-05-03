@@ -1,83 +1,103 @@
-import React, { useState, useEffect } from 'react';
-import { StatusBar, Platform } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { StatusBar, Platform, View } from 'react-native';
 import * as Font from 'expo-font';
 import * as Notifications from 'expo-notifications';
+import * as Device from 'expo-device';
 import FlashMessage from 'react-native-flash-message';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import AppContainer from './src/routes/routes';
 import { colors } from './src/utils/colors';
-import { Spinner } from './src/components';
 import { ScheduleProvider } from './src/context/ScheduleContext';
-import { AuthProvider } from './src/components/Auth/AuthContext'; // Import the AuthProvider
+import { AuthProvider } from './src/components/Auth/AuthContext';
+import { Provider } from 'react-redux';
+import { store } from './src/redux/store';
+
+// Configure how notifications are handled when app is in foreground
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
 
 export default function App() {
   const [fontLoaded, setFontLoaded] = useState(false);
+  const [expoPushToken, setExpoPushToken] = useState('');
 
   useEffect(() => {
-    loadAppData();
+    async function loadFonts() {
+      try {
+        await Font.loadAsync({
+          // Add your custom fonts here if needed
+        });
+        setFontLoaded(true);
+      } catch (error) {
+        console.error('Error loading fonts:', error);
+        setFontLoaded(true); // Set to true even if font loading fails
+      }
+    }
+
+    loadFonts();
+    registerForPushNotificationsAsync();
   }, []);
 
-  async function loadAppData() {
-    // Load custom fonts
-    await Font.loadAsync({
-      'Poppins-Regular': require('./src/assets/font/Poppins/Poppins-Regular.ttf'),
-      'Poppins-Bold': require('./src/assets/font/Poppins/Poppins-Bold.ttf'),
-    });
-
-    // Request permissions for push notifications
-    await permissionForPushNotificationsAsync();
-
-    // Set fontLoaded to true once all data is loaded
-    setFontLoaded(true);
-  }
-
-  async function permissionForPushNotificationsAsync() {
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
-
-    // Only ask for permissions if not already granted
-    if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
+  async function registerForPushNotificationsAsync() {
+    let token;
+    
+    if (Device.isDevice) {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+      
+      if (finalStatus !== 'granted') {
+        alert('Failed to get push token for push notification!');
+        return;
+      }
+      
+      token = (await Notifications.getExpoPushTokenAsync()).data;
+      console.log(token);
+      
+      // Store the token in AsyncStorage
+      await AsyncStorage.setItem('expoPushToken', token);
+    } else {
+      alert('Must use physical device for Push Notifications');
     }
 
-    // Stop if permissions are not granted
-    if (finalStatus !== 'granted') {
-      return;
-    }
-
-    // Configure notification channel for Android
     if (Platform.OS === 'android') {
-      Notifications.setNotificationChannelAsync('default', {
+      await Notifications.setNotificationChannelAsync('default', {
         name: 'default',
         importance: Notifications.AndroidImportance.HIGH,
         vibrationPattern: [0, 250, 250, 250],
         lightColor: colors.brownColor,
       });
     }
+
+    return token;
   }
 
-  // Show a spinner while fonts and data are loading
   if (!fontLoaded) {
-    return <Spinner spinnerColor={colors.spinnerColor} />;
+    return <View style={{ flex: 1, backgroundColor: colors.headerbackground }} />;
   }
 
-  // Render the main app once everything is loaded
   return (
-    <>
+    <Provider store={store}>
       <StatusBar
         barStyle="dark-content"
         backgroundColor={colors.headerbackground}
       />
 
-      {/* Wrap the app with AuthProvider and ScheduleProvider */}
       <AuthProvider>
         <ScheduleProvider>
-          <AppContainer />
+          <AppContainer expoPushToken={expoPushToken} />
         </ScheduleProvider>
       </AuthProvider>
 
-      {/* FlashMessage for global notifications */}
       <FlashMessage position="top" />
-    </>
+    </Provider>
   );
 }

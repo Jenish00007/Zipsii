@@ -1,13 +1,14 @@
 {
   "expo": {
-    "version": "2.0.8",
-    "name": "Zipsii",
-    "scheme": "ecommero-app",
-    "description": " Ecommero is a starter kit ecommerce UI theme built in React Native using Expo for IOS and Android. It's made keeping good aesthetics in mind as well keeping the best coding practices in mind. Its fully customisable to easily help you in your next ecommerce project. https://market.nativebase.io/view/react-native-e-commero-ui-theme",
+    "version": "1.0.3",
+    "name": "Zypsii",
+    "scheme": "zypsii",
+    "owner": "don05",
+    "description": "Zypsii Travel is a modern travel companion app built in React Native using Expo for iOS and Android. It's designed with beautiful aesthetics and best coding practices in mind, helping travelers plan, book, and manage their journeys seamlessly. The app features trip planning, booking management, and local experiences discovery.",
     "slug": "lofigram",
     "privacy": "public",
     "androidStatusBar": {
-      "backgroundColor": "#000"
+      "backgroundColor": "#000000"
     },
     "platforms": [
       "ios",
@@ -25,7 +26,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.ecommero.app",
+      "bundleIdentifier": "com.SmartKal.founder",
       "usesAppleSignIn": true
     },
     "notification": {
@@ -33,26 +34,23 @@
       "color": "#D0AD8A",
       "icon": "./assets/image.png",
       "androidMode": "default",
-      "androidCollapsedTitle": "Ecommero"
+      "androidCollapsedTitle": "Zypsii"
     },
     "android": {
-      "versionCode": 9,
-      "package": "com.ecommero.app",
+      "versionCode": 3,
+      "package": "com.SmartKal.founder",
       "permissions": [],
       "googleServicesFile": "./google-services.json"
     },
     "extra": {
       "eas": {
-        "projectId": "5159b530-8294-440f-a72a-546bb111c0f8"
+        "projectId": "a79bc421-d1f4-4a46-8a0e-042308451c06"
       }
     },
-    "builds": {
-    "android": {
-      "release": {
-        "workflow": "managed",
-        "type": "apk"
-      }
-    }
-  }
+    "plugins": [
+      ["expo-font", {
+        "fonts": []
+      }]
+    ]
   }
 }

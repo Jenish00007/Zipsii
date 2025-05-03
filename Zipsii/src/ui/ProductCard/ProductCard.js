@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Image, TouchableOpacity, Alert, Text } from 'react-native';
 import styles from './styles';
 import { colors, scale } from '../../utils';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 
@@ -26,6 +26,9 @@ function ProductCard(props) {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${accessToken}`, // Attach the JWT token to the request header
         },
+        body:{
+          
+        }
       });
 
       if (response.ok) {
@@ -46,6 +49,12 @@ function ProductCard(props) {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Format distance to show one decimal place
+  const formatDistance = (distance) => {
+    if (!distance) return '0.0 km';
+    return `${parseFloat(distance).toFixed(1)} km`;
   };
 
   return (
@@ -70,7 +79,7 @@ function ProductCard(props) {
             disabled={loading}  // Disable while loading
           >
             <Ionicons
-              name={liked ? 'ios-bookmark' : 'ios-bookmark-outline'}
+              name={liked ? 'bookmark' : 'bookmark-outline'}
               size={scale(20)}
               color={colors.greenColor}
             />
@@ -86,7 +95,16 @@ function ProductCard(props) {
           </Text>
 
           <View style={styles.priceContainer}>
-            {/* Optionally add more product information like price or rating */}
+            <View style={styles.distanceContainer}>
+              <Ionicons name="location-outline" size={14} color={colors.Zypsii_color} />
+              <Text style={styles.distanceText}>
+                {formatDistance(props.distance)}
+              </Text>
+            </View>
+            <View style={styles.ratingContainer}>
+              <Ionicons name="star" size={14} color={colors.Zypsii_color} />
+              <Text style={styles.ratingText}>{props.rating || '0'}</Text>
+            </View>
           </View>
         </View>
       </View>

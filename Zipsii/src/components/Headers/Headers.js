@@ -3,8 +3,20 @@ import { View, Text, TouchableOpacity, Image } from 'react-native'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'; // Import Material Icons
 import styles from './styles'
+import { useNavigation } from '@react-navigation/native';
 
 function BackHeader(props) {
+  const navigation = useNavigation();
+  
+  const handleSearchPress = () => {
+    navigation.navigate('SearchPage');
+  };
+  const handleNotificationPress = () => {
+    navigation.navigate('Notification');
+  };
+  const handleProfilePress = () => {
+    navigation.navigate('ProfileDashboard');
+  };
   return (
     <View style={styles.container}>
       <View style={styles.subContainer}>
@@ -25,19 +37,19 @@ function BackHeader(props) {
           <TouchableOpacity
             activeOpacity={0.7}
             style={styles.iconButton}
-            onPress={() => props.onSearchPressed()}>
+            onPress={() => handleSearchPress()}>
             <Ionicons name="ios-search" size={24} color="#fff" />
           </TouchableOpacity>
           <TouchableOpacity
             activeOpacity={0.7}
             style={styles.iconButton}
-            onPress={() => props.onNotificationPressed()}>
+            onPress={() => handleNotificationPress()}>
             <Ionicons name="notifications" size={24} color="#fff" />
           </TouchableOpacity>
           <TouchableOpacity
             activeOpacity={0.7}
             style={styles.iconButton}
-            onPress={() => props.onProfilePressed()}>
+            onPress={() => handleProfilePress()}>
             <Ionicons name="person" size={24} color="#fff" />
           </TouchableOpacity>
         </View>

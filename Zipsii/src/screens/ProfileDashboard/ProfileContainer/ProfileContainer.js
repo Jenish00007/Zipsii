@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { TouchableOpacity, View, Image, ScrollView } from 'react-native';
+import { TouchableOpacity, View, Image, ScrollView, Share } from 'react-native';
 import styles from './styles';
 import { Feather, MaterialIcons, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -10,6 +10,29 @@ import { colors } from '../../../utils';
 function ProfileContainer({profileInfo}) {
   const navigation = useNavigation();
 
+  const handleShare = async () => {
+    try {
+      const shareOptions = {
+        message: `Check out ${profileInfo?.name}'s profile on Zypsii!`,
+        url: `Zypsii://profile/${profileInfo?.id}`,
+        title: `Share ${profileInfo?.name}'s Profile`
+      };
+
+      const result = await Share.share(shareOptions);
+      
+      if (result.action === Share.sharedAction) {
+        if (result.activityType) {
+          console.log('Shared with activity type:', result.activityType);
+        } else {
+          console.log('Shared successfully');
+        }
+      } else if (result.action === Share.dismissedAction) {
+        console.log('Share dismissed');
+      }
+    } catch (error) {
+      console.error('Error sharing profile:', error);
+    }
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -25,8 +48,8 @@ function ProfileContainer({profileInfo}) {
             </TouchableOpacity>
           </View>
           <View style={styles.circle}>
-            <TouchableOpacity onPress={() => console.log('Share button pressed')}>
-            <MaterialCommunityIcons name="share-all-outline"  size={24} color={colors.white} />
+            <TouchableOpacity onPress={handleShare}>
+              <MaterialCommunityIcons name="share-all-outline" size={24} color={colors.white} />
             </TouchableOpacity>
           </View>
         </View>
@@ -45,33 +68,39 @@ function ProfileContainer({profileInfo}) {
         </View>
 
         {/* Stats Section */}
-        {/* <View style={styles.statsContainer}>
+        <View style={styles.statsContainer}>
           <View style={styles.stat}>
             <TextDefault style={styles.statLabel}>Posts</TextDefault>
-            <TextDefault style={styles.statNumber}>100</TextDefault>
+            <TextDefault style={styles.statNumber}>{profileInfo?.Posts || '0'}</TextDefault>
           </View>
-          <View style={styles.stat}>
+          <TouchableOpacity 
+            style={styles.stat}
+            onPress={() => navigation.navigate('FollowersList', { initialTab: 'Followers' })}
+          >
             <TextDefault style={styles.statLabel}>Followers</TextDefault>
-            <TextDefault style={styles.statNumber}>120k</TextDefault>
-          </View>
-          <View style={styles.statLast}>
+            <TextDefault style={styles.statNumber}>{profileInfo?.Followers || '0'}</TextDefault>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.statLast}
+            onPress={() => navigation.navigate('FollowersList', { initialTab: 'Following' })}
+          >
             <TextDefault style={styles.statLabel}>Following</TextDefault>
-            <TextDefault style={styles.statNumber}>0</TextDefault>
-          </View>
-        </View> */}
+            <TextDefault style={styles.statNumber}>{profileInfo?.Following || '0'}</TextDefault>
+          </TouchableOpacity>
+        </View>
 
         {/* Settings Options */}
         <View style={styles.settingsSection} H5>
           {[
             { label: 'Your Profile', icon: 'person-outline', route: 'DummyScreen' },
-            // { label: 'Create Business Page', icon: 'person-outline', route: 'PageCreation' },
+            // { label: 'Expense Calculator', icon: 'calculate', route: 'ExpenseCalculator' },
             { label: 'Delete', icon: 'delete', route: 'DeleteButton' },
             { label: 'Logout', icon: 'logout', route: 'Logout' },
             { label: 'Favourites', icon: 'star-outline', route: 'Favourite' },
+            { label: 'FAQ', icon: 'help-outline', route: 'FAQ' },
             { label: 'My Schedule', icon: 'list', route: 'MySchedule' },
-            // { label: 'Settings', icon: 'settings', route: 'Settings' },
-            { label: 'Help Center', icon: 'help', route: 'HelpCenter' },
-            { label: 'Privacy Policy', icon: 'lock', route: 'PrivacyPolicy' },
+            // { label: 'Help Center', icon: 'help', route: 'HelpCenter' },
+            // { label: 'Privacy Policy', icon: 'lock', route: 'PrivacyPolicy' },
           ].map((item, index) => (
             <TouchableOpacity
               key={index}

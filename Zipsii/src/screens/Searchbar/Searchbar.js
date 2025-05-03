@@ -8,13 +8,17 @@ import {
   Image,
   TouchableOpacity,
 } from "react-native";
-import Icon from "react-native-vector-icons/Ionicons";
+import { Ionicons } from '@expo/vector-icons';
 import { colors } from "../../utils";
 import { alignment } from "../../utils";
+import { base_url } from "../../utils/base_url";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNavigation } from '@react-navigation/native';
 
-const baseUrl = 'http://172.20.10.5:8000'; // Backend API base URL
+//const baseUrl = 'https://admin.zypsii.com'; // Backend API base URL
 
 function SearchPage() {
+  const navigation = useNavigation();
   const [searchText, setSearchText] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isFocused, setIsFocused] = useState(false);
@@ -26,25 +30,66 @@ function SearchPage() {
       setSearchResults([]); // Clear results if search is empty
       return;
     }
+    const accessToken = await AsyncStorage.getItem('accessToken');
+    console.log('Access Token:', accessToken); // Log token for debugging
 
     const url = activeTab === "People"
-      ? `${baseUrl}/search_people?query=${text}`
-      : `${baseUrl}/search_places?query=${text}`;
+      ? `${base_url}/user/getProfile?filter=users&search=${text}`
+      : `${base_url}/schedule/places/getNearest?searchPlaceName=${encodeURIComponent(text)}`;
 
     try {
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
       const data = await response.json();
+      
+      console.log('API Response:', {
+        url,
+        rawData: data,
+        activeTab,
+        searchText: text,
+        status: response.status
+      });
 
-      const formattedData = data.map(item => ({
-        id: item.id.toString(),
-        image: item.image,
-        name: item.name || item.title,
-        tagline: item.tagline || item.subtitle,
-      }));
-
-      setSearchResults(formattedData);
+      if (data.success && data.data) {
+        if (activeTab === "Places") {
+          // Format place data
+          const formattedData = data.data.map(place => ({
+            id: place._id,
+            image: place.image,
+            name: place.name,
+            tagline: place.address,
+            rating: place.rating,
+            distance: place.distanceInKilometer,
+            location: place.location
+          }));
+          setSearchResults(formattedData);
+        } else {
+          // Format people data (existing logic)
+          const formattedData = [{
+            id: data.data._id,
+            image: data.data.profileImage || 'https://via.placeholder.com/50',
+            name: data.data.fullName,
+            tagline: data.data.userName,
+            email: data.data.email,
+            website: data.data.website,
+            bio: data.data.bio,
+            location: data.data.location
+          }];
+          setSearchResults(formattedData);
+        }
+      } else {
+        console.log('No data found in response');
+        setSearchResults([]);
+      }
     } catch (error) {
       console.error('Error fetching search results:', error);
+      setSearchResults([]);
     }
   };
 
@@ -56,17 +101,55 @@ function SearchPage() {
 
   // Render each search result item
   const renderItem = ({ item }) => (
-    <View style={styles.personContainer}>
-      <Image 
-        source={{ uri: item.image }} 
-        style={styles.avatar}
-       
-      />
-      <View style={styles.personDetails}>
-        <Text style={styles.personName}>{item.name}</Text>
-        <Text style={styles.personTagline}>{item.tagline}</Text>
+    <TouchableOpacity 
+      onPress={() => {
+        if (activeTab === "Places") {
+          navigation.navigate('Destination', {
+            product: {
+              id: item.id,
+              image: item.image,
+              name: item.name,
+              subtitle: item.tagline,
+              rating: item.rating,
+              distance: item.distance,
+              location: item.location
+            }
+          });
+        }
+      }}
+    >
+      <View style={styles.personContainer}>
+        <Image 
+          source={{ uri: item.image || 'https://via.placeholder.com/50' }} 
+          style={styles.avatar}
+        />
+        <View style={styles.personDetails}>
+          <Text style={styles.personName}>{item.name}</Text>
+           {activeTab === "People" ?
+          <Text style={styles.personTagline}>
+            {item.tagline}
+          </Text>
+          :
+          null
+          }
+          {activeTab === "Places" && (
+            <>
+              <View style={styles.ratingContainer}>
+                <Ionicons name="star" size={14} color={colors.Zypsii_color} />
+                <Text style={styles.ratingText}>{item.rating || '0'}</Text>
+                <Text style={styles.distanceText}>{item.distance}</Text>
+              </View>
+            </>
+          )}
+          {item.bio && <Text style={styles.bioText}>{item.bio}</Text>}
+          {item.website && (
+            <Text style={styles.websiteText} numberOfLines={1}>
+              🌐 {item.website}
+            </Text>
+          )}
+        </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   // Display number of results
@@ -83,12 +166,15 @@ function SearchPage() {
     <View style={styles.container}>
       {/* Back button and search bar */}
       <View style={styles.headerContainer}>
-        <TouchableOpacity style={styles.backButton}>
-          <Icon name="chevron-back" size={28} color="#333" />
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="chevron-back" size={28} color="#333" />
         </TouchableOpacity>
         
         <View style={styles.searchBarContainer}>
-          <Icon name="search" size={22} color="#999" style={styles.searchIcon} />
+          <Ionicons name="search" size={22} color="#999" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
             value={searchText}
@@ -233,7 +319,7 @@ const styles = StyleSheet.create({
   },
   activeTabText: {
     fontSize: 16,
-    color: colors.Zipsii_color,
+    color: colors.Zypsii_color,
     fontWeight: "600",
   },
   activeIndicator: {
@@ -242,7 +328,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor:colors.Zipsii_color,
+    backgroundColor:colors.Zypsii_color,
     borderTopLeftRadius: 3,
     borderTopRightRadius: 3,
   },
@@ -284,11 +370,36 @@ const styles = StyleSheet.create({
     color: colors.fontThirdColor || "#777",
     fontWeight: "normal",
   },
+  bioText: {
+    fontSize: 14,
+    color: colors.fontThirdColor || "#777",
+    marginTop: 4,
+  },
+  websiteText: {
+    fontSize: 14,
+    color: colors.Zypsii_color,
+    marginTop: 4,
+  },
   noResults: {
     textAlign: "center",
     fontSize: 16,
     color: "#999",
     marginTop: 40,
+  },
+  ratingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 4,
+  },
+  ratingText: {
+    fontSize: 14,
+    color: colors.Zypsii_color,
+    marginLeft: 4,
+  },
+  distanceText: {
+    fontSize: 14,
+    color: colors.fontThirdColor || "#777",
+    marginLeft: 4,
   },
 });
 

@@ -131,12 +131,12 @@ const styles = StyleSheet.create({
   },
   itemCardContainer: {
     width: scale(180),
-    height: scale(200),
+    height: scale(220),
     borderRadius: scale(6),
     borderColor: colors.whiteColor,
     borderWidth: scale(3),
     ...alignment.MTsmall,
-    ...alignment.MRlarge
+    ...alignment.MRlarge,
   },
   iconContainer: {
     width: scale(60),  // Adjust width as needed
@@ -161,12 +161,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: scale(10), // Adjust for proper spacing
   },
   titleSpacer: {
-    marginLeft: '5%',
+    marginLeft: '4%',
+    marginTop: scale(15)
+  },
+  titleSpacernearest: {
+    marginLeft: '4%',
+    marginTop: scale(15),
+    marginBottom: '4%',
+  },
+  titleSpaceredge: {
+    marginLeft: '1%',
     marginTop: scale(15)
   },
   titleSpacerdesti: {
-    marginLeft: '5%',
-    marginTop: scale(25)
+    marginLeft: '1%',
+    marginTop: scale(15)
   },
   productCard: {
     marginLeft: '5%',
@@ -180,7 +189,7 @@ const styles = StyleSheet.create({
   seeAllTextContainer: {
     flex: 1, // Ensures it takes the remaining space and pushes text to the right
     alignItems: 'flex-end', // Aligns text to the right
-    marginTop: scale(9), // If you want a bit of space above
+    marginTop: scale(1), // If you want a bit of space above
   },
   locationImage: {
     width: 34,  // Adjust width
@@ -279,36 +288,38 @@ const styles = StyleSheet.create({
   },
   scheduleContainer: {
     padding: wp('4%'), // Dynamic padding based on screen width
-    marginTop: hp('2%'),
+    //marginTop: hp('2%'),
     // marginTop: verticalScale(20),
-    paddingHorizontal: scale(16),
+    paddingHorizontal: scale(14),
     backgroundColor: '#fff',
     paddingBottom: verticalScale(20),
   },
   scheduleheadContainer:{
     flexDirection: 'row',
-    marginBottom: hp('2%'),
+    //marginBottom: hp('2%'),
     justifyContent: 'space-between',
     alignItems: 'center',
     ...alignment.PxSmall
   },
   card: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: colors.lightpink,
-    borderRadius: scale(20),
-    padding: scale(10),
-    marginRight: scale(10),
-    borderWidth: 1,
-    borderColor: colors.grayLinesColor,
-    elevation: 4,
+    width: 150,
+    marginRight: 10,
+    borderRadius: 10,
+    overflow: 'hidden',
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
-  image: {
-    width: scale(100),
-    height: scale(110),
-    borderRadius: scale(25),
-    marginRight: scale(10),
-    marginTop: 4,
+  cardImage: {
+    width: '100%',
+    height: 120,
+    resizeMode: 'cover',
   },
   cardContent: {
     flex: 1,
@@ -380,5 +391,81 @@ const styles = StyleSheet.create({
    color: colors.btncolor,
    fontWeight: "500",
  },
+ contentContainer: {
+    flex: 1,
+    width: '100%',
+  },
+  bottomTabContainer: {
+    width: '100%',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: colors.white,
+    zIndex: 1000,
+  },
+  container: {
+    flex: 1,
+    backgroundColor: colors.themeBackground,
+  },
+  mainContent: {
+    flex: 1,
+    paddingBottom: scale(60), // Add padding for bottom tab
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: scale(60), // Add padding for bottom tab
+  },
+  discoverCard: {
+    width: width * 0.45,
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    marginRight: scale(10),
+    marginBottom: scale(10),
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    overflow: 'hidden',
+  },
+  discoverCardImage: {
+    width: '100%',
+    height: scale(120),
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+  },
+  discoverCardContent: {
+    padding: scale(10),
+  },
+  discoverCardTitle: {
+    fontSize: scale(14),
+    fontWeight: 'bold',
+    color: colors.fontMainColor,
+    marginBottom: scale(4),
+  },
+  discoverCardSubtitle: {
+    fontSize: scale(12),
+    color: colors.fontThirdColor,
+    marginBottom: scale(8),
+  },
+  discoverCardFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  discoverCardRating: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  discoverCardDistance: {
+    fontSize: scale(12),
+    color: colors.fontThirdColor,
+  },
 })
 export default styles

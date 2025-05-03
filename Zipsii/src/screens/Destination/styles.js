@@ -1,17 +1,24 @@
 import { StyleSheet, Dimensions } from 'react-native';
-import { alignment, colors } from '../../utils';
+import { alignment, colors, scale } from '../../utils';
 
 const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.white,
+    backgroundColor: colors.themeBackground,
+  },
+  mainContent: {
+    flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   scrollContainer: {
     flexGrow: 1,
-    // paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingBottom: scale(100), // Increased padding to ensure content is scrollable past the bottom tab
   },
   imageContainer: {
     width: '100%',
@@ -68,7 +75,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   readMore: {
-    color: colors.Zipsii_color, // Set this to your desired link color (e.g., purple or blue)
+    color: colors.Zypsii_color, // Set this to your desired link color (e.g., purple or blue)
     fontWeight: 'bold',
   },
   commenttitle:{

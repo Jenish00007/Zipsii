@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react'
 import {
   View,
   Text,
@@ -7,325 +7,231 @@ import {
   Image,
   TextInput,
   StyleSheet,
-} from "react-native";
-import { colors } from "../../utils";
-import * as ImagePicker from "expo-image-picker";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Location from 'expo-location'; // Importing Location module
+  ScrollView,
+  ActivityIndicator
+} from 'react-native'
+import { colors } from '../../utils'
+import * as ImagePicker from 'expo-image-picker'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import * as Location from 'expo-location' // Importing Location module
+import { base_url } from '../../utils/base_url'
+import { styles } from './styles'
+import { Ionicons } from '@expo/vector-icons'
+import { useNavigation } from '@react-navigation/native'
 
-const ProfilePage = ({ navigation }) => {
-  const [name, setName] = useState("");
-  const [username, setUsername] = useState("");
-  const [website, setWebsite] = useState("");
-  const [bio, setBio] = useState("");
-  const [location, setLocation] = useState({ latitude: 343, longitude: 343 }); // Default location
-  const [profileImage, setProfileImage] = useState(null);
+const ProfilePage = () => {
+  const navigation = useNavigation();
+  const [fullName, setFullName] = useState('')
+  const [username, setUsername] = useState('')
+  const [website, setWebsite] = useState('')
+  const [bio, setBio] = useState('')
+  const [location, setLocation] = useState('')
+  const [profileImage, setProfileImage] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
 
-  // Fetch profile data on component mount
   useEffect(() => {
-    const fetchProfileData = async () => {
-
-      try {
-        const response = await fetch("http://192.168.1.24:3030/user/getProfile");
-        const data = await response.json();
-        const userString = await AsyncStorage.getItem('user');
-
-        // Check if the user exists and parse it
-        if (userString) {
-          const user = JSON.parse(userString);
-          const fullName = user.fullName;
-          const user_name = user.userName;
-          
-          setName(fullName || "");
-          setUsername(user_name || "");
-
-        } else {
-          console.log('No user found in AsyncStorage');
-        }
-
-        if (response.ok) {
-          setName(data.fullName || fullName || '');
-          setUsername(data.username || "");
-          setWebsite(data.website || "");
-          setBio(data.bio || "");
-          setLocation(data.location);
-          setProfileImage(data.profilePicture || null); 
-        } else {
-          console.log("profile data not found", data);
-        }
-      } catch (error) {
-        console.error("Error:", error);
-      }
-    };
-
     fetchProfileData();
-    getLocation(); // Get the user's location when the component mounts
-  }, []); // Empty dependency array ensures this runs only once on component mount
+  }, []);
 
-  // Function to fetch the current location
-  const getLocation = async () => {
+  const fetchProfileData = async () => {
     try {
-      // Request permission for location access
-      const { status } = await Location.requestForegroundPermissionsAsync();
-
-      if (status === 'granted') {
-        const location = await Location.getCurrentPositionAsync({});
-        console.log(location);
-
-        // Set the fetched latitude and longitude in the state
-        setLocation({
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-        });
-      } else {
-        Alert.alert('Permission Denied', 'Location permission is required');
+      const accessToken = await AsyncStorage.getItem('accessToken');
+      if (!accessToken) {
+        throw new Error('No access token found');
       }
-    } catch (error) {
-      console.warn('Error fetching location:', error);
-      Alert.alert('Error', 'Unable to fetch location');
-    }
-  };
 
-  // Function to pick an image
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
-
-    if (!result.cancelled) {
-      setProfileImage(result.uri); // Set selected image URI
-    }
-  };
-
-  // Save the profile data
-  const handleSave = async () => {
-    const profileData = {
-      fullName: name,
-      username,
-      website,
-      bio,
-      location: JSON.stringify(location),
-    };
-
-    if (profileImage) {
-      const uri = profileImage;
-      const fileName = uri.split("/").pop();
-      const type = `image/${fileName.split(".").pop()}`;
-      profileData.profilePicture = {
-        uri,
-        name: fileName,
-        type,
-      };
-    }
-
-    const accessToken = await AsyncStorage.getItem('accessToken');
-
-    try {
-      const response = await fetch("http://192.168.1.24:3030/edit_profile", {
-        method: "POST",
+      const response = await fetch(`${base_url}/user/getProfile`, {
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify(profileData),
+          'Content-Type': 'application/json'
+        }
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log("Profile updated successfully", data);
-        Alert.alert('Success', 'Profile updated successfully!');
-        navigation.goBack();
+      if (!response.ok) {
+        throw new Error('Failed to fetch profile data');
+      }
+
+      const result = await response.json();
+      console.log('Profile data:', result); // Debug log
+
+      if (result.success && result.data && result.data.length > 0) {
+        const userData = result.data[0];
+        setFullName(userData.fullName || '');
+        setUsername(userData.userName || '');
+        setWebsite(userData.website || '');
+        setBio(userData.bio || '');
+        setLocation(userData.location || '');
+        if (userData.profileImage) {
+          setProfileImage(userData.profileImage);
+        }
       } else {
-        throw new Error('Error updating profile');
+        throw new Error('No profile data found');
       }
     } catch (error) {
-      console.error("Error:", error);
-      Alert.alert('Error', 'Failed to update profile. Please try again.');
+      console.error('Error fetching profile data:', error);
+      Alert.alert('Error', 'Failed to load profile data. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
+
+  const pickImage = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 1,
+      });
+
+      if (!result.canceled) {
+        setProfileImage(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Alert.alert('Error', 'Failed to pick image');
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      const accessToken = await AsyncStorage.getItem('accessToken');
+      if (!accessToken) {
+        throw new Error('No access token found');
+      }
+
+      const formData = new FormData();
+      formData.append('fullName', fullName);
+      formData.append('userName', username);
+      formData.append('website', website);
+      formData.append('bio', bio);
+      formData.append('location', location);
+      
+      if (profileImage) {
+        formData.append('profileImage', {
+          uri: profileImage,
+          type: 'image/jpeg',
+          name: 'profile.jpg'
+        });
+      }
+
+      const response = await fetch(`${base_url}/user/profile/update`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'multipart/form-data'
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update profile');
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        Alert.alert('Success', 'Profile updated successfully');
+        navigation.goBack();
+      } else {
+        throw new Error(data.message || 'Failed to update profile');
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      Alert.alert('Error', error.message || 'Failed to update profile');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.btncolor} />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.cancelButton}
-        >
-          <Text style={styles.cancelText}>Cancel</Text>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={24} color={colors.fontMainColor} />
         </TouchableOpacity>
-        <TouchableOpacity onPress={handleSave} style={styles.doneButton}>
-          <Text style={styles.doneText}>Done</Text>
+        <Text style={styles.headerTitle}>Edit Profile</Text>
+        <TouchableOpacity style={styles.saveButton} onPress={handleSave} disabled={saving}>
+          <Text style={styles.saveButtonText}>{saving ? 'Saving...' : 'Save'}</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Profile Image */}
-      <View style={styles.profileImageContainer}>
-        <TouchableOpacity onPress={pickImage} style={styles.imageUploadButton}>
+      <ScrollView>
+        <TouchableOpacity style={styles.profileImageContainer} onPress={pickImage}>
           {profileImage ? (
-            <Image
-              source={{ uri: profileImage }}
-              style={styles.profileImage}
-            />
+            <Image source={{ uri: profileImage }} style={styles.profileImage} />
           ) : (
-            <Image
-              source={require("../../assets/profileimage.jpg")}
-              style={styles.profileImage}
-            />
+            <View style={styles.profileImagePlaceholder}>
+              <Text style={styles.profileImagePlaceholderText}>Add Photo</Text>
+            </View>
           )}
-          <Text style={styles.imageUploadText}>Change Profile Photo</Text>
         </TouchableOpacity>
-      </View>
 
-      {/* Input Fields */}
-      <View style={styles.inputWrapper}>
-        {/* Name */}
-        <View style={styles.inputRow}>
-          <Text style={styles.inputLabel}>Name</Text>
-          <View style={styles.inputFieldContainer}>
+        <View style={styles.form}>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Full Name</Text>
             <TextInput
-              style={styles.inputField}
-              placeholder="Enter your name"
-              value={name}
-              onChangeText={setName}
+              style={styles.input}
+              value={fullName}
+              onChangeText={setFullName}
+              placeholder="Enter your full name"
             />
-            <View style={styles.divider} />
           </View>
-        </View>
 
-        {/* Username */}
-        <View style={styles.inputRow}>
-          <Text style={styles.inputLabel}>Username</Text>
-          <View style={styles.inputFieldContainer}>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Username</Text>
             <TextInput
-              style={styles.inputField}
-              placeholder="Enter your username"
+              style={styles.input}
               value={username}
               onChangeText={setUsername}
-              editable={false} 
+              placeholder="Enter your username"
             />
-            <View style={styles.divider} />
           </View>
-        </View>
 
-        {/* Website */}
-        <View style={styles.inputRow}>
-          <Text style={styles.inputLabel}>Website</Text>
-          <View style={styles.inputFieldContainer}>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Website</Text>
             <TextInput
-              style={styles.inputField}
-              placeholder="Add your website"
+              style={styles.input}
               value={website}
               onChangeText={setWebsite}
+              placeholder="Enter your website"
             />
-            <View style={styles.divider} />
           </View>
-        </View>
 
-        {/* Bio */}
-        <View style={styles.inputRow}>
-          <Text style={styles.inputLabel}>Bio</Text>
-          <View style={styles.inputFieldContainer}>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Bio</Text>
             <TextInput
-              style={[styles.inputField, styles.bioInput]}
-              placeholder="Write about yourself"
+              style={[styles.input, styles.bioInput]}
               value={bio}
               onChangeText={setBio}
+              placeholder="Write something about yourself"
+              multiline
+              numberOfLines={4}
             />
-            <View style={styles.divider} />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Location</Text>
+            <TextInput
+              style={styles.input}
+              value={location}
+              onChangeText={setLocation}
+              placeholder="Enter your location"
+            />
           </View>
         </View>
-      </View>
+      </ScrollView>
     </View>
-  );
-};
+  )
+}
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.white,
-    padding: 20,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 20,
-  },
-  cancelButton: {
-    flex: 1,
-  },
-  doneButton: {
-    flex: 1,
-    alignItems: "flex-end",
-  },
-  cancelText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: colors.black,
-  },
-  doneText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: colors.blueColor,
-  },
-  profileImageContainer: {
-    alignItems: "center",
-    marginBottom: 30,
-  },
-  imageUploadButton: {
-    alignItems: "center",
-  },
-  profileImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 2,
-    borderColor: colors.graycolor,
-  },
-  imageUploadText: {
-    marginTop: 10,
-    fontSize: 16,
-    fontWeight: "500",
-    color: colors.blueColor,
-  },
-  inputWrapper: {
-    marginBottom: 30,
-  },
-  inputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 15,
-    paddingVertical: 5,
-  },
-  inputLabel: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: colors.fontMainColor,
-    flex: 1,
-  },
-  inputFieldContainer: {
-    flex: 2,
-    alignItems: "flex-end",
-  },
-  inputField: {
-    fontSize: 16,
-    color: colors.black,
-    width: "100%",
-  },
-  bioInput: {
-    textAlignVertical: "top",
-  },
-  divider: {
-    height: 1,
-    backgroundColor: colors.graycolor,
-    width: "100%",
-    marginTop: 5,
-  },
-});
-
-export default ProfilePage;
+export default ProfilePage

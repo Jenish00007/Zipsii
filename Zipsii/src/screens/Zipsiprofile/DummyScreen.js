@@ -7,18 +7,19 @@ import { colors } from '../../utils';
 import { Feather, MaterialIcons, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import Post from '../../components/Posts/Post';
 import Schedule from '../MySchedule/Schedule/AllSchedule';
-
-const baseUrl = 'http://172.20.10.5:8000';
+import { base_url } from '../../utils/base_url';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const DummyScreen = ({ navigation }) => {
   const [activeIcon, setActiveIcon] = useState('th-large'); // Default active icon
   const [profileInfo, setProfileInfo] = useState({
-    id: 1,
-    name: 'Leonardo',
+    id: '',
+    name: '',
     Posts: '0',
     Followers: '0',
     Following: '0',
-    image: '../../assets/profileimage.jpg'
+    image: '',
+    notes: ''
   });
   const [loading, setLoading] = useState(true);
   const [all_schedule, setAll_schedule] = useState([]);
@@ -29,19 +30,35 @@ const DummyScreen = ({ navigation }) => {
   useEffect(() => {
     const fetchProfileInfo = async () => {
       try {
-        const response = await fetch(`${baseUrl}/userInfo`);
-        // Check if response is ok before parsing
+        const accessToken = await AsyncStorage.getItem('accessToken');
+        if (!accessToken) {
+          throw new Error('No access token found');
+        }
+
+        const response = await fetch(`${base_url}/user/getProfile`, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        
-        const contentType = response.headers.get("content-type");
-        if (!contentType || !contentType.includes("application/json")) {
-          throw new Error("Received non-JSON response from server");
+
+        const result = await response.json();
+        if (result.success && result.data && result.data.length > 0) {
+          const userData = result.data[0];
+          setProfileInfo({
+            id: userData.id || '',
+            name: userData.fullName || '',
+            Posts: userData.posts || '0',
+            Followers: userData.followers || '0',
+            Following: userData.following || '0',
+            image: userData.profileImage || '',
+            notes: userData.bio || ''
+          });
         }
-        
-        const data = await response.json();
-        setProfileInfo(data);
       } catch (error) {
         console.error('Error fetching data:', error);
         // Keep the default profile data in case of error
@@ -228,7 +245,7 @@ const DummyScreen = ({ navigation }) => {
           source={{uri:profileInfo.image}} // Local profile image
           style={styles.profileImage}
         />
-        <Text style={styles.name}>{profileInfo.name || 'Leonardo'}</Text>
+        <Text style={styles.name}>{profileInfo.name || 'Jenish'}</Text>
         <Text style={styles.description}>{profileInfo.notes}</Text>
       </TouchableOpacity>
 

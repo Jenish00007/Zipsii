@@ -1,29 +1,75 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, Image, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image, ActivityIndicator, KeyboardAvoidingView, ScrollView, Platform, Dimensions, Modal } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
-import { Feather } from '@expo/vector-icons';
-import { useAuth } from '../../components/Auth/AuthContext'; // Adjust the path as needed
-import * as Google from 'expo-auth-session/providers/google'
+import { useAuth } from '../../components/Auth/AuthContext';
+import * as Google from 'expo-auth-session/providers/google';
+import { colors } from '../../utils/colors';
+import { base_url } from '../../utils/base_url';
+import * as Notifications from 'expo-notifications';
+import * as Device from 'expo-device';
+
 const SignInScreen = () => {
   const [userNameOrEmail, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [passwordIsVisible, setPasswordIsVisible] = useState(false);
+  const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
+  const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
   const navigation = useNavigation();
-  const { login, userDetails } = useAuth(); // Assuming useAuth provides the current user and login function
+  const { user, login } = useAuth();
+
+  // Google login state and function
+  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
+    clientId: 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com',
+  });
 
   useEffect(() => {
     const checkUser = async () => {
       const storedUser = await AsyncStorage.getItem('user');
+
       if (storedUser) {
         // If user is already logged in, navigate to MainLanding
-        navigation.navigate('MainLanding');
+        navigation.navigate('Drawer', { screen: 'MainLanding' });
       }
     };
 
     checkUser();
   }, [navigation]);
+
+  const registerForPushNotificationsAsync = async () => {
+    let token;
+    
+    if (Device.isDevice) {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+      
+      if (finalStatus !== 'granted') {
+        alert('Failed to get push token for push notification!');
+        return;
+      }
+      
+      token = (await Notifications.getExpoPushTokenAsync()).data;
+    } else {
+      alert('Must use physical device for Push Notifications');
+    }
+
+    if (Platform.OS === 'android') {
+      await Notifications.setNotificationChannelAsync('default', {
+        name: 'default',
+        importance: Notifications.AndroidImportance.HIGH,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: colors.brownColor,
+      });
+    }
+
+    return token;
+  };
 
   const handleLogin = async () => {
     if (!userNameOrEmail || !password) {
@@ -33,12 +79,18 @@ const SignInScreen = () => {
 
     setLoading(true);
     try {
-      const response = await fetch('http://192.168.1.6:3030/user/login/', {
+      const expoPushToken = await registerForPushNotificationsAsync();
+      
+      const response = await fetch(`${base_url}/user/login/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ userNameOrEmail, password }),
+        body: JSON.stringify({ 
+          userNameOrEmail, 
+          password,
+          expoPushToken 
+        }),
       });
 
       if (response.ok) {
@@ -48,10 +100,10 @@ const SignInScreen = () => {
           const { token, userDetails } = data;
           // Store the accessToken and user info
           await AsyncStorage.setItem('accessToken', token);
+          console.log('Access Token:', token);
           await AsyncStorage.setItem('user', JSON.stringify(userDetails));
-
           // Use the login function from AuthContext to set the user
-          login(login);
+          login(userDetails);
           
           navigation.navigate('MainLanding');
         } else {
@@ -68,194 +120,402 @@ const SignInScreen = () => {
     }
   };
 
-  // If user is already logged in, don't render the SignInScreen
-  if (login) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#3662AA" />
-      </View>
-    );
-  }else{
+  const handleGoogleLogin = async () => {
+    try {
+      const result = await promptAsync();
+      if (result?.type === 'success') {
+        const { id_token } = result.params;
+        const expoPushToken = await registerForPushNotificationsAsync();
+
+        setLoading(true);
+        const response = await fetch(`${base_url}/user/login/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            googleToken: id_token,
+            expoPushToken 
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (!data.error) {
+            Alert.alert('Success', 'Logged in successfully');
+            const { token, userDetails } = data;
+            // Store the accessToken and user info
+            await AsyncStorage.setItem('accessToken', token);
+            await AsyncStorage.setItem('user', JSON.stringify(userDetails));
+
+            // Use the login function from AuthContext to set the user
+            login(userDetails);
+            
+navigation.navigate('Drawer', { screen: 'MainLanding' });          } else {
+            Alert.alert('Error', data.message || 'Google login failed');
+          }
+        } else {
+          Alert.alert('Error', 'Google login failed, please try again.');
+        }
+      } else {
+        Alert.alert('Error', 'Google login failed');
+      }
+    } catch (error) {
+      console.error('Google login error:', error);
+      Alert.alert('Error', 'Google login failed due to a network error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!forgotPasswordEmail) {
+      Alert.alert('Error', 'Please enter your email address');
+      return;
+    }
+
+    setForgotPasswordLoading(true);
+    try {
+      console.log('Sending forgot password request to:', `${base_url}/auth/forgetPassword`);
+      console.log('Request body:', JSON.stringify({ email: forgotPasswordEmail }));
+      
+      const response = await fetch(`${base_url}/auth/forgetPassword`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: forgotPasswordEmail }),
+      });
+
+      console.log('Response status:', response.status);
+      const data = await response.json();
+      console.log('Response data:', data);
+
+      if (response.ok) {
+        Alert.alert('Success', 'Password reset link has been sent to your email');
+        setForgotPasswordModal(false);
+        setForgotPasswordEmail('');
+      } else {
+        Alert.alert('Error', data.message || 'Failed to send reset link. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error in forgot password:', error);
+      Alert.alert(
+        'Error', 
+        'Failed to process your request. Please check your internet connection and try again.'
+      );
+    } finally {
+      setForgotPasswordLoading(false);
+    }
+  };
+
+
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Login</Text>
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
+    >
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        bounces={false}
+      >
+        <View style={styles.topSection}>
+          <Text style={styles.title}>Login</Text>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your Email"
+              placeholderTextColor="#999"
+              value={userNameOrEmail}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+          </View>
 
-      <View style={styles.inputContainer}>
-        <View style={styles.icon}>
-          <Feather name="mail" size={22} color="#7C808D" />
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Password</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your Password"
+              placeholderTextColor="#999"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+            />
+          </View>
+
+          <TouchableOpacity 
+            style={styles.forgotPassword}
+            onPress={() => setForgotPasswordModal(true)}
+          >
+            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+          </TouchableOpacity>
         </View>
-        <TextInput
-          style={styles.input}
-          placeholder="Email ID"
-          placeholderTextColor="#7C808D"
-          selectionColor="#3662AA"
-          onChangeText={setEmail}
-          value={userNameOrEmail}
-        />
-      </View>
 
-      <View style={styles.inputContainer}>
-        <View style={styles.icon}>
-          <Feather name="lock" size={22} color="#7C808D" />
+        <View style={styles.bottomSection}>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.signupButton} onPress={() => navigation.navigate('Drawer', { screen: 'SignUp' })}>
+              <Text style={styles.signupButtonText}>SIGNUP</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+              <Text style={styles.loginButtonText}>LOGIN</Text>
+            </TouchableOpacity>
+          </View>
+
+          <Text style={styles.orText}>or login with</Text>
+
+          <View style={styles.socialButtonsContainer}>
+            <TouchableOpacity onPress={handleGoogleLogin}>
+              <Image source={require('../../assets/icons/google.png')} style={styles.socialIcon} />
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <Image source={require('../../assets/icons/facebook.png')} style={styles.socialIcon} />
+            </TouchableOpacity>
+            {/* <TouchableOpacity>
+              <Image source={require('../../assets/icons/twitter.png')} style={styles.socialIcon} />
+            </TouchableOpacity> */}
+          </View>
+
+          <TouchableOpacity onPress={() => navigation.navigate('Drawer', { screen: 'SignUp' })}>
+            <Text style={styles.signupText}>Don't have an account? <Text style={styles.signupLink}>SIGN UP</Text></Text>
+          </TouchableOpacity>
         </View>
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          secureTextEntry={!passwordIsVisible}
-          placeholderTextColor="#7C808D"
-          selectionColor="#3662AA"
-          onChangeText={setPassword}
-          value={password}
-        />
-        <TouchableOpacity
-          style={styles.passwordVisibleButton}
-          onPress={() => setPasswordIsVisible(!passwordIsVisible)}
-        >
-          <Feather name={passwordIsVisible ? 'eye' : 'eye-off'} size={20} color="#7C808D" />
-        </TouchableOpacity>
-      </View>
+      </ScrollView>
 
-      <TouchableOpacity style={styles.forgotPasswordButton}>
-        <Text style={styles.forgotPasswordButtonText}>Forgot password?</Text>
-      </TouchableOpacity>
+      {/* Forgot Password Modal */}
+      <Modal
+        visible={forgotPasswordModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setForgotPasswordModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Reset Password</Text>
+            <Text style={styles.modalSubtitle}>
+              Enter your email address and we'll send you a link to reset your password.
+            </Text>
+            
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Enter your email"
+              placeholderTextColor="#999"
+              value={forgotPasswordEmail}
+              onChangeText={setForgotPasswordEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
 
-      <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={loading}>
-        <Text style={styles.loginButtonText}>{loading ? 'Signing in...' : 'Sign In'}</Text>
-      </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.modalButton}
+              onPress={handleForgotPassword}
+              disabled={forgotPasswordLoading}
+            >
+              {forgotPasswordLoading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text style={styles.modalButtonText}>Send Reset Link</Text>
+              )}
+            </TouchableOpacity>
 
-      <View style={styles.orContainer}>
-        <View style={styles.orLine} />
-        <Text style={styles.orText}>OR</Text>
-        <View style={styles.orLine} />
-      </View>
-
-      {/* Google Login Button */}
-      <TouchableOpacity style={styles.socialButton}>
-        <Image
-          style={styles.googleLogo}
-          source={require('../../assets/icons/google.png')}
-        />
-        <Text style={styles.googleButtonText}>Login with Google</Text>
-      </TouchableOpacity>
-
-      {/* Facebook Login Button */}
-      <TouchableOpacity style={styles.socialButton}>
-        <Feather name="facebook" size={22} color="#fff" />
-        <Text style={styles.socialButtonText}>Login with Facebook</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
-        <Text style={styles.signupText}>Don't have an account? Sign Up</Text>
-      </TouchableOpacity>
-    </ScrollView>
+            <TouchableOpacity 
+              style={styles.modalCloseButton}
+              onPress={() => setForgotPasswordModal(false)}
+            >
+              <Text style={styles.modalCloseButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    </KeyboardAvoidingView>
   );
 };
-}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#a60f93',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    minHeight: Dimensions.get('window').height,
+  },
+  topSection: {
+    flex: 1,
+    backgroundColor: '#a60f93',
     paddingHorizontal: 30,
-    paddingVertical: 20,
+    paddingTop: 60,
+    paddingBottom: 30,
+  },
+  bottomSection: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    padding: 30,
+    paddingBottom: Platform.OS === 'ios' ? 50 : 30,
   },
   title: {
-    fontSize: 30,
+    fontSize: 32,
     fontWeight: 'bold',
+    color: '#FFFFFF',
     marginBottom: 40,
-    textAlign: 'center',
+  },
+  label: {
+    color: '#FFFFFF',
+    marginBottom: 8,
+    fontSize: 16,
   },
   inputContainer: {
-    flexDirection: 'row',
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-    position: 'relative',
-  },
-  icon: {
-    marginRight: 15,
+    marginBottom: 25,
   },
   input: {
-    borderBottomWidth: 1.5,
-    flex: 1,
-    paddingBottom: 10,
-    borderBottomColor: '#eee',
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    borderRadius: 8,
+    padding: 15,
+    color: '#FFFFFF',
     fontSize: 16,
   },
-  passwordVisibleButton: {
-    position: 'absolute',
-    right: 0,
-  },
-  forgotPasswordButton: {
+  forgotPassword: {
     alignSelf: 'flex-end',
   },
-  forgotPasswordButtonText: {
-    color: '#3662AA',
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  loginButton: {
-    backgroundColor: '#3662AA',
-    padding: 14,
-    borderRadius: 10,
-    marginTop: 20,
-  },
-  loginButtonText: {
-    color: '#fff',
-    textAlign: 'center',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  orContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 20,
-  },
-  orLine: {
-    height: 1,
-    backgroundColor: '#eee',
-    flex: 1,
-  },
-  orText: {
-    color: '#7C808D',
-    marginRight: 10,
-    marginLeft: 10,
+  forgotPasswordText: {
+    color: '#FFFFFF',
     fontSize: 14,
   },
-  socialButton: {
-    backgroundColor: '#3b5998',  // For Facebook
-    padding: 14,
-    borderRadius: 10,
+  buttonContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-    marginBottom: 10,
+    justifyContent: 'space-between',
+    marginBottom: 30,
   },
-  socialButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '500',
+  signupButton: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 15,
+    borderRadius: 25,
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: '#a60f93',
+  },
+  loginButton: {
+    flex: 1,
+    backgroundColor: '#a60f93',
+    paddingVertical: 15,
+    borderRadius: 25,
+    marginLeft: 10,
+  },
+  signupButtonText: {
+    color: '#a60f93',
     textAlign: 'center',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
-  googleLogo: {
-    width: 20.03,
-    height: 20.44,
-    position: 'absolute',
-    left: 14,
+  loginButtonText: {
+    color: '#FFFFFF',
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  orText: {
+    color: '#999',
+    textAlign: 'center',
+    marginVertical: 20,
+  },
+  socialButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 30,
+  },
+  socialIcon: {
+    width: 40,
+    height: 40,
+    marginHorizontal: 15,
   },
   signupText: {
-    color: '#007bff',
-    marginTop: 10,
+    color: '#666',
     textAlign: 'center',
+    fontSize: 14,
+  },
+  signupLink: {
+    color: '#a60f93',
+    fontWeight: 'bold',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 20,
+    width: '80%',
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: colors.btncolor,
+    marginBottom: 10,
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  modalInput: {
+    width: '100%',
+    height: 50,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    marginBottom: 20,
+    fontSize: 16,
+  },
+  modalButton: {
+    backgroundColor: colors.btncolor,
+    width: '100%',
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  modalButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  modalCloseButton: {
+    width: '100%',
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.btncolor,
+  },
+  modalCloseButtonText: {
+    color: colors.btncolor,
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 
 export default SignInScreen;
+

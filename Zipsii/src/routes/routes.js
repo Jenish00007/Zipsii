@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import navigationService from './navigationService';
 import * as Notifications from 'expo-notifications';
 import * as Screen from '../screens';
+import TripMap from '../screens/TripMap/TripMap';
 
 const NavigationStack = createStackNavigator();
 const MainStack = createStackNavigator();
@@ -25,8 +26,8 @@ const MainStack = createStackNavigator();
 function Drawer() {
   return (
     <NavigationStack.Navigator screenOptions={{ headerShown: false }}>
-      <NavigationStack.Screen name='Login' component={Screen.Login}/>
       <NavigationStack.Screen name="MainLanding" component={Screen.MainLanding} />
+      <NavigationStack.Screen name="ExpenseCalculator" component={Screen.ExpenseCalculator} />
       <NavigationStack.Screen name="DeleteButton" component={Screen.DeleteButton} />
       <NavigationStack.Screen name="Logout" component={Screen.LogoutButton} />
       <NavigationStack.Screen name="ProfileDashboard" component={Screen.ProfileDashboard} />
@@ -51,9 +52,12 @@ function Drawer() {
       <NavigationStack.Screen name="SignUp" component={Screen.SignUp} />
       <NavigationStack.Screen name="Favourite" component={Screen.FavoritesPage} />
       <NavigationStack.Screen name="MapScreen" component={Screen.MapScreen} />
-
-
-      
+      <NavigationStack.Screen name="FollowersList" component={Screen.FollowersList} />
+      <NavigationStack.Screen name="FAQ" component={Screen.FAQ} />
+      <NavigationStack.Screen name="SplitDashboard" component={Screen.SplitDashboard} />
+      <NavigationStack.Screen name="CreateSplit" component={Screen.CreateSplit} />
+      <NavigationStack.Screen name="SplitDetail" component={Screen.SplitDetail} />
+      <NavigationStack.Screen name="TripMap" component={TripMap} />
     </NavigationStack.Navigator>
   );
 }
@@ -93,8 +97,9 @@ function AppContainer() {
       ref={ref => {
         navigationService.setGlobalRef(ref);
       }}>
-      <MainStack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Onboarding">
-        <MainStack.Screen name="Onboarding" component={Screen.OnboardingScreen} />
+      <MainStack.Navigator screenOptions={{ headerShown: false }}>
+        {/* <MainStack.Screen name="Onboarding" component={Screen.OnboardingScreen} /> */}
+        <MainStack.Screen name="Login" component={Screen.Login} />
         <MainStack.Screen name="Drawer" component={Drawer} />
       </MainStack.Navigator>
     </NavigationContainer>

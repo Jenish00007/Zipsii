@@ -3,9 +3,10 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons'; 
 import styles from './styles';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { scale, colors } from '../../utils';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+
 function BottomTab({ screen }) {
   const navigation = useNavigation();
  
@@ -25,36 +26,31 @@ function BottomTab({ screen }) {
         style={styles.footerBtnContainer}
       >
         <MaterialCommunityIcons
-          name="home" // Solid green icon
+          name="home"
           size={scale(20)}
           color={getIconColor('HOME')}
         />
         <Text style={getTextStyle('HOME')}>Home</Text>
       </TouchableOpacity>
 
-      {/* Cart Icon */}
+      {/* Location Icon */}
       <TouchableOpacity
         onPress={() => navigation.navigate('WhereToGo')}
         style={styles.footerBtnContainer}
       >
         <View style={styles.imgContainer}>
           <SimpleLineIcons
-            name="location-pin" // Solid green icon
+            name="location-pin"
             size={scale(20)}
             color={getIconColor('WhereToGo')}
           />
-
-          
-          {/* {cartCount > 0 && (
-            <View style={styles.badgeContainer}>
-              <Text style={styles.badgeText}>{cartCount}</Text>
-            </View>
-          )} */}
         </View>
         <Text style={getTextStyle('WhereToGo')}>Where to Go</Text>
       </TouchableOpacity>
 
-      {/* Favourites Icon */}
+    
+
+      {/* Upload Icon */}
       <TouchableOpacity
         onPress={() => navigation.navigate('ReelUpload')}
         style={styles.footerBtnContainer}
@@ -66,9 +62,22 @@ function BottomTab({ screen }) {
         />
         <Text style={getTextStyle('FAVOURITES')}>Upload</Text>
       </TouchableOpacity>
+
+  {/* Split/Expense Calculator Icon */}
+  <TouchableOpacity
+        onPress={() => navigation.navigate('SplitDashboard')}
+        style={styles.footerBtnContainer}
+      >
+        <MaterialIcons
+          name="attach-money"
+          size={scale(20)}
+          color={getIconColor('SPLIT')}
+        />
+        <Text style={getTextStyle('SPLIT')}>Split</Text>
+      </TouchableOpacity>
       
-      {/* My Orders Icon */}
-      <TouchableOpacity
+       {/* My Orders Icon */}
+       {/* <TouchableOpacity
         onPress={() => navigation.navigate('MessageList')}
         style={styles.footerBtnContainer}
       >
@@ -78,17 +87,11 @@ function BottomTab({ screen }) {
           color={getIconColor('ORDERS')}
         />
         <Text style={getTextStyle('ORDERS')}>Chat</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       {/* Profile Icon */}
       <TouchableOpacity
-        onPress={() => {
-          // if (isLoggedIn) {
-            navigation.navigate('ProfileDashboard');
-          // } else {
-          //   navigation.navigate('SignIn');
-          // }
-        }}
+        onPress={() => navigation.navigate('ProfileDashboard')}
         style={styles.footerBtnContainer}
       >
         <View style={styles.profileContainer}>
@@ -97,11 +100,6 @@ function BottomTab({ screen }) {
             size={scale(20)}
             color={getIconColor('PROFILE')}
           />
-          {/* {isLoggedIn &&
-            orders &&
-            orders.filter((o) =>
-              ['PENDING', 'DISPATCHED', 'ACCEPTED'].includes(o.orderStatus)
-            ).length > 0 && <View style={styles.profileBadge} />} */}
         </View>
         <Text style={getTextStyle('PROFILE')}>Menu</Text>
       </TouchableOpacity>

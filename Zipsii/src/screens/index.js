@@ -1,9 +1,8 @@
-
-
 import MainLanding from './MainLanding/MainLanding'
-
+import ExpenseCalculator from './ExpenseCalculator/ExpenseCalculator'
 import ProfileDashboard from './ProfileDashboard/ProfileDashboard'
 import Review from './Review/Review'
+import FAQ from './FAQ/FAQ'
 
 import DeleteButton from './DeleteScreen/DeleteScreen'
 import DummyScreen from './Zipsiprofile/DummyScreen'
@@ -29,12 +28,17 @@ import SignUp from './SignUp/SignUp'
 import FavoritesPage from './Favourite/Favourite'
 import LogoutButton from './Logout/Logout'
 import MapScreen from './mapscreen/MapScreen '
+import FollowersList from './FollowersList/FollowersList'
+import SplitDashboard from './Split/SplitDashboard'
+import CreateSplit from './Split/CreateSplit'
+import SplitDetail from './Split/SplitDetail'
 
 
 export {
 
   data,
   MainLanding,
+  ExpenseCalculator,
   ProfileDashboard,
   MapScreen,
   Review,
@@ -60,4 +64,9 @@ export {
   LocationPage,
   SignUp,
   LogoutButton,
+  FollowersList,
+  FAQ,
+  SplitDashboard,
+  CreateSplit,
+  SplitDetail,
 }

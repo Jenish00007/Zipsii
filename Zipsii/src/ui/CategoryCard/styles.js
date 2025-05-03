@@ -27,6 +27,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: scale(2),
   },
+  text: {
+    fontSize: scale(10),
+  },
   dummyImage: {
     width: scale(60),
     height: scale(60),
